@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Affiliate Tool - Reup Video Pro</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:#0a0a0a; color:#cccccc; min-height:100vh;
+        }
+        .header {
+            background:#1a1a1a; border-bottom:2px solid #ff4d4d;
+            padding:20px 30px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;
+        }
+        .header h1 { color:#e0e0e0; font-size:24px; display:flex; align-items:center; gap:10px; }
+        .header h1 small { font-size:13px; color:#888; font-weight:400; }
+        .header .aff-id-box { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .header .aff-id-box label { color:#aaa; font-size:13px; }
+        .header .aff-id-box input { background:#111; border:1px solid #333; color:#ccc; padding:8px 12px; border-radius:6px; width:200px; outline:none; }
+        .header .aff-id-box input:focus { border-color:#ff4d4d; }
+        .header .fb-page-box { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .header .fb-page-box input { background:#111; border:1px solid #333; color:#ccc; padding:8px 12px; border-radius:6px; width:200px; outline:none; }
+        .header .fb-page-box input:focus { border-color:#1877f2; }
+
+        .nav { display:flex; gap:0; background:#1a1a1a; border-bottom:1px solid #2a2a2a; overflow-x:auto; }
+        .nav button { background:transparent; border:none; color:#888; padding:14px 24px; cursor:pointer; font-size:14px; font-weight:500; border-bottom:2px solid transparent; transition:all 0.3s; white-space:nowrap; }
+        .nav button:hover { color:#ddd; background:#222; }
+        .nav button.active { color:#fff; border-bottom-color:#ff4d4d; background:#222; }
+
+        .content { padding:30px; max-width:1200px; margin:0 auto; }
+        .tab { display:none; }
+        .tab.active { display:block; animation:fadeIn 0.3s; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+        .card { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px; padding:24px; margin-bottom:20px; }
+        .card h2 { color:#e0e0e0; font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+        .card h2 .badge { background:#2a2a2a; color:#aaa; font-size:11px; padding:2px 10px; border-radius:12px; font-weight:400; }
+        .form-group { margin-bottom:14px; }
+        .form-group label { display:block; color:#aaa; font-size:13px; margin-bottom:4px; font-weight:500; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; background:#111; border:1px solid #333; color:#ccc; padding:10px 14px; border-radius:8px; font-size:14px; outline:none; font-family:inherit; transition:border-color 0.3s; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color:#ff4d4d; }
+        .form-group textarea { resize:vertical; min-height:80px; }
+        .form-row { display:flex; gap:14px; flex-wrap:wrap; }
+        .form-row .form-group { flex:1; min-width:200px; }
+
+        .btn { padding:10px 22px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.3s; display:inline-flex; align-items:center; gap:8px; }
+        .btn-primary { background:#2a2a2a; color:#e0e0e0; border:1px solid #444; }
+        .btn-primary:hover { background:#3a3a3a; }
+        .btn-success { background:#2a2a2a; color:#8bc34a; border:1px solid #8bc34a; }
+        .btn-success:hover { background:#333; }
+        .btn-danger { background:#2a2a2a; color:#ef5350; border:1px solid #ef5350; }
+        .btn-danger:hover { background:#333; }
+        .btn-douyin { background:#ff4d4d; color:white; }
+        .btn-douyin:hover { background:#e64444; transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,77,77,0.4); }
+        .btn-fb { background:#1877f2; color:white; }
+        .btn-fb:hover { background:#166fe5; transform:translateY(-1px); box-shadow:0 4px 12px rgba(24,119,242,0.4); }
+        .btn-sm { padding:6px 14px; font-size:12px; }
+
+        .link-result { background:#0d0d0d; border:1px solid #2a2a2a; border-radius:8px; padding:14px; margin:10px 0; word-break:break-all; font-family:'Consolas',monospace; font-size:13px; color:#8bc34a; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .link-result .copy-btn { background:#2a2a2a; border:1px solid #444; color:#ccc; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; white-space:nowrap; }
+        .link-result .copy-btn:hover { background:#3a3a3a; }
+
+        .workflow-step { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; padding:16px; background:#0d0d0d; border-radius:10px; border-left:3px solid #ff4d4d; }
+        .workflow-step .step-num { background:#ff4d4d; color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0; }
+        .workflow-step .step-content { flex:1; }
+        .workflow-step .step-content h4 { color:#e0e0e0; margin-bottom:6px; }
+        .workflow-step .step-content p { color:#888; font-size:13px; line-height:1.6; }
+
+        .translation-box { background:#0d0d0d; border:1px solid #2a2a2a; border-radius:8px; padding:16px; margin:10px 0; display:flex; gap:16px; flex-wrap:wrap; }
+        .translation-box .lang-col { flex:1; min-width:200px; }
+        .translation-box .lang-col .label { color:#888; font-size:11px; text-transform:uppercase; margin-bottom:4px; }
+        .translation-box .lang-col .content { color:#ccc; font-size:14px; line-height:1.6; }
+        .translation-box .arrow { display:flex; align-items:center; color:#444; font-size:20px; }
+
+        .lang-selector { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .lang-selector select { background:#111; border:1px solid #333; color:#ccc; padding:8px 12px; border-radius:6px; font-size:13px; outline:none; }
+        .lang-selector .swap-btn { background:#2a2a2a; border:none; color:#aaa; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:16px; }
+
+        .video-card { background:#111; border:1px solid #2a2a2a; border-radius:10px; padding:16px; display:flex; gap:14px; align-items:flex-start; margin-bottom:12px; }
+        .video-card .thumb { width:120px; height:80px; background:#222; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:30px; }
+        .video-card .info { flex:1; }
+        .video-card .info .title { color:#e0e0e0; font-weight:600; margin-bottom:4px; }
+        .video-card .info .meta { color:#666; font-size:12px; margin-bottom:6px; }
+        .video-card .info .status { font-size:12px; padding:2px 10px; border-radius:10px; display:inline-block; }
+        .video-card .info .status.pending { background:#332; color:#ffa726; }
+        .video-card .info .status.edited { background:#232; color:#64b5f6; }
+        .video-card .info .status.done { background:#232; color:#8bc34a; }
+        .video-card .actions { display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+        .video-card .progress-bar { margin-top:8px; height:4px; background:#2a2a2a; border-radius:2px; overflow:hidden; }
+        .video-card .progress-bar .fill { height:100%; border-radius:2px; transition:width 0.3s; }
+
+        .copyright-checklist { background:#0d0d0d; border:1px solid #333; border-radius:8px; padding:16px; margin:10px 0; }
+        .copyright-checklist h4 { color:#e0e0e0; margin-bottom:10px; }
+        .copyright-checklist label { display:flex; align-items:center; gap:10px; padding:6px 0; color:#aaa; font-size:13px; cursor:pointer; }
+        .copyright-checklist input[type="checkbox"] { accent-color:#ff4d4d; width:16px; height:16px; }
+
+        .empty-state { text-align:center; padding:40px 20px; color:#666; }
+        .empty-state .icon { font-size:48px; margin-bottom:12px; }
+        .empty-state p { font-size:14px; }
+        .toast { position:fixed; bottom:30px; right:30px; background:#1a1a1a; color:#ccc; padding:14px 24px; border-radius:10px; font-size:14px; opacity:0; transform:translateY(20px); transition:all 0.4s; pointer-events:none; box-shadow:0 8px 24px rgba(0,0,0,0.8); border:1px solid #2a2a2a; z-index:999; }
+        .toast.show { opacity:1; transform:translateY(0); }
+
+        .fb-post-preview { background:#0d1b2a; border:1px solid #1877f2; border-radius:10px; padding:16px; margin:10px 0; }
+        .fb-post-preview .fb-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+        .fb-post-preview .fb-avatar { width:40px; height:40px; border-radius:50%; background:#1877f2; display:flex; align-items:center; justify-content:center; font-size:20px; }
+        .fb-post-preview .fb-name { color:#e0e0e0; font-weight:600; font-size:14px; }
+        .fb-post-preview .fb-time { color:#666; font-size:11px; }
+        .fb-post-preview .fb-content { color:#ccc; font-size:14px; line-height:1.6; margin-bottom:10px; white-space:pre-wrap; }
+        .fb-post-preview .fb-link { background:#0a1628; padding:10px; border-radius:8px; border:1px solid #1b2838; font-size:12px; color:#1877f2; word-break:break-all; }
+        .fb-post-preview .fb-actions { display:flex; gap:20px; margin-top:10px; color:#666; font-size:13px; }
+
+        .fb-page-connected { background:#0d1b2a; border:1px solid #1877f2; border-radius:10px; padding:16px; display:flex; align-items:center; gap:14px; }
+        .fb-page-connected .avatar { width:48px; height:48px; border-radius:50%; background:#1877f2; display:flex; align-items:center; justify-content:center; font-size:24px; }
+        .fb-page-connected .info { flex:1; }
+        .fb-page-connected .info .name { color:#e0e0e0; font-weight:600; }
+        .fb-page-connected .info .status { color:#8bc34a; font-size:12px; }
+        .fb-page-connected .token-input { background:#111; border:1px solid #333; color:#ccc; padding:8px 12px; border-radius:6px; width:100%; font-size:12px; font-family:monospace; }
+
+        @media(max-width:640px) {
+            .header { padding:15px; flex-direction:column; align-items:stretch; }
+            .header .aff-id-box input, .header .fb-page-box input { width:100%; }
+            .content { padding:15px; }
+            .video-card { flex-direction:column; }
+            .video-card .thumb { width:100%; height:120px; }
+            .workflow-step { flex-direction:column; }
+            .translation-box { flex-direction:column; }
+            .translation-box .arrow { transform:rotate(90deg); justify-content:center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            🎬 Shopee Affiliate Pro
+            <small>Reup Video & Auto Đăng FB Page</small>
+        </h1>
+        <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
+            <div class="aff-id-box">
+                <label>🔗 Aff ID:</label>
+                <input type="text" id="affIdInput" placeholder="VD: an_17372610481" value="" style="width:150px;">
+                <button class="btn btn-primary btn-sm" onclick="saveAffId()">Lưu</button>
+            </div>
+            <div class="fb-page-box">
+                <label>📘 FB Page ID:</label>
+                <input type="text" id="fbPageIdInput" placeholder="VD: 123456789" value="" style="width:150px;">
+                <button class="btn btn-sm" style="background:#1877f2;color:white;" onclick="saveFbPageId()">Lưu Page</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav" id="tabNav">
+        <button class="active" data-tab="tab-workflow">🎯 Quy trình</button>
+        <button data-tab="tab-videos">🎬 Video của tôi</button>
+        <button data-tab="tab-translate">🌐 Dịch mô tả</button>
+        <button data-tab="tab-posting">📘 Đăng tự động</button>
+        <button data-tab="tab-settings">⚙️ Cài đặt</button>
+    </div>
+
+    <div class="content">
+        <!-- ===== TAB 1: QUY TRÌNH ===== -->
+        <div class="tab active" id="tab-workflow">
+            <div class="card">
+                <h2>🎯 Quy trình Reup Video Douyin/Bilibili → Facebook</h2>
+                <p style="color:#888;font-size:13px;margin-bottom:16px;">Làm theo các bước dưới đây để reup video an toàn, tránh bản quyền và kiếm tiền affiliate</p>
+
+                <div class="workflow-step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>📥 Tải video từ Douyin / Bilibili / TikTok</h4>
+                        <p>Dùng các web tải video miễn phí. Copy link video → dán vào web tải → tải về máy.</p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                            <a href="https://ssstik.io" target="_blank" class="btn btn-sm" style="background:#ff4d4d;color:white;">⬇️ ssstik.io</a>
+                            <a href="https://snaptik.app" target="_blank" class="btn btn-sm" style="background:#ff4d4d;color:white;">⬇️ snaptik.app</a>
+                            <a href="https://www.douyin.com" target="_blank" class="btn btn-sm btn-primary">🎵 Douyin</a>
+                            <a href="https://www.bilibili.com" target="_blank" class="btn btn-sm btn-primary">📺 Bilibili</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>✂️ Lách bản quyền - Chỉnh sửa video</h4>
+                        <p>Dùng CapCut / Premiere Pro / Filmora để chỉnh sửa video tránh bị FB phát hiện reup:</p>
+                        <div class="copyright-checklist">
+                            <h4>✅ Checklist chỉnh sửa (tick sau khi làm)</h4>
+                            <label><input type="checkbox" class="edit-cb" value="Cắt đầu/cuối video (2-5s)"> ✂️ Cắt đầu/cuối video 2-5 giây</label>
+                            <label><input type="checkbox" class="edit-cb" value="Thay đổi tốc độ (0.9x hoặc 1.1x)"> ⏱️ Thay đổi tốc độ phát (0.9x hoặc 1.1x)</label>
+                            <label><input type="checkbox" class="edit-cb" value="Lật ngang video (mirror)"> 🔄 Lật ngang video (Flip horizontal)</label>
+                            <label><input type="checkbox" class="edit-cb" value="Thêm filter/lớp phủ mờ"> 🎨 Thêm filter hoặc lớp phủ mờ</label>
+                            <label><input type="checkbox" class="edit-cb" value="Chèn text/logo watermark"> 💧 Chèn text/logo watermark riêng</label>
+                            <label><input type="checkbox" class="edit-cb" value="Thay nhạc nền khác"> 🎵 Thay nhạc nền bằng nhạc free copyright</label>
+                            <label><input type="checkbox" class="edit-cb" value="Ghép thêm 1-2s intro/outro"> 🎬 Ghép thêm intro/outro riêng</label>
+                            <label><input type="checkbox" class="edit-cb" value="Đổi tỉ lệ khung hình (9:16 → 1:1 hoặc 4:5)"> 📐 Đổi tỉ lệ khung hình (VD 9:16 → 4:5)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>🌐 Dịch mô tả video</h4>
+                        <p>Copy mô tả gốc (tiếng Trung/Anh) → paste vào tab <strong>"Dịch mô tả"</strong> → dịch sang tiếng Việt</p>
+                        <button class="btn btn-douyin btn-sm" onclick="openTab('tab-translate')">🌐 Mở tab dịch</button>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>🔗 Gắn link Affiliate + Lưu video</h4>
+                        <p>Tạo link affiliate ở ô bên dưới → thêm video vào danh sách → gắn link + bản dịch</p>
+                        <div class="form-group" style="margin-top:10px;">
+                            <label>URL sản phẩm Shopee</label>
+                            <div class="form-row">
+                                <div class="form-group" style="flex:3">
+                                    <input type="url" id="quickProductUrl" placeholder="https://shopee.vn/product/... hoặc https://s.shopee.vn/...">
+                                </div>
+                                <div class="form-group" style="flex:0">
+                                    <button class="btn btn-success" onclick="quickGenerateLink()" style="height:100%;">⚡ Tạo Aff Link</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="quickLinkResult" style="display:none;">
+                            <div class="link-result">
+                                <span id="quickAffLink"></span>
+                                <button class="copy-btn" onclick="copyQuickLink()">📋 Copy</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-douyin" style="margin-top:10px;" onclick="quickAddVideo()">➕ Thêm video vào danh sách</button>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h4>📘 Đăng lên Facebook Page</h4>
+                        <p>Vào tab <strong>"Đăng tự động"</strong> → copy nội dung → đăng lên Page kèm link aff</p>
+                        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+                            <button class="btn btn-fb btn-sm" onclick="openFbPageComposer()">📘 Mở Facebook Page</button>
+                            <button class="btn btn-fb btn-sm" onclick="openFbCreator()">🚀 Mở Creator Studio</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-num">6</div>
+                    <div class="step-content">
+                        <h4>🔄 Đánh dấu đã đăng & Lên lịch</h4>
+                        <p>Đánh dấu video đã reup trong danh sách. Lên lịch đăng để duy trì đều đặn.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💡 Mẹo tránh bị Facebook phát hiện reup</h2>
+                <ul style="color:#aaa;font-size:14px;line-height:2.2;padding-left:20px;">
+                    <li>✅ <strong>Ít nhất 3-4 thay đổi</strong> trong checklist ở Bước 2</li>
+                    <li>✅ <strong>Không đăng liên tục</strong> - cách nhau ít nhất 2-3 giờ</li>
+                    <li>✅ <strong>Đăng đa dạng</strong> - xen kẽ video, ảnh, text</li>
+                    <li>✅ <strong>Thêm hashtag</strong> và mô tả gốc (đã dịch) để trông tự nhiên</li>
+                    <li>✅ <strong>Không quá 3 video/ngày</strong> từ cùng 1 nguồn</li>
+                    <li>✅ <strong>Dùng Page</strong> thay vì profile cá nhân (Page ít bị check hơn)</li>
+                    <li>❌ <strong>KHÔNG</strong> đăng video còn watermark Douyin/TikTok</li>
+                    <li>❌ <strong>KHÔNG</strong> đăng nguyên bản không chỉnh sửa</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ===== TAB 2: DANH SÁCH VIDEO ===== -->
+        <div class="tab" id="tab-videos">
+            <div class="card">
+                <h2>➕ Thêm video cần reup</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nguồn video</label>
+                        <select id="videoSource">
+                            <option value="Douyin">🎵 Douyin (TikTok Trung Quốc)</option>
+                            <option value="Bilibili">📺 Bilibili</option>
+                            <option value="TikTok">🎵 TikTok</option>
+                            <option value="Shopee Video">🛒 Shopee Video</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Link video gốc</label>
+                        <input type="url" id="videoUrl" placeholder="https://www.douyin.com/...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tiêu đề video (gốc)</label>
+                    <input type="text" id="videoTitle" placeholder="Paste tiêu đề gốc">
+                </div>
+                <div class="form-group">
+                    <label>Mô tả gốc (paste từ video gốc)</label>
+                    <textarea id="videoDesc" rows="2" placeholder="Paste mô tả gốc..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Bản dịch (sau khi dịch ở tab Dịch)</label>
+                    <textarea id="videoTranslated" rows="2" placeholder="Bản dịch tiếng Việt..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Link Affiliate</label>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:3">
+                            <input type="url" id="videoAffLink" placeholder="Link affiliate cho video này">
+                        </div>
+                        <div class="form-group" style="flex:0">
+                            <button class="btn btn-primary btn-sm" onclick="fillAffLink()" style="height:100%;">🔄 Lấy từ ô trên</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:0">
+                        <label>Đã edit?</label>
+                        <select id="videoEdited" style="width:120px;">
+                            <option value="no">❌ Chưa</option>
+                            <option value="yes">✅ Đã edit</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:0">
+                        <label>Đã dịch?</label>
+                        <select id="videoTranslatedStatus" style="width:120px;">
+                            <option value="no">❌ Chưa</option>
+                            <option value="yes">✅ Đã dịch</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-douyin" onclick="addVideo()">➕ Thêm video</button>
+            </div>
+
+            <div class="card">
+                <h2>📋 Danh sách video reup <span class="badge" id="videoCount">0</span></h2>
+                <div id="videoList"><div class="empty-state"><div class="icon">🎬</div><p>Chưa có video. Thêm video từ tab Quy trình hoặc ở trên!</p></div></div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 3: DỊCH MÔ TẢ ===== -->
+        <div class="tab" id="tab-translate">
+            <div class="card">
+                <h2>🌐 Dịch mô tả video tự động</h2>
+                <p style="color:#888;font-size:13px;margin-bottom:14px;">Dùng Google Translate API miễn phí. Paste mô tả gốc (Trung/Anh/...) → dịch sang Việt.</p>
+                <div class="lang-selector">
+                    <select id="sourceLang">
+                        <option value="zh-CN">🇨🇳 Tiếng Trung</option>
+                        <option value="en">🇬🇧 Tiếng Anh</option>
+                        <option value="ja">🇯🇵 Tiếng Nhật</option>
+                        <option value="ko">🇰🇷 Tiếng Hàn</option>
+                        <option value="th">🇹🇭 Tiếng Thái</option>
+                        <option value="vi">🇻🇳 Tiếng Việt</option>
+                    </select>
+                    <button class="swap-btn" onclick="swapLanguages()">⇄</button>
+                    <select id="targetLang">
+                        <option value="vi">🇻🇳 Tiếng Việt</option>
+                        <option value="en">🇬🇧 Tiếng Anh</option>
+                        <option value="zh-CN">🇨🇳 Tiếng Trung</option>
+                        <option value="ja">🇯🇵 Tiếng Nhật</option>
+                        <option value="ko">🇰🇷 Tiếng Hàn</option>
+                        <option value="th">🇹🇭 Tiếng Thái</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top:14px;">
+                    <label>📝 Nội dung gốc (copy từ video Douyin/Bilibili)</label>
+                    <textarea id="sourceText" rows="4" placeholder="Paste mô tả gốc vào đây..."></textarea>
+                </div>
+                <button class="btn btn-douyin" onclick="translateText()">🌐 Dịch ngay</button>
+                <div id="translationResult" style="display:none;margin-top:14px;">
+                    <div class="translation-box">
+                        <div class="lang-col">
+                            <div class="label" id="sourceLabel">🇨🇳 Gốc</div>
+                            <div class="content" id="sourceDisplay"></div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="lang-col">
+                            <div class="label" id="targetLabel">🇻🇳 Đã dịch</div>
+                            <div class="content" id="targetDisplay"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-success" onclick="copyTranslation()">📋 Copy bản dịch</button>
+                        <button class="btn btn-fb" onclick="postTransToFb()">📘 Đăng FB</button>
+                        <button class="btn btn-primary" onclick="saveTransToVideo()">💾 Lưu vào video đang thêm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 4: ĐĂNG TỰ ĐỘNG ===== -->
+        <div class="tab" id="tab-posting">
+            <div class="card" style="border-color:#1877f2;background:linear-gradient(135deg,#1a1a2e,#16213e);">
+                <h2>📘 Đăng bài lên Facebook Page</h2>
+                <p style="color:#8899aa;font-size:13px;margin-bottom:16px;">
+                    Soạn nội dung → xem trước → copy → dán vào Page. Dùng Creator Studio để đăng video.
+                </p>
+                <div class="fb-page-connected">
+                    <div class="avatar">📘</div>
+                    <div class="info">
+                        <div class="name" id="fbPageDisplay">Trang Facebook: <span id="fbPageName">Chưa cài đặt</span></div>
+                        <div class="status" id="fbPageStatus">⚠️ Nhập FB Page ID ở thanh trên cùng</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📝 Soạn bài đăng</h2>
+                <div class="form-group">
+                    <label>Chọn nơi đăng</label>
+                    <select id="fbPostTarget">
+                        <option value="page">📄 Facebook Page (khuyên dùng)</option>
+                        <option value="profile">👤 Trang cá nhân</option>
+                        <option value="group">👥 Nhóm</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Chọn video từ danh sách</label>
+                    <select id="selectVideoForPost" onchange="loadVideoForPost()">
+                        <option value="">-- Chọn video --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nội dung bài đăng</label>
+                    <textarea id="fbPostContent" rows="6" placeholder="Nội dung bài đăng sẽ hiện ở đây..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Link Affiliate</label>
+                    <input type="url" id="fbPostAffLink" placeholder="Link affiliate sẽ tự động thêm vào cuối bài">
+                </div>
+                <div class="form-group">
+                    <label>Hashtag</label>
+                    <input type="text" id="fbPostHashtags" value="#shopee #affiliate #deal #review">
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn btn-fb" onclick="previewAndCopyPost()">📋 Copy & Mở FB</button>
+                    <button class="btn btn-fb" onclick="openFbCreator()" style="background:#2a2a2a;color:#1877f2;border:1px solid #1877f2;">🚀 Mở Creator Studio</button>
+                    <button class="btn btn-success" onclick="copyPostContent()">📋 Copy nội dung</button>
+                    <button class="btn btn-primary" onclick="autoFillPost()">🔄 Tự động điền từ video</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>👁️ Xem trước bài đăng</h2>
+                <div id="fbPreview" class="fb-post-preview">
+                    <div class="fb-header">
+                        <div class="fb-avatar">📘</div>
+                        <div>
+                            <div class="fb-name" id="previewPageName">Trang Facebook của bạn</div>
+                            <div class="fb-time">Vừa xong</div>
+                        </div>
+                    </div>
+                    <div class="fb-content" id="previewContent">Nội dung bài đăng sẽ hiển thị ở đây...</div>
+                    <div class="fb-link" id="previewLink">🔗 Link affiliate</div>
+                    <div class="fb-actions">
+                        <span>👍 0</span>
+                        <span>💬 0</span>
+                        <span>🔗 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📌 Link nhanh</h2>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <a href="https://business.facebook.com/creatorstudio" target="_blank" class="btn btn-fb">🚀 Creator Studio (đăng video)</a>
+                    <a href="https://www.facebook.com" target="_blank" class="btn btn-fb" style="background:#2a2a2a;color:#1877f2;border:1px solid #1877f2;">📘 Facebook.com</a>
+                    <a href="https://business.facebook.com/latest/posts" target="_blank" class="btn btn-primary">📄 Bài viết trên Page</a>
+                    <a href="https://www.facebook.com/groups/" target="_blank" class="btn btn-primary">👥 Nhóm</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 5: CÀI ĐẶT ===== -->
+        <div class="tab" id="tab-settings">
+            <div class="card">
+                <h2>🔗 Cài đặt Affiliate</h2>
+                <div class="form-group">
+                    <label>Mã Affiliate Shopee (VD: an_17372610481)</label>
+                    <input type="text" id="settingsAffId" placeholder="VD: an_17372610481">
+                </div>
+                <button class="btn btn-success" onclick="saveSettings()">💾 Lưu</button>
+            </div>
+            <div class="card">
+                <h2>📘 Cài đặt Facebook Page</h2>
+                <p style="color:#888;font-size:13px;margin-bottom:10px;">
+                    📌 <strong>Cách lấy Page ID:</strong> Mở Page Facebook → Về trang chủ → Copy ID từ URL 
+                    (facebook.com/<strong style="color:#8bc34a;">{PageID}</strong>)
+                </p>
+                <div class="form-group">
+                    <label>Facebook Page ID</label>
+                    <input type="text" id="settingsFbPageId" placeholder="VD: 123456789">
+                </div>
+                <button class="btn btn-fb" onclick="saveSettings()">💾 Lưu</button>
+            </div>
+            <div class="card">
+                <h2>📊 Thống kê</h2>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                    <div class="stat-item" style="background:#111;padding:16px;border-radius:8px;border:1px solid #2a2a2a;min-width:150px;">
+                        <div style="color:#888;font-size:12px;">🎬 Tổng video</div>
+                        <div style="color:#e0e0e0;font-size:24px;font-weight:700;" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-item" style="background:#111;padding:16px;border-radius:8px;border:1px solid #2a2a2a;min-width:150px;">
+                        <div style="color:#888;font-size:12px;">⏳ Chờ reup</div>
+                        <div style="color:#ffa726;font-size:24px;font-weight:700;" id="statPending">0</div>
+                    </div>
+                    <div class="stat-item" style="background:#111;padding:16px;border-radius:8px;border:1px solid #2a2a2a;min-width:150px;">
+                        <div style="color:#888;font-size:12px;">✅ Đã reup</div>
+                        <div style="color:#8bc34a;font-size:24px;font-weight:700;" id="statDone">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>🗑️ Xoá dữ liệu</h2>
+                <button class="btn btn-danger" onclick="clearAllData()">⚠️ Xoá tất cả dữ liệu</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== DATA ====================
+        let affId = localStorage.getItem('shopeeAffId') || '';
+        let fbPageId = localStorage.getItem('fbPageId') || '';
+        let videos = JSON.parse(localStorage.getItem('reupVideos') || '[]');
+
+        // ==================== INIT ====================
+        function init() {
+            if (affId) {
+                document.getElementById('affIdInput').value = affId;
+                document.getElementById('settingsAffId').value = affId;
+            }
+            if (fbPageId) {
+                document.getElementById('fbPageIdInput').value = fbPageId;
+                document.getElementById('settingsFbPageId').value = fbPageId;
+                updateFbPageDisplay();
+            }
+
+            // Tab navigation
+            document.querySelectorAll('#tabNav button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#tabNav button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    // Refresh post video list when switching to posting tab
+                    if (this.dataset.tab === 'tab-posting') populatePostVideoSelect();
+                });
+            });
+
+            renderAll();
+        }
+
+        // ==================== SAVE SETTINGS ====================
+        function saveAffId() {
+            affId = document.getElementById('affIdInput').value.trim();
+            localStorage.setItem('shopeeAffId', affId);
+            document.getElementById('settingsAffId').value = affId;
+            showToast('✅ Đã lưu mã Affiliate: ' + affId);
+        }
+
+        function saveFbPageId() {
+            fbPageId = document.getElementById('fbPageIdInput').value.trim();
+            localStorage.setItem('fbPageId', fbPageId);
+            document.getElementById('settingsFbPageId').value = fbPageId;
+            updateFbPageDisplay();
+            showToast('✅ Đã lưu FB Page ID: ' + fbPageId);
+        }
+
+        function saveSettings() {
+            affId = document.getElementById('settingsAffId').value.trim();
+            fbPageId = document.getElementById('settingsFbPageId').value.trim();
+            localStorage.setItem('shopeeAffId', affId);
+            localStorage.setItem('fbPageId', fbPageId);
+            document.getElementById('affIdInput').value = affId;
+            document.getElementById('fbPageIdInput').value = fbPageId;
+            updateFbPageDisplay();
+            showToast('✅ Đã lưu cài đặt!');
+        }
+
+        function updateFbPageDisplay() {
+            if (fbPageId) {
+                document.getElementById('fbPageName').textContent = fbPageId;
+                document.getElementById('fbPageStatus').textContent = '✅ Đã kết nối Page ID: ' + fbPageId;
+                document.getElementById('previewPageName').textContent = 'Trang (ID: ' + fbPageId + ')';
+            } else {
+                document.getElementById('fbPageName').textContent = 'Chưa cài đặt';
+                document.getElementById('fbPageStatus').textContent = '⚠️ Nhập FB Page ID ở thanh trên cùng';
+            }
+        }
+
+        // ==================== QUICK LINK (Tab Workflow) ====================
+        function openTab(tabId) {
+            document.querySelectorAll('#tabNav button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            const btn = document.querySelector(`[data-tab="${tabId}"]`);
+            if (btn) btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'tab-posting') populatePostVideoSelect();
+        }
+
+        function quickGenerateLink() {
+            const url = document.getElementById('quickProductUrl').value.trim();
+            if (!url) { showToast('⚠️ Nhập URL sản phẩm!'); return; }
+            const affLink = parseAndGenerate(url);
+            if (affLink) {
+                document.getElementById('quickAffLink').textContent = affLink;
+                document.getElementById('quickLinkResult').style.display = 'block';
+                document.getElementById('videoAffLink').value = affLink;
+                showToast('✅ Đã tạo link!');
+            }
+        }
+
+        function copyQuickLink() {
+            copyToClipboard(document.getElementById('quickAffLink').textContent);
+        }
+
+        function quickAddVideo() {
+            // Chuyển sang tab video với dữ liệu từ form workflow
+            document.getElementById('videoUrl').value = '';
+            document.getElementById('videoTitle').value = '';
+            const link = document.getElementById('quickAffLink').textContent || '';
+            document.getElementById('videoAffLink').value = link;
+            document.querySelector('[data-tab="tab-videos"]').click();
+            showToast('📝 Điền thông tin video ở tab Video');
+        }
+
+        function fillAffLink() {
+            const link = document.getElementById('quickAffLink').textContent;
+            if (link) { document.getElementById('videoAffLink').value = link; showToast('🔄 Đã lấy link!'); }
+            else showToast('⚠️ Tạo link ở tab Quy trình trước!');
+        }
+
+        // ==================== PARSE SHOPEE URL ====================
+        function parseAndGenerate(url) {
+            if (!url) return null;
+            // Short link s.shopee
+            if (url.match(/s\.shopee\.(vn|com)\//)) return url;
+
+            const m = url.match(/utm_source=an_(\d+)/);
+            const isAff = m !== null;
+            let x = url.match(/\/product\/(\d+)\/(\d+)/);
+            let shopId, itemId;
+            if (x) { shopId = x[1]; itemId = x[2]; }
+            else {
+                x = url.match(/-i\.(\d+)\.(\d+)/);
+                if (x) { shopId = x[1]; itemId = x[2]; }
+            }
+
+            if (isAff) {
+                if (affId) {
+                    let link = url.replace(/utm_source=[^&]+/, `utm_source=an_${affId}`);
+                    if (link.includes('af_id=')) link = link.replace(/af_id=[^&]+/, `af_id=${affId}`);
+                    else link += `&af_id=${affId}`;
+                    return link;
+                }
+                return url;
+            }
+
+            if (shopId && itemId) {
+                if (!affId) { showToast('⚠️ Nhập mã Affiliate!'); return null; }
+                return `https://shopee.vn/product/${shopId}/${itemId}/?af_id=${affId}&utm_source=an_${affId}&utm_medium=affiliate&utm_campaign=aff`;
+            }
+
+            showToast('⚠️ Ko nhận dạng được URL!');
+            return null;
+        }
+
+        // ==================== VIDEOS ====================
+        function addVideo() {
+            const source = document.getElementById('videoSource').value;
+            const url = document.getElementById('videoUrl').value.trim();
+            const title = document.getElementById('videoTitle').value.trim();
+            const desc = document.getElementById('videoDesc').value.trim();
+            const translated = document.getElementById('videoTranslated').value.trim();
+            const affLink = document.getElementById('videoAffLink').value.trim();
+            const edited = document.getElementById('videoEdited').value;
+            const transStatus = document.getElementById('videoTranslatedStatus').value;
+
+            if (!url || !title) { showToast('⚠️ Nhập link và tiêu đề!'); return; }
+
+            const progress = edited === 'yes' && transStatus === 'yes' ? 60 : 20;
+
+            videos.unshift({
+                id: Date.now(),
+                source, url, title, desc, translated, affLink,
+                edited: edited === 'yes',
+                translatedStatus: transStatus === 'yes',
+                status: 'pending',
+                progress: progress,
+                date: new Date().toLocaleDateString('vi-VN'),
+                fbPosted: false,
+                fbPostDate: null
+            });
+            saveVideos();
+            renderAll();
+            clearVideoForm();
+            showToast('✅ Đã thêm video!');
+        }
+
+        function clearVideoForm() {
+            ['videoUrl','videoTitle','videoDesc','videoTranslated'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('videoEdited').value = 'no';
+            document.getElementById('videoTranslatedStatus').value = 'no';
+        }
+
+        function deleteVideo(id) {
+            if (!confirm('Xoá video này?')) return;
+            videos = videos.filter(v => v.id !== id);
+            saveVideos();
+            renderAll();
+        }
+
+        function markVideo(id, status) {
+            const v = videos.find(x => x.id === id);
+            if (!v) return;
+            if (status === 'editing') {
+                v.edited = true;
+                v.progress = Math.min(v.progress + 20, 80);
+                if (v.edited && v.translatedStatus) v.progress = 60;
+                showToast('✅ Đã đánh dấu đã edit');
+            } else if (status === 'done') {
+                v.status = v.status === 'done' ? 'pending' : 'done';
+                v.fbPosted = v.status === 'done';
+                v.fbPostDate = v.status === 'done' ? new Date().toLocaleString('vi-VN') : null;
+                v.progress = v.status === 'done' ? 100 : (v.edited && v.translatedStatus ? 60 : 20);
+            }
+            saveVideos();
+            renderAll();
+        }
+
+        function saveVideos() { localStorage.setItem('reupVideos', JSON.stringify(videos)); }
+
+        function renderVideoList() {
+            const c = document.getElementById('videoList');
+            document.getElementById('videoCount').textContent = videos.length;
+            if (!videos.length) { c.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><p>Chưa có video nào. Bắt đầu từ tab Quy trình!</p></div>'; return; }
+
+            c.innerHTML = videos.map(v => {
+                const pct = v.progress || 0;
+                const barColor = pct === 100 ? '#8bc34a' : pct >= 60 ? '#64b5f6' : '#ffa726';
+                const statusIcon = v.status === 'done' ? '✅' : v.edited ? '✂️' : '⏳';
+                const statusText = v.status === 'done' ? 'Đã đăng' : v.edited ? 'Đã edit' : 'Chờ edit';
+                const statusClass = v.status === 'done' ? 'done' : v.edited ? 'edited' : 'pending';
+                return `
+                <div class="video-card">
+                    <div class="thumb">${v.source==='Douyin'?'🎵':v.source==='Bilibili'?'📺':v.source==='TikTok'?'🎵':'🎬'}</div>
+                    <div class="info">
+                        <div class="title">${esc(v.title)}</div>
+                        <div class="meta">📌 ${v.source} · ${v.date} · ${v.fbPosted ? '📘 Đã đăng' + (v.fbPostDate ? ' lúc ' + v.fbPostDate : '') : '📘 Chưa đăng'}</div>
+                        <div><span class="status ${statusClass}">${statusIcon} ${statusText}</span></div>
+                        ${v.translated ? `<div style="color:#8bc34a;font-size:12px;margin-top:4px;">🌐 ${esc(v.translated.substring(0,100))}</div>` : ''}
+                        ${v.affLink ? `<div style="color:#bbb;font-size:11px;margin-top:2px;">🔗 ${esc(v.affLink.substring(0,60))}</div>` : ''}
+                        <div class="progress-bar"><div class="fill" style="width:${pct}%;background:${barColor};"></div></div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary btn-sm" onclick="markVideo(${v.id},'editing')">✂️ Đã edit</button>
+                        <button class="btn btn-success btn-sm" onclick="markVideo(${v.id},'done')">${v.status==='done'?'↩️':'✅ Đã reup'}</button>
+                        <button class="btn btn-fb btn-sm" onclick="postVideoToFb(${v.id})">📘 Đăng FB</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteVideo(${v.id})">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function postVideoToFb(id) {
+            const v = videos.find(x => x.id === id);
+            if (!v) return;
+            // Soạn nội dung và chuyển sang tab posting
+            const content = (v.translated || v.desc || v.title) + '\n\n👉 Mua ngay: ' + (v.affLink || '{link}') + '\n#shopee #affiliate #deal #review';
+            document.getElementById('fbPostContent').value = content;
+            document.getElementById('fbPostAffLink').value = v.affLink || '';
+            // Chọn video trong select
+            const select = document.getElementById('selectVideoForPost');
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value == id) { select.value = id; break; }
+            }
+            loadVideoForPost();
+            document.querySelector('[data-tab="tab-posting"]').click();
+            showToast('📋 Đã copy nội dung sang tab Đăng!');
+        }
+
+        // ==================== TRANSLATE ====================
+        function translateText() {
+            const text = document.getElementById('sourceText').value.trim();
+            if (!text) { showToast('⚠️ Nhập nội dung cần dịch!'); return; }
+            const source = document.getElementById('sourceLang').value;
+            const target = document.getElementById('targetLang').value;
+            const btn = document.querySelector('#tab-translate .btn-douyin');
+            btn.textContent = '⏳ Đang dịch...'; btn.disabled = true;
+
+            fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(text)}`)
+                .then(r => r.json())
+                .then(data => {
+                    let translated = '';
+                    if (data && data[0]) translated = data[0].map(s => s[0]).join('');
+                    document.getElementById('sourceDisplay').textContent = text;
+                    document.getElementById('targetDisplay').textContent = translated || '⚠️ Lỗi';
+                    document.getElementById('sourceLabel').textContent = `📍 Gốc (${getLangName(source)})`;
+                    document.getElementById('targetLabel').textContent = `📍 Đã dịch (${getLangName(target)})`;
+                    document.getElementById('translationResult').style.display = 'block';
+                    // Also fill into video form
+                    document.getElementById('videoTranslated').value = translated;
+                    showToast('✅ Đã dịch xong!');
+                    btn.textContent = '🌐 Dịch ngay'; btn.disabled = false;
+                })
+                .catch(() => {
+                    showToast('⚠️ Lỗi dịch! Kiểm tra mạng.');
+                    btn.textContent = '🌐 Dịch ngay'; btn.disabled = false;
+                });
+        }
+
+        function getLangName(code) {
+            const names = {'zh-CN':'T.Trung','en':'T.Anh','ja':'T.Nhật','ko':'T.Hàn','th':'T.Thái','vi':'T.Việt'};
+            return names[code] || code;
+        }
+
+        function swapLanguages() {
+            const s = document.getElementById('sourceLang');
+            const t = document.getElementById('targetLang');
+            const tmp = s.value; s.value = t.value; t.value = tmp;
+        }
+
+        function copyTranslation() {
+            const text = document.getElementById('targetDisplay').textContent;
+            if (text && !text.includes('⚠️')) copyToClipboard(text);
+            else showToast('⚠️ Chưa có bản dịch!');
+        }
+
+        function postTransToFb() {
+            const text = document.getElementById('targetDisplay').textContent;
+            if (text && !text.includes('⚠️')) {
+                const link = document.getElementById('quickAffLink').textContent || '';
+                document.getElementById('fbPostContent').value = text + (link ? '\n\n👉 Mua ngay: ' + link : '') + '\n#shopee #affiliate';
+                document.querySelector('[data-tab="tab-posting"]').click();
+                showToast('📋 Đã gửi sang tab Đăng!');
+            } else showToast('⚠️ Dịch trước đã!');
+        }
+
+        function saveTransToVideo() {
+            const text = document.getElementById('targetDisplay').textContent;
+            if (text && !text.includes('⚠️')) {
+                document.getElementById('videoTranslated').value = text;
+                document.getElementById('videoTranslatedStatus').value = 'yes';
+                showToast('💾 Đã lưu bản dịch vào form thêm video!');
+            } else showToast('⚠️ Dịch trước đã!');
+        }
+
+        // ==================== POSTING ====================
+        function populatePostVideoSelect() {
+            const select = document.getElementById('selectVideoForPost');
+            select.innerHTML = '<option value="">-- Chọn video --</option>';
+            videos.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = v.title.substring(0, 50) + (v.status === 'done' ? ' ✅' : ' ⏳');
+                select.appendChild(opt);
+            });
+        }
+
+        function loadVideoForPost() {
+            const id = parseInt(document.getElementById('selectVideoForPost').value);
+            if (!id) return;
+            const v = videos.find(x => x.id === id);
+            if (!v) return;
+            const content = (v.translated || v.desc || v.title) + '\n\n' + (v.affLink ? '👉 Mua ngay: ' + v.affLink + '\n' : '') + '#shopee #affiliate #deal #review';
+            document.getElementById('fbPostContent').value = content;
+            document.getElementById('fbPostAffLink').value = v.affLink || '';
+            updateFbPreview();
+            showToast('🔄 Đã tải nội dung video!');
+        }
+
+        function autoFillPost() {
+            const id = parseInt(document.getElementById('selectVideoForPost').value);
+            if (!id) { showToast('⚠️ Chọn video trước!'); return; }
+            loadVideoForPost();
+        }
+
+        function updateFbPreview() {
+            const content = document.getElementById('fbPostContent').value;
+            const link = document.getElementById('fbPostAffLink').value;
+            const hashtags = document.getElementById('fbPostHashtags').value;
+            document.getElementById('previewContent').textContent = content || 'Nội dung bài đăng...';
+            document.getElementById('previewLink').textContent = '🔗 ' + (link || 'Link affiliate');
+            const pageName = fbPageId ? 'Trang (ID: ' + fbPageId + ')' : 'Trang Facebook của bạn';
+            document.getElementById('previewPageName').textContent = pageName;
+        }
+
+        // Auto update preview on input
+        document.addEventListener('input', function(e) {
+            if (['fbPostContent','fbPostAffLink','fbPostHashtags'].includes(e.target.id)) {
+                updateFbPreview();
+            }
+        });
+
+        function previewAndCopyPost() {
+            let content = document.getElementById('fbPostContent').value.trim();
+            const link = document.getElementById('fbPostAffLink').value.trim();
+            const hashtags = document.getElementById('fbPostHashtags').value.trim();
+            if (!content) { showToast('⚠️ Chưa có nội dung! Chọn video hoặc soạn nội dung.'); return; }
+            if (link) content += '\n\n👉 Mua ngay: ' + link;
+            if (hashtags) content += '\n' + hashtags;
+            copyToClipboard(content);
+            // Mở Facebook
+            const target = document.getElementById('fbPostTarget').value;
+            let fbUrl = 'https://www.facebook.com';
+            if (target === 'page') fbUrl = 'https://business.facebook.com/creatorstudio/posts';
+            else if (target === 'group') fbUrl = 'https://www.facebook.com/groups/';
+            window.open(fbUrl, '_blank');
+            showToast('📋 Đã copy! Mở FB để dán và đăng');
+        }
+
+        function copyPostContent() {
+            const content = document.getElementById('fbPostContent').value.trim();
+            if (!content) { showToast('⚠️ Chưa có nội dung!'); return; }
+            copyToClipboard(content);
+        }
+
+        function openFbPageComposer() {
+            let url = 'https://www.facebook.com';
+            const target = document.getElementById('fbPostTarget').value;
+            if (target === 'page') url = 'https://business.facebook.com/creatorstudio';
+            else if (target === 'group') url = 'https://www.facebook.com/groups/';
+            window.open(url, '_blank');
+            showToast('📘 Đã mở Facebook!');
+        }
+
+        function openFbCreator() {
+            window.open('https://business.facebook.com/creatorstudio', '_blank');
+            showToast('🚀 Đã mở Creator Studio');
+        }
+
+        // ==================== SETTINGS ====================
+        function clearAllData() {
+            if (!confirm('⚠️ Chắc chắn xoá tất cả dữ liệu? Không thể hoàn tác!')) return;
+            if (!confirm('⚠️⚠️ Xoá toàn bộ video, cài đặt, mọi thứ?')) return;
+            localStorage.removeItem('reupVideos');
+            localStorage.removeItem('shopeeAffId');
+            localStorage.removeItem('fbPageId');
+            videos = [];
+            affId = '';
+            fbPageId = '';
+            document.getElementById('affIdInput').value = '';
+            document.getElementById('fbPageIdInput').value = '';
+            document.getElementById('settingsAffId').value = '';
+            document.getElementById('settingsFbPageId').value = '';
+            updateFbPageDisplay();
+            renderAll();
+            showToast('🗑️ Đã xoá toàn bộ dữ liệu!');
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = videos.length;
+            document.getElementById('statPending').textContent = videos.filter(v => v.status !== 'done').length;
+            document.getElementById('statDone').textContent = videos.filter(v => v.status === 'done').length;
+        }
+
+        // ==================== UTILITIES ====================
+        function copyToClipboard(text) {
+            if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('📋 Đã copy!')).catch(() => fallbackCopy(text));
+            else fallbackCopy(text);
+        }
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('📋 Đã copy!');
+        }
+
+        function esc(str) { if (!str) return ''; return str.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"').replace(/'/g,'&#039;'); }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function renderAll() {
+            renderVideoList();
+            updateStats();
+            populatePostVideoSelect();
+            updateFbPreview();
+        }
+
+        // Initial preview update
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFbPreview();
+        });
+
+        init();
+    </script>
+</body>
+</html>

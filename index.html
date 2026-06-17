@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Minify Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #1a1a1a;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+            border: 1px solid #2a2a2a;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 span {
+            background: #2a2a2a;
+            color: #cccccc;
+            border: 1px solid #3a3a3a;
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .subtitle {
+            color: #888888;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .editor-area {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .editor-panel {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .editor-panel label {
+            display: block;
+            font-weight: 600;
+            color: #aaaaaa;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .editor-panel label .count {
+            font-weight: 400;
+            color: #666666;
+            font-size: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 350px;
+            padding: 16px;
+            background: #111111;
+            color: #cccccc;
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #666666;
+        }
+
+        textarea::placeholder {
+            color: #444444;
+        }
+
+        textarea.output {
+            background: #0d0d0d;
+            border-color: #2a2a2a;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444444;
+        }
+
+        .btn-primary:hover {
+            background: #3a3a3a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-success {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444444;
+        }
+
+        .btn-success:hover {
+            background: #3a3a3a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #aaaaaa;
+            border: 1px solid #444444;
+        }
+
+        .btn-outline:hover {
+            background: #1a1a1a;
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #888888;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .stats {
+            margin-top: 20px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: #111111;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #888888;
+            border: 1px solid #2a2a2a;
+        }
+
+        .stat-item strong {
+            color: #cccccc;
+        }
+
+        .stat-item .saved {
+            color: #8bc34a;
+            font-weight: 700;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1a1a1a;
+            color: #cccccc;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s;
+            pointer-events: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+            border: 1px solid #2a2a2a;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px;
+            }
+            textarea {
+                height: 200px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🎨 CSS Minify
+            <span>Tool</span>
+        </h1>
+        <p class="subtitle">Dán CSS hoặc chọn file .css để làm gọn — mỗi selector 1 dòng, thuộc tính dồn vào 1 dòng</p>
+
+        <div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input CSS
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste CSS vào đây hoặc chọn file..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output CSS
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quả sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnMinify">⚡ Minify</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .css
+                <input type="file" id="fileInput" accept=".css">
+            </button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                📏 Kích thước gốc: <strong id="originalSize">0</strong> bytes
+            </div>
+            <div class="stat-item">
+                📏 Kích thước sau: <strong id="minifiedSize">0</strong> bytes
+            </div>
+            <div class="stat-item">
+                💾 Tiết kiệm: <strong class="saved" id="savings">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const btnMinify = document.getElementById('btnMinify');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const fileInput = document.getElementById('fileInput');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const originalSize = document.getElementById('originalSize');
+        const minifiedSize = document.getElementById('minifiedSize');
+        const savings = document.getElementById('savings');
+
+        function minifyCSS(css) {
+            let result = '';
+            let i = 0;
+            let braceDepth = 0;
+            let insideBlock = false;
+
+            while (i < css.length) {
+                const ch = css[i];
+
+                if (ch === '{') {
+                    braceDepth++;
+                    insideBlock = true;
+                    if (result.endsWith(' ')) {
+                        result = result.slice(0, -1);
+                    }
+                    result += '{';
+                    i++;
+                } else if (ch === '}') {
+                    braceDepth--;
+                    if (result.endsWith(' ')) {
+                        result = result.slice(0, -1);
+                    }
+                    result += '}';
+                    result += '\n';
+                    i++;
+                    if (braceDepth === 0) {
+                        insideBlock = false;
+                    }
+                } else if (insideBlock && braceDepth > 0) {
+                    if (ch === '\n' || ch === '\r' || ch === '\t') {
+                        i++;
+                        continue;
+                    }
+                    if (ch === ' ') {
+                        const last = result.length > 0 ? result[result.length - 1] : '';
+                        if (last === ' ' || last === '{' || last === ';') {
+                            i++;
+                            continue;
+                        }
+                        let j = i + 1;
+                        while (j < css.length && (css[j] === ' ' || css[j] === '\n' || css[j] === '\r' || css[j] === '\t')) {
+                            j++;
+                        }
+                        if (j < css.length && (css[j] === ':' || css[j] === ';' || css[j] === '}')) {
+                            i = j;
+                            continue;
+                        }
+                        result += ' ';
+                        i++;
+                    } else {
+                        result += ch;
+                        i++;
+                    }
+                } else {
+                    if (ch === '\n' || ch === '\r' || ch === '\t') {
+                        i++;
+                        continue;
+                    }
+                    if (ch === ' ' && result.endsWith(' ')) {
+                        i++;
+                        continue;
+                    }
+                    result += ch;
+                    i++;
+                }
+            }
+
+            return result.replace(/\n+/g, '\n').trim();
+        }
+
+        function updateStats(input, output) {
+            const inBytes = new Blob([input]).size;
+            const outBytes = new Blob([output]).size;
+            const diff = inBytes - outBytes;
+            const pct = inBytes > 0 ? ((diff / inBytes) * 100).toFixed(1) : '0.0';
+
+            originalSize.textContent = inBytes.toLocaleString();
+            minifiedSize.textContent = outBytes.toLocaleString();
+            savings.textContent = `${diff > 0 ? '-' : ''}${Math.abs(diff).toLocaleString()} bytes (${pct}%)`;
+            savings.style.color = diff > 0 ? '#8bc34a' : '#666';
+
+            inputCount.textContent = `(${input.length} ký tự)`;
+            outputCount.textContent = `(${output.length} ký tự)`;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function handleMinify() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Vui lòng nhập CSS trước!');
+                return;
+            }
+            const output = minifyCSS(input);
+            outputText.value = output;
+            updateStats(input, output);
+            showToast('✅ Minify thành công!');
+        }
+
+        btnMinify.addEventListener('click', handleMinify);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ liệu để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+
+        btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', '');
+            showToast('🗑️ Đã xoá');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                updateStats(inputText.value, '');
+                handleMinify();
+                fileInput.value = '';
+            };
+            reader.readAsText(file);
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleMinify();
+            }
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = `(${inputText.value.length} ký tự)`;
+            if (outputText.value) {
+                updateStats(inputText.value, outputText.value);
+            } else {
+                originalSize.textContent = '0';
+                savings.textContent = '0';
+            }
+        });
+    </script>
+</body>
+</html>
