@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MKT Software - Studio đa năng tầng</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0f1117;
+            color: #e4e6eb;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: #0f1117;
+            border-right: 1px solid #2a2d3a;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #2a2d3a;
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: #8b8d98;
+            margin-top: 4px;
+            margin-left: 42px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 8px;
+            font-size: 12px;
+            color: #8b8d98;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .nav-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #b0b3b8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background-color: #1a1d28;
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background-color: #1a1d28;
+            color: #fff;
+            border-left: 3px solid #667eea;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background-color: #667eea;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .user-profile {
+            padding: 16px 20px;
+            border-top: 1px solid #2a2d3a;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #8b8d98;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background-color: #0f1117;
+            border-bottom: 1px solid #2a2d3a;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background-color: #1a1d28;
+            border: 1px solid #2a2d3a;
+            color: #e4e6eb;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: #8b8d98;
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            background-color: #1a1d28;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 8px 16px 8px 36px;
+            color: #e4e6eb;
+            width: 280px;
+            font-size: 14px;
+        }
+
+        .search-box input::placeholder {
+            color: #8b8d98;
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: #1a1d28;
+            border: 1px solid #2a2d3a;
+            color: #e4e6eb;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background-color: #252836;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            border: 2px solid #0f1117;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .main-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background-color: #1a1d28;
+            border: 1px solid #2a2d3a;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #252836;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .card-description {
+            font-size: 13px;
+            color: #8b8d98;
+            margin-top: 2px;
+        }
+
+        /* Source Selection */
+        .source-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .source-tab {
+            padding: 6px 14px;
+            border-radius: 6px;
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            color: #b0b3b8;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .source-tab:hover {
+            background-color: #2a2d3a;
+            color: #fff;
+        }
+
+        .source-tab.active {
+            background-color: #667eea;
+            color: #fff;
+            border-color: #667eea;
+        }
+
+        .news-sources {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .news-source {
+            padding: 12px 16px;
+            background-color: #252836;
+            border: 2px solid #2a2d3a;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #e4e6eb;
+        }
+
+        .news-source:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .news-source.selected {
+            border-color: #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .source-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .source-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .source-name {
+            font-weight: 500;
+        }
+
+        .selection-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background-color: #252836;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .selection-count {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .clear-selection {
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .clear-selection:hover {
+            text-decoration: underline;
+        }
+
+        .article-count {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .article-count label {
+            font-size: 14px;
+            color: #b0b3b8;
+        }
+
+        .article-count input {
+            width: 80px;
+            padding: 8px 12px;
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            border-radius: 6px;
+            color: #e4e6eb;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .article-count span {
+            font-size: 13px;
+            color: #8b8d98;
+        }
+
+        .btn-secondary {
+            background-color: #667eea;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5568d3;
+        }
+
+        /* Articles List */
+        .article-item {
+            padding: 16px;
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .article-source-badge {
+            background-color: #667eea;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .article-time {
+            font-size: 12px;
+            color: #8b8d98;
+        }
+
+        .article-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .article-summary {
+            font-size: 13px;
+            color: #b0b3b8;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-small {
+            background-color: #667eea;
+            color: #fff;
+        }
+
+        .btn-small:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-link {
+            background-color: transparent;
+            color: #667eea;
+            text-decoration: none;
+            border: 1px solid #667eea;
+        }
+
+        .btn-link:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .ai-summary {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #1a1d28;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+        }
+
+        .ai-summary-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .ai-summary-content {
+            font-size: 13px;
+            color: #b0b3b8;
+            line-height: 1.6;
+        }
+
+        .ai-summary-content ul {
+            margin-left: 20px;
+            margin-top: 6px;
+        }
+
+        .ai-summary-content li {
+            margin-bottom: 4px;
+        }
+
+        /* Full Content Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #1a1d28;
+            border: 1px solid #2a2d3a;
+            border-radius: 12px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #2a2d3a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            color: #e4e6eb;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .modal-close:hover {
+            background-color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .full-content {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #e4e6eb;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .btn-full-content {
+            background-color: #764ba2;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-full-content:hover {
+            background-color: #6a3f94;
+        }
+
+        /* Article Images */
+        .article-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2a2d3a;
+        }
+
+        .article-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .article-image:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-create-video {
+            width: 100%;
+            background-color: #764ba2;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-create-video:hover {
+            background-color: #6a3f94;
+        }
+
+        .btn-create-video:disabled {
+            background-color: #2a2d3a;
+            color: #8b8d98;
+            cursor: not-allowed;
+        }
+
+        /* Step 2 */
+        .voice-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .voice-option {
+            padding: 20px;
+            background-color: #252836;
+            border: 2px solid #2a2d3a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-option:hover {
+            border-color: #667eea;
+        }
+
+        .voice-option-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .voice-option-icon {
+            font-size: 20px;
+        }
+
+        .voice-option-title {
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .voice-option-desc {
+            font-size: 13px;
+            color: #8b8d98;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .template-card {
+            text-align: center;
+        }
+
+        .template-placeholder {
+            border: 2px dashed #2a2d3a;
+            border-radius: 12px;
+            padding: 40px 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-placeholder:hover {
+            border-color: #667eea;
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .template-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .template-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .template-desc {
+            font-size: 13px;
+            color: #8b8d98;
+        }
+
+        .template-link {
+            color: #667eea;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .template-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Summary */
+        .summary-section {
+            border-top: 1px solid #2a2d3a;
+            padding-top: 20px;
+        }
+
+        .summary-title {
+            font-size: 14px;
+            color: #8b8d98;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #b0b3b8;
+        }
+
+        .summary-icon {
+            font-size: 16px;
+        }
+
+        .summary-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .summary-divider {
+            height: 1px;
+            background-color: #2a2d3a;
+            margin: 8px 0;
+        }
+
+        .btn-create {
+            width: 100%;
+            background-color: #667eea;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-create:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-create:disabled {
+            background-color: #2a2d3a;
+            color: #8b8d98;
+            cursor: not-allowed;
+        }
+
+        .warning-text {
+            text-align: center;
+            font-size: 13px;
+            color: #ef4444;
+            margin-top: 12px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2d3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3d4a;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-sidebar {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .header {
+                padding: 16px;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .search-box {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>
+                    <div class="logo-icon">MKT</div>
+                </h1>
+                <div class="logo-subtitle">Studio đa năng tầng</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Tổng quan</div>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">📊</span>
+                    <span>Tổng quan</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Sản xuất & đăng</div>
+                <a href="#" class="nav-item active">
+                    <span class="nav-item-icon">✨</span>
+                    <span>Tạo video</span>
+                    <span class="nav-badge">Mới</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">☁️</span>
+                    <span>Đăng video</span>
+                    <span class="nav-badge">Mới</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">⚡</span>
+                    <span>Tự động</span>
+                    <span class="nav-badge">Mới</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">📅</span>
+                    <span>Lịch đăng</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Quản lý</div>
+                <a href="#" class="nav-item" onclick="openStorage(event)">
+                    <span class="nav-item-icon">📦</span>
+                    <span>Kho bài viết</span>
+                    <span class="nav-badge" id="storageCount" style="display: none;">0</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">📹</span>
+                    <span>Quản lý Video</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">🎤</span>
+                    <span>Giọng clone</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">⏱️</span>
+                    <span>Lịch sử video</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">📈</span>
+                    <span>Phân tích</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Tài khoản</div>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">🔗</span>
+                    <span>Kết nối</span>
+                </a>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-avatar">HN</div>
+                <div class="user-info">
+                    <div class="user-name">Hiệp Nguyễn Hoàng</div>
+                    <div class="user-email">hiepnh@visocial.vn</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle">☰</button>
+                    <div>
+                        <div class="page-title">Tạo video</div>
+                        <div class="page-subtitle">Tổng hợp tin tức thành video ngắn tự động</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="Truy cập nhanh...">
+                    </div>
+                    <button class="icon-btn">🔔<span class="notification-dot"></span></button>
+                    <button class="icon-btn">🌙</button>
+                    <button class="icon-btn">❓</button>
+                    <button class="btn-primary">+ Bài mới</button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+                <div class="main-column">
+                    <!-- Step 1: News Sources -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📰</div>
+                            <div>
+                                <div class="card-title">Bước 1: Nguồn tin</div>
+                                <div class="card-description">Chọn nhiều nguồn để tổng hợp đa chiều hơn</div>
+                            </div>
+                        </div>
+
+                        <div class="source-tabs">
+                            <button class="source-tab active">Chọn nguồn</button>
+                            <button class="source-tab">🔗 Dán link</button>
+                        </div>
+
+                        <div class="news-sources">
+                            <div class="news-source selected" data-source="vnexpress">
+                                <div class="source-logo" style="background-color: #c41e3a;">Vn</div>
+                                <div class="source-info">
+                                    <div class="source-name">VnExpress</div>
+                                </div>
+                            </div>
+                            <div class="news-source selected" data-source="tuoitre">
+                                <div class="source-logo" style="background-color: #d32f2f;">T</div>
+                                <div class="source-info">
+                                    <div class="source-name">Tuổi Trẻ</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="thanhnien">
+                                <div class="source-logo" style="background-color: #1976d2;">TN</div>
+                                <div class="source-info">
+                                    <div class="source-name">Thanh Niên</div>
+                                </div>
+                            </div>
+                            <div class="news-source selected" data-source="dantri">
+                                <div class="source-logo" style="background-color: #388e3c;">D</div>
+                                <div class="source-info">
+                                    <div class="source-name">Dân Trí</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="vietnamnet">
+                                <div class="source-logo" style="background-color: #f44336;">V</div>
+                                <div class="source-info">
+                                    <div class="source-name">VietnamNet</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="nguoilaodong">
+                                <div class="source-logo" style="background-color: #7b1fa2;">N</div>
+                                <div class="source-info">
+                                    <div class="source-name">Người Lao Động</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="tienphong">
+                                <div class="source-logo" style="background-color: #d32f2f;">T</div>
+                                <div class="source-info">
+                                    <div class="source-name">Tiền Phong</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="phapluat">
+                                <div class="source-logo" style="background-color: #1976d2;">P</div>
+                                <div class="source-info">
+                                    <div class="source-name">Pháp Luật TP.HCM</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="nhandan">
+                                <div class="source-logo" style="background-color: #d32f2f;">N</div>
+                                <div class="source-info">
+                                    <div class="source-name">Nhân Dân</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="nguoidatin">
+                                <div class="source-logo" style="background-color: #f44336;">N</div>
+                                <div class="source-info">
+                                    <div class="source-name">Người Đưa Tin</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="kenh14">
+                                <div class="source-logo" style="background-color: #d32f2f;">14</div>
+                                <div class="source-info">
+                                    <div class="source-name">Kenh14</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="soha">
+                                <div class="source-logo" style="background-color: #388e3c;">S</div>
+                                <div class="source-info">
+                                    <div class="source-name">Soha</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="genk">
+                                <div class="source-logo" style="background-color: #333;">G</div>
+                                <div class="source-info">
+                                    <div class="source-name">GenK</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="cafebiz">
+                                <div class="source-logo" style="background-color: #ff6f00;">C</div>
+                                <div class="source-info">
+                                    <div class="source-name">CafeBiz</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="techcrunch">
+                                <div class="source-logo" style="background-color: #0a9e01;">T</div>
+                                <div class="source-info">
+                                    <div class="source-name">TechCrunch</div>
+                                </div>
+                            </div>
+                            <div class="news-source" data-source="24h">
+                                <div class="source-logo" style="background-color: #fff;">24</div>
+                                <div class="source-info">
+                                    <div class="source-name">24h</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="selection-info">
+                            <span>Đã chọn <span class="selection-count" id="selectedCount">3</span> nguồn</span>
+                            <span class="clear-selection" onclick="clearSelection()">Bỏ chọn tất cả</span>
+                        </div>
+
+                        <div class="article-count">
+                            <label>Số bài tổng hợp</label>
+                            <input type="number" id="articleCount" value="3" min="1" max="10">
+                            <span>bài (1 – 10)</span>
+                        </div>
+
+                        <button class="btn-secondary" onclick="scanArticles()">
+                            <span>📡</span>
+                            <span>Quét bài viết</span>
+                        </button>
+                    </div>
+
+                    <!-- Articles List -->
+                    <div class="card" id="articlesCard" style="display: none;">
+                        <div class="card-header">
+                            <div class="card-icon">📄</div>
+                            <div>
+                                <div class="card-title">Bài viết đã quét</div>
+                                <div class="card-description">Danh sách bài viết từ các nguồn đã chọn</div>
+                            </div>
+                        </div>
+
+                        <div id="articlesList"></div>
+                    </div>
+
+                    <!-- Step 2: Voice & Music -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🎙️</div>
+                            <div>
+                                <div class="card-title">Bước 2: Giọng đọc & nhạc nền</div>
+                                <div class="card-description">Lời đọc tự động + nhạc nền cho video</div>
+                            </div>
+                        </div>
+
+                        <div class="voice-options">
+                            <div class="voice-option" onclick="selectVoice(this)">
+                                <div class="voice-option-header">
+                                    <span class="voice-option-icon">🎙️</span>
+                                    <span class="voice-option-title">Giọng đọc (TTS)</span>
+                                </div>
+                                <div class="voice-option-desc">Chọn giọng đọc tự động cho video</div>
+                            </div>
+                            <div class="voice-option" onclick="selectMusic(this)">
+                                <div class="voice-option-header">
+                                    <span class="voice-option-icon">🎵</span>
+                                    <span class="voice-option-title">Nhạc nền</span>
+                                </div>
+                                <div class="voice-option-desc">Thêm nhạc nền vào video</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar -->
+                <div class="right-sidebar">
+                    <!-- Template Selection -->
+                    <div class="card template-card">
+                        <div class="card-header" style="justify-content: center;">
+                            <div class="card-icon">🎬</div>
+                            <div class="card-title">Mẫu video *</div>
+                        </div>
+
+                        <div class="template-placeholder" onclick="selectTemplate()">
+                            <div class="template-icon">🎨</div>
+                            <div class="template-title">Chọn mẫu branding</div>
+                            <div class="template-desc">Chọn một hoặc nhiều mẫu</div>
+                        </div>
+
+                        <div style="font-size: 13px; color: #8b8d98; text-align: center;">
+                            Chưa có mẫu? <span class="template-link">Tạo mẫu mới</span>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="card">
+                        <div class="summary-title">video sẽ được tạo</div>
+
+                        <div class="summary-item">
+                            <div class="summary-label">
+                                <span class="summary-icon">✅</span>
+                                <span>Nguồn tin</span>
+                            </div>
+                            <div class="summary-value" id="summarySources">3 nguồn báo</div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="summary-label">
+                                <span class="summary-icon">📄</span>
+                                <span>Bài đã quét</span>
+                            </div>
+                            <div class="summary-value" id="summaryArticles">0</div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="summary-label">
+                                <span class="summary-icon">🎙️</span>
+                                <span>Giọng đọc</span>
+                            </div>
+                            <div class="summary-value" id="summaryVoice">Giọng Nữ</div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="summary-label">
+                                <span class="summary-icon">🎵</span>
+                                <span>Nhạc nền</span>
+                            </div>
+                            <div class="summary-value" id="summaryMusic">Tắt</div>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-item">
+                            <div class="summary-label">
+                                <span class="summary-icon">🎬</span>
+                                <span>Mẫu video</span>
+                            </div>
+                            <div class="summary-value" id="summaryTemplate">0 mẫu</div>
+                        </div>
+
+                        <button class="btn-create" id="createBtn" disabled>
+                            <span>📥</span>
+                            <span>Tạo & lưu vào kho</span>
+                        </button>
+
+                        <button class="btn-create-video" id="createVideoBtn" disabled>
+                            <span>🎬</span>
+                            <span>Tạo Video từ bài viết</span>
+                        </button>
+
+                        <div class="warning-text" id="warningText">Chưa quét bài viết</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State management
+        let selectedSources = new Set(['vnexpress', 'tuoitre', 'dantri']);
+        let selectedVoice = null;
+        let selectedMusic = false;
+        let selectedTemplate = false;
+        let scannedArticles = 0;
+        let currentArticles = [];
+
+        // Real news source URLs (for reference - actual fetching needs backend)
+        const NEWS_SOURCES = {
+            vnexpress: {
+                name: 'VnExpress',
+                rss: 'https://vnexpress.net/rss/tin-moi-nhat.rss',
+                baseUrl: 'https://vnexpress.net'
+            },
+            tuoitre: {
+                name: 'Tuổi Trẻ',
+                rss: 'https://tuoitre.vn/rss/tin-moi-nhat.rss',
+                baseUrl: 'https://tuoitre.vn'
+            },
+            thanhnien: {
+                name: 'Thanh Niên',
+                rss: 'https://thanhnien.vn/rss/home.rss',
+                baseUrl: 'https://thanhnien.vn'
+            },
+            dantri: {
+                name: 'Dân Trí',
+                rss: 'https://dantri.com.vn/rss/home.rss',
+                baseUrl: 'https://dantri.com.vn'
+            },
+            vietnamnet: {
+                name: 'VietnamNet',
+                rss: 'https://vietnamnet.vn/rss/home.rss',
+                baseUrl: 'https://vietnamnet.vn'
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSummary();
+            attachSourceListeners();
+            updateStorageCount();
+        });
+
+        // Attach click listeners to news sources
+        function attachSourceListeners() {
+            document.querySelectorAll('.news-source').forEach(source => {
+                source.addEventListener('click', function() {
+                    const sourceId = this.dataset.source;
+                    
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        selectedSources.delete(sourceId);
+                    } else {
+                        this.classList.add('selected');
+                        selectedSources.add(sourceId);
+                    }
+                    
+                    updateSummary();
+                });
+            });
+        }
+
+        // Clear all selections
+        function clearSelection() {
+            document.querySelectorAll('.news-source').forEach(source => {
+                source.classList.remove('selected');
+            });
+            selectedSources.clear();
+            updateSummary();
+        }
+
+        // Scan articles from backend API
+        async function scanArticles() {
+            const articleCount = parseInt(document.getElementById('articleCount').value) || 3;
+            scannedArticles = articleCount * selectedSources.size;
+            
+            // Visual feedback
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span><span>Đang quét...</span>';
+            btn.disabled = true;
+            
+            try {
+                // Call backend API to fetch real articles
+                const articles = await fetchArticlesFromBackend(selectedSources, articleCount);
+                currentArticles = articles;
+                displayArticles(articles);
+                
+                document.getElementById('summaryArticles').textContent = scannedArticles;
+                document.getElementById('warningText').textContent = '';
+                document.getElementById('createBtn').disabled = false;
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+                document.getElementById('warningText').textContent = 'Lỗi khi lấy bài viết. Kiểm tra backend server.';
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Fetch articles from backend API (use relative URL to support dynamic port)
+        async function fetchArticlesFromBackend(sources, countPerSource) {
+            const sourceArray = Array.from(sources);
+            const sourcesParam = sourceArray.join(',');
+            
+            // Use relative URL so it works with any port
+            // Request full content for better AI summary
+            const apiUrl = `/api/articles?sources=${sourcesParam}&count=${countPerSource}&fullContent=true`;
+            
+            console.log(`Fetching from: ${apiUrl}`);
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to fetch articles');
+            }
+            
+            return data.articles;
+        }
+
+        // Display articles in the list
+        function displayArticles(articles) {
+            const articlesList = document.getElementById('articlesList');
+            const articlesCard = document.getElementById('articlesCard');
+            
+            articlesCard.style.display = 'block';
+            
+            articlesList.innerHTML = articles.map(article => `
+                <div class="article-item">
+                    <div class="article-header">
+                        <div class="article-source-badge">${article.source}</div>
+                        <div class="article-time">${article.publishedAt}</div>
+                    </div>
+                    <div class="article-title">${article.title}</div>
+                    <div class="article-summary">${article.summary}</div>
+                    <div class="article-actions">
+                        <button class="btn-small" onclick="toggleSummary('${article.id}')">
+                            <span>🤖</span> Tóm tắt AI
+                        </button>
+                        <button class="btn-small btn-full-content" onclick="showFullContent('${article.id}')">
+                            <span>📖</span> Nội dung chi tiết
+                        </button>
+                        <a href="${article.url}" target="_blank" class="btn-small btn-link">
+                            🔗 Đọc gốc
+                        </a>
+                    </div>
+                    <div class="ai-summary" id="summary-${article.id}" style="display: none;">
+                        <div class="ai-summary-header">
+                            <span>🤖</span> Tóm tắt AI
+                        </div>
+                        <div class="ai-summary-content">
+                            ${generateAISummary(article)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Generate AI summary from article content - FULL VERSION for 3min video
+        function generateAISummary(article) {
+            // Get all sentences from content
+            const sentences = article.content.split('. ').filter(s => s.trim().length > 10);
+            
+            // Get more sentences for longer video (up to 15 sentences or all available)
+            const keyPoints = sentences.slice(0, Math.min(15, sentences.length));
+            
+            // If content is very short, use the full content
+            const summaryPoints = keyPoints.length > 0 ? keyPoints : [article.content];
+            
+            // Build comprehensive summary
+            let summaryHTML = `
+                <strong>📝 Tóm tắt chi tiết:</strong>
+                <p style="margin-top: 8px; line-height: 1.8; font-size: 14px;">${article.summary}</p>
+            `;
+            
+            // Add all key points for longer narration
+            if (summaryPoints.length > 1) {
+                summaryHTML += `
+                    <strong style="margin-top: 12px; display: block; font-size: 14px;">📋 Nội dung chi tiết:</strong>
+                    <ul style="margin-left: 20px; margin-top: 8px; line-height: 1.8;">
+                        ${summaryPoints.map((s, i) => `<li style="margin-bottom: 8px; font-size: 13px;">${i + 1}. ${s.trim()}.</li>`).join('')}
+                    </ul>
+                `;
+            }
+            
+            // Add source
+            summaryHTML += `
+                <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2d3a; font-size: 13px;">
+                    <strong>📰 Nguồn:</strong> 
+                    <a href="${article.url}" target="_blank" style="color: #667eea; text-decoration: none;">${article.source}</a>
+                </p>
+            `;
+            
+            return summaryHTML;
+        }
+
+        // Toggle AI summary
+        function toggleSummary(articleId) {
+            const summaryElement = document.getElementById(`summary-${articleId}`);
+            if (summaryElement.style.display === 'none') {
+                summaryElement.style.display = 'block';
+            } else {
+                summaryElement.style.display = 'none';
+            }
+        }
+
+        // Show full content in modal
+        function showFullContent(articleId) {
+            const article = currentArticles.find(a => a.id === articleId);
+            if (!article) return;
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.id = 'fullContentModal';
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">${article.title}</div>
+                        <button class="modal-close" onclick="closeModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="full-content">${article.content}</div>
+                    </div>
+                </div>
+            `;
+
+            // Add to body
+            document.body.appendChild(modal);
+
+            // Close on overlay click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('fullContentModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Open storage modal
+        function openStorage(event) {
+            event.preventDefault();
+            
+            const savedData = localStorage.getItem('savedArticles');
+            const data = savedData ? JSON.parse(savedData) : null;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.id = 'storageModal';
+            
+            let contentHTML = '';
+            
+            if (!data || !data.articles || data.articles.length === 0) {
+                contentHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #8b8d98;">
+                        <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">📦</div>
+                        <p>Chưa có bài viết nào trong kho</p>
+                        <p style="font-size: 12px; margin-top: 8px;">Quét bài viết và lưu vào kho để xem tại đây</p>
+                    </div>
+                `;
+            } else {
+                const date = new Date(data.createdAt).toLocaleString('vi-VN');
+                contentHTML = `
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2a2d3a;">
+                        <p style="color: #b0b3b8; font-size: 13px;">
+                            📅 Lưu lúc: ${date}<br>
+                            📊 Số bài: ${data.articles.length} bài<br>
+                            📰 Nguồn: ${data.sources.join(', ')}
+                        </p>
+                    </div>
+                    <div style="max-height: 50vh; overflow-y: auto;">
+                        ${data.articles.map((article, index) => `
+                            <div style="padding: 16px; background-color: #252836; border: 1px solid #2a2d3a; border-radius: 8px; margin-bottom: 12px;">
+                                <div style="font-weight: 500; color: #fff; margin-bottom: 8px;">
+                                    ${index + 1}. ${article.title}
+                                </div>
+                                <div style="font-size: 12px; color: #8b8d98; margin-bottom: 8px;">
+                                    ${article.source} • ${article.publishedAt}
+                                </div>
+                                <div style="font-size: 13px; color: #b0b3b8; margin-bottom: 12px;">
+                                    ${article.summary.substring(0, 150)}...
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-small" onclick="alert('${article.title}\\n\\n${article.content.substring(0, 500)}...')">
+                                        👁️ Xem
+                                    </button>
+                                    <a href="${article.url}" target="_blank" class="btn-small btn-link">
+                                        🔗 Đọc gốc
+                                    </a>
+                                    <button class="btn-small btn-danger" onclick="deleteArticle('${article.id}')">
+                                        🗑️ Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📦 Kho bài viết đã lưu</div>
+                        <button class="modal-close" onclick="closeStorageModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        ${contentHTML}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeStorageModal();
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeStorageModal();
+                }
+            });
+        }
+
+        // Close storage modal
+        function closeStorageModal() {
+            const modal = document.getElementById('storageModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Delete article from storage
+        function deleteArticle(articleId) {
+            if (!confirm('Bạn có chắc muốn xóa bài viết này?')) {
+                return;
+            }
+            
+            const savedData = localStorage.getItem('savedArticles');
+            if (!savedData) return;
+            
+            const data = JSON.parse(savedData);
+            data.articles = data.articles.filter(a => a.id !== articleId);
+            
+            localStorage.setItem('savedArticles', JSON.stringify(data));
+            
+            // Refresh modal
+            closeStorageModal();
+            openStorage(new Event('click'));
+            
+            // Update count
+            updateStorageCount();
+        }
+
+        // Update storage count badge
+        function updateStorageCount() {
+            const savedData = localStorage.getItem('savedArticles');
+            const data = savedData ? JSON.parse(savedData) : null;
+            const count = data && data.articles ? data.articles.length : 0;
+            
+            const badge = document.getElementById('storageCount');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        // Select voice
+        function selectVoice(element) {
+            document.querySelectorAll('.voice-option').forEach(opt => {
+                opt.style.borderColor = '#2a2d3a';
+            });
+            element.style.borderColor = '#667eea';
+            selectedVoice = true;
+            document.getElementById('summaryVoice').textContent = 'Giọng Nữ';
+            updateSummary();
+        }
+
+        // Select music
+        function selectMusic(element) {
+            if (selectedMusic) {
+                element.style.borderColor = '#2a2d3a';
+                selectedMusic = false;
+                document.getElementById('summaryMusic').textContent = 'Tắt';
+            } else {
+                element.style.borderColor = '#667eea';
+                selectedMusic = true;
+                document.getElementById('summaryMusic').textContent = 'Đã bật';
+            }
+            updateSummary();
+        }
+
+        // Select template
+        function selectTemplate() {
+            selectedTemplate = !selectedTemplate;
+            const placeholder = document.querySelector('.template-placeholder');
+            
+            if (selectedTemplate) {
+                placeholder.style.borderColor = '#667eea';
+                placeholder.style.backgroundColor = 'rgba(102, 126, 234, 0.1)';
+                document.getElementById('summaryTemplate').textContent = '1 mẫu';
+            } else {
+                placeholder.style.borderColor = '#2a2d3a';
+                placeholder.style.backgroundColor = 'transparent';
+                document.getElementById('summaryTemplate').textContent = '0 mẫu';
+            }
+            updateSummary();
+        }
+
+        // Update summary
+        function updateSummary() {
+            document.getElementById('selectedCount').textContent = selectedSources.size;
+            document.getElementById('summarySources').textContent = selectedSources.size + ' nguồn báo';
+            
+            const createBtn = document.getElementById('createBtn');
+            const createVideoBtn = document.getElementById('createVideoBtn');
+            
+            if (selectedSources.size > 0 && scannedArticles > 0) {
+                createBtn.disabled = false;
+                createVideoBtn.disabled = false;
+                document.getElementById('warningText').textContent = '';
+            } else {
+                createBtn.disabled = true;
+                createVideoBtn.disabled = true;
+                if (scannedArticles === 0 && selectedSources.size > 0) {
+                    document.getElementById('warningText').textContent = 'Chưa quét bài viết';
+                }
+            }
+        }
+
+        // Save to storage (createBtn functionality)
+        function saveToStorage() {
+            if (currentArticles.length === 0) {
+                alert('Vui lòng quét bài viết trước!');
+                return;
+            }
+
+            // Save articles to localStorage
+            const storageData = {
+                articles: currentArticles,
+                createdAt: new Date().toISOString(),
+                sources: Array.from(selectedSources)
+            };
+
+            localStorage.setItem('savedArticles', JSON.stringify(storageData));
+            
+            alert(`✅ Đã lưu ${currentArticles.length} bài viết vào kho!\n\nBạn có thể xem lại trong mục "Quản lý Video".`);
+        }
+
+        // Source tab switching
+        document.querySelectorAll('.source-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Initialize buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create button - Save to storage
+            const createBtn = document.getElementById('createBtn');
+            if (createBtn) {
+                createBtn.addEventListener('click', saveToStorage);
+            }
+
+            // Create video button
+            const createVideoBtn = document.getElementById('createVideoBtn');
+            if (createVideoBtn) {
+                createVideoBtn.addEventListener('click', createVideo);
+            }
+        });
+
+        // Create video function
+        async function createVideo() {
+            if (currentArticles.length === 0) {
+                alert('Vui lòng quét bài viết trước!');
+                return;
+            }
+
+            const btn = document.getElementById('createVideoBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span><span>Đang tạo video...</span>';
+            btn.disabled = true;
+
+            try {
+                // Prepare articles for video creation
+                const videoArticles = currentArticles.map(article => ({
+                    title: article.title,
+                    content: article.content,
+                    images: article.images || [],
+                    url: article.url
+                }));
+
+                // Call video creation API
+                const response = await fetch('/api/create-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        articles: videoArticles,
+                        voiceType: 'female'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const duration = Math.floor(data.data.totalDuration / 60);
+                    alert(`✅ Video đã được tạo thành công!\n\n📊 Thống kê:\n- Tổng thời gian: ${duration} phút\n- Số bài viết: ${data.data.articles.length}\n- Giọng đọc: ${data.data.voiceType === 'female' ? 'Giọng Nữ' : 'Giọng Nam'}\n\n💡 Bạn có thể nghe thử audio từ API TTS.`);
+                    
+                    console.log('Video data:', data.data);
+                } else {
+                    alert('❌ Lỗi khi tạo video: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error creating video:', error);
+                alert('❌ Lỗi khi tạo video. Kiểm tra console để biết chi tiết.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Initialize create video button
+        document.addEventListener('DOMContentLoaded', function() {
+            const createVideoBtn = document.getElementById('createVideoBtn');
+            if (createVideoBtn) {
+                createVideoBtn.addEventListener('click', createVideo);
+            }
+        });
+    </script>
+</body>
+</html>

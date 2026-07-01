@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Formatter - Indent 2 Spaces</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0a0a0a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: #1a1a1a;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      padding: 40px;
+      width: 100%;
+      max-width: 1000px;
+      border: 1px solid #2a2a2a;
+    }
+    h1 {
+      font-size: 28px;
+      color: #e0e0e0;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h1 span {
+      background: #2a2a2a;
+      color: #cccccc;
+      border: 1px solid #3a3a3a;
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .subtitle {
+      color: #888888;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .editor-area {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .editor-panel {
+      flex: 1;
+      min-width: 300px;
+    }
+    .editor-panel label {
+      display: block;
+      font-weight: 600;
+      color: #aaaaaa;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .editor-panel label .count {
+      font-weight: 400;
+      color: #666666;
+      font-size: 12px;
+    }
+    textarea {
+      width: 100%;
+      height: 400px;
+      padding: 16px;
+      background: #111111;
+      color: #cccccc;
+      border: 2px solid #2a2a2a;
+      border-radius: 10px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: vertical;
+      transition: border-color 0.3s;
+      outline: none;
+      tab-size: 2;
+    }
+    textarea:focus {
+      border-color: #666666;
+    }
+    textarea::placeholder {
+      color: #444444;
+    }
+    textarea.output {
+      background: #0d0d0d;
+      border-color: #2a2a2a;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: #2a2a2a;
+      color: #e0e0e0;
+      border: 1px solid #444444;
+    }
+    .btn-primary:hover {
+      background: #3a3a3a;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+    }
+    .btn-success {
+      background: #2a2a2a;
+      color: #e0e0e0;
+      border: 1px solid #444444;
+    }
+    .btn-success:hover {
+      background: #3a3a3a;
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: transparent;
+      color: #aaaaaa;
+      border: 1px solid #444444;
+    }
+    .btn-outline:hover {
+      background: #1a1a1a;
+    }
+    .btn-secondary {
+      background: #2a2a2a;
+      color: #888888;
+    }
+    .btn-secondary:hover {
+      background: #3a3a3a;
+    }
+    .btn-warning {
+      background: #2a2a2a;
+      color: #ffa726;
+      border: 1px solid #ffa726;
+    }
+    .btn-warning:hover {
+      background: #333;
+    }
+    .file-upload-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .stats {
+      margin-top: 20px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      background: #111111;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #888888;
+      border: 1px solid #2a2a2a;
+    }
+    .stat-item strong {
+      color: #cccccc;
+    }
+    .stat-item .saved {
+      color: #8bc34a;
+      font-weight: 700;
+    }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1a1a1a;
+      color: #cccccc;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.4s;
+      pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+      border: 1px solid #2a2a2a;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .options {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .options label {
+      color: #aaa;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .options input[type="checkbox"] {
+      accent-color: #ffa726;
+      width: 16px;
+      height: 16px;
+    }
+    .options select {
+      background: #111;
+      border: 1px solid #333;
+      color: #ccc;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+    @media (max-width: 640px) {
+      .container { padding: 20px; }
+      textarea { height: 250px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      ✨ JS Formatter
+      <span>Indent 2 Spaces</span>
+    </h1>
+    <p class="subtitle">Dán JavaScript hoặc chọn file .js để định dạng — indent 2 spaces, dấu ngoặc, toán tử chuẩn</p>
+
+    <div class="editor-area">
+      <div class="editor-panel">
+        <label>
+          📥 Input JS
+          <span class="count" id="inputCount">(0 ký tự)</span>
+        </label>
+        <textarea id="inputText" placeholder="Paste JavaScript vào đây hoặc chọn file...
+function hello(){const x=1;return x;}
+const obj={a:1,b:2};"></textarea>
+      </div>
+      <div class="editor-panel">
+        <label>
+          📤 Output JS
+          <span class="count" id="outputCount">(0 ký tự)</span>
+        </label>
+        <textarea id="outputText" class="output" placeholder="Kết quả sẽ hiển thị ở đây..." readonly></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btnFormat">⚡ Format</button>
+      <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+      <button class="btn btn-outline file-upload-wrapper">
+        📂 Chọn file .js
+        <input type="file" id="fileInput" accept=".js">
+      </button>
+      <button class="btn btn-warning" id="btnBeautify">🎨 Beautify</button>
+      <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+    </div>
+
+    <div class="options">
+      <label>
+        <input type="checkbox" id="optPreserveLines" checked>
+        Giữ dòng trống
+      </label>
+      <label>
+        <input type="checkbox" id="optMinify">
+        Chế độ minify (1 dòng)
+      </label>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat-item">
+        📏 Kích thước gốc: <strong id="originalSize">0</strong> bytes
+      </div>
+      <div class="stat-item">
+        📏 Kích thước sau: <strong id="minifiedSize">0</strong> bytes
+      </div>
+      <div class="stat-item">
+        💾 Tiết kiệm: <strong class="saved" id="savings">0</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const btnFormat = document.getElementById('btnFormat');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnClear = document.getElementById('btnClear');
+    const btnBeautify = document.getElementById('btnBeautify');
+    const fileInput = document.getElementById('fileInput');
+    const optPreserveLines = document.getElementById('optPreserveLines');
+    const optMinify = document.getElementById('optMinify');
+    const inputCount = document.getElementById('inputCount');
+    const outputCount = document.getElementById('outputCount');
+    const originalSize = document.getElementById('originalSize');
+    const minifiedSize = document.getElementById('minifiedSize');
+    const savings = document.getElementById('savings');
+
+    // ===== FORMATTER =====
+    function formatJS(code, minify) {
+      const tokens = [];
+      let i = 0;
+
+      function isWordChar(ch) {
+        return /[a-zA-Z0-9_$\u00C0-\u024F]/.test(ch);
+      }
+
+      // Tokenize
+      while (i < code.length) {
+        const ch = code[i];
+        const next = code[i + 1] || '';
+
+        // Whitespace
+        if (ch === ' ' || ch === '\t') { i++; continue; }
+        if (ch === '\n' || ch === '\r') {
+          if (ch === '\r' && next === '\n') i += 2; else i++;
+          tokens.push({ t: 'nl' });
+          continue;
+        }
+
+        // Line comment
+        if (ch === '/' && next === '/') {
+          let comment = '';
+          i += 2;
+          while (i < code.length && code[i] !== '\n') { comment += code[i]; i++; }
+          tokens.push({ t: 'lineComment', v: comment });
+          continue;
+        }
+
+        // Block comment
+        if (ch === '/' && next === '*') {
+          let comment = '';
+          i += 2;
+          while (i < code.length - 1) {
+            if (code[i] === '*' && code[i + 1] === '/') { i += 2; break; }
+            comment += code[i];
+            i++;
+          }
+          tokens.push({ t: 'blockComment', v: comment });
+          continue;
+        }
+
+        // String
+        if (ch === "'" || ch === '"' || ch === '`') {
+          let str = ch;
+          let quote = ch;
+          i++;
+          while (i < code.length) {
+            if (ch === '`' && code[i] === '$' && code[i + 1] === '{') {
+              str += '${';
+              i += 2;
+              let depth = 1;
+              while (i < code.length && depth > 0) {
+                if (code[i] === '{') depth++;
+                if (code[i] === '}') depth--;
+                str += code[i];
+                i++;
+              }
+              continue;
+            }
+            if (code[i] === '\\' && code[i + 1]) { str += code[i] + code[i + 1]; i += 2; continue; }
+            str += code[i];
+            if (code[i] === quote) { i++; break; }
+            i++;
+          }
+          tokens.push({ t: 'string', v: str });
+          continue;
+        }
+
+        // Number
+        if (/[0-9]/.test(ch) || (ch === '-' && /[0-9]/.test(next) && (i === 0 || /[=(,+\-*/%!&|^?:[]/.test(code[i - 1])))) {
+          let num = '';
+          if (ch === '-') { num = '-'; i++; }
+          while (i < code.length && /[0-9.Ee+\-]/.test(code[i])) {
+            if ((code[i] === '+' || code[i] === '-') && i > 0 && code[i - 1] !== 'e' && code[i - 1] !== 'E') break;
+            num += code[i];
+            i++;
+          }
+          tokens.push({ t: 'word', v: num });
+          continue;
+        }
+
+        // Word / identifier
+        if (isWordChar(ch)) {
+          let word = '';
+          while (i < code.length && isWordChar(code[i])) { word += code[i]; i++; }
+          tokens.push({ t: 'word', v: word });
+          continue;
+        }
+
+        // Multi-char operators
+        const ops = {
+          '===': 'op', '!==': 'op', '==': 'op', '!=': 'op', '&&': 'op', '||': 'op',
+          '>=': 'op', '<=': 'op', '=>': 'op', '++': 'inc', '--': 'dec',
+          '+=': 'op', '-=': 'op', '*=': 'op', '/=': 'op', '%=': 'op', '**': 'op',
+          '<<': 'op', '>>': 'op', '?.': 'op', '::': 'op'
+        };
+        let matched = false;
+        for (const [op, type] of Object.entries(ops)) {
+          if (code.substring(i, i + op.length) === op) {
+            tokens.push({ t: type, v: op });
+            i += op.length;
+            matched = true;
+            break;
+          }
+        }
+        if (matched) continue;
+
+        // Single char operators & punctuation
+        if ('+-*/%=><!&|^~?:'.includes(ch)) { tokens.push({ t: 'op', v: ch }); i++; continue; }
+        if (ch === '.') { tokens.push({ t: 'dot', v: '.' }); i++; continue; }
+        if (ch === '{') { tokens.push({ t: '{' }); i++; continue; }
+        if (ch === '}') { tokens.push({ t: '}' }); i++; continue; }
+        if (ch === '(') { tokens.push({ t: '(' }); i++; continue; }
+        if (ch === ')') { tokens.push({ t: ')' }); i++; continue; }
+        if (ch === '[') { tokens.push({ t: '[' }); i++; continue; }
+        if (ch === ']') { tokens.push({ t: ']' }); i++; continue; }
+        if (ch === ';') { tokens.push({ t: ';' }); i++; continue; }
+        if (ch === ',') { tokens.push({ t: ',' }); i++; continue; }
+
+        tokens.push({ t: 'char', v: ch });
+        i++;
+      }
+
+      // Mark property colons
+      for (let t = 0; t < tokens.length; t++) {
+        const tok = tokens[t];
+        if (tok.v === ':' && tok.t === 'op') {
+          const prev = tokens[t - 1];
+          const next = tokens[t + 1];
+          if (prev && next &&
+            (prev.t === 'word' || prev.t === 'string' || prev.t === ']') &&
+            (next.t === 'word' || next.t === 'string' || next.t === '{' || next.t === '[' || next.t === '(' || next.t === '-' || next.t === 'inc' || next.t === 'dec')) {
+            tok.t = 'propColon';
+          }
+        }
+      }
+
+      // Build output
+      let out = '';
+      let indent = 0;
+      let nlPending = false;
+      let lastT = null;
+      let lastV = '';
+      let inFor = 0;
+      const keywordsAfterSpace = new Set(['return', 'throw', 'typeof', 'void', 'delete']);
+      const controlFlow = new Set(['if', 'for', 'while', 'switch', 'catch']);
+
+      for (let t = 0; t < tokens.length; t++) {
+        const tok = tokens[t];
+        const nextTok = tokens[t + 1] || null;
+        const nextT = nextTok ? nextTok.t : '';
+
+        if (tok.t === 'nl') {
+          if (out.length > 0 && !out.endsWith('\n')) out += '\n';
+          nlPending = true;
+          continue;
+        }
+
+        if (tok.t === 'lineComment') {
+          if (!out.endsWith('\n')) out += '\n';
+          out += '  '.repeat(indent) + '//' + tok.v + '\n';
+          continue;
+        }
+        if (tok.t === 'blockComment') {
+          if (!out.endsWith('\n')) out += '\n';
+          const lines = tok.v.split('\n');
+          const ind = '  '.repeat(indent);
+          out += ind + '/*\n';
+          for (const line of lines) {
+            const trimmed = line.replace(/^\s*\*?\s?/, '');
+            out += ind + ' * ' + trimmed + '\n';
+          }
+          out += ind + ' */\n';
+          continue;
+        }
+
+        if (nlPending || out === '') {
+          if (out !== '') { if (!out.endsWith('\n')) out += '\n'; nlPending = false; }
+          if (!minify) out += '  '.repeat(indent);
+          nlPending = false;
+        }
+
+        const val = tok.v || '';
+        const type = tok.t;
+
+        if (type === '{') {
+          while (out.endsWith(' ')) out = out.slice(0, -1);
+          out += ' {';
+          indent++;
+          if (!minify) { out += '\n'; nlPending = true; }
+          lastT = type; lastV = val;
+          continue;
+        }
+        if (type === '}') {
+          indent = Math.max(0, indent - 1);
+          while (out.endsWith(' ') || out.endsWith('\n')) out = out.slice(0, -1);
+          if (!minify) out += '\n';
+          if (!minify) out += '  '.repeat(indent);
+          out += '}';
+          if (nextT === ',' || nextT === ';' || nextTok && (nextTok.v === 'else' || nextTok.v === 'catch' || nextTok.v === 'finally')) {
+            // stay
+          } else if (!minify && nextT && nextT !== 'nl' && nextT !== '}' && nextT !== ')') {
+            out += ' ';
+          } else if (!minify && (nextT === 'nl' || nextT === '}' || nextT === ')')) {
+            out += '\n'; nlPending = true;
+          } else if (minify && nextT && nextT !== 'nl') {
+            // no space needed between } and next token in minify
+          }
+          lastT = type; lastV = val;
+          continue;
+        }
+
+        if (type === ';') {
+          out += ';';
+          if (inFor > 0) {
+            out += ' ';
+          } else if (!minify) {
+            out += '\n'; nlPending = true;
+          }
+          lastT = type; lastV = val;
+          continue;
+        }
+
+        if (type === ',') {
+          out += ',';
+          if (nextT === ')' || nextT === ']' || nextT === 'nl' || nextT === ';') {
+            // no space
+          } else { out += ' '; }
+          lastT = type; lastV = val;
+          continue;
+        }
+
+        if (type === '(') {
+          while (out.endsWith(' ')) out = out.slice(0, -1);
+          if (lastT === 'word' && controlFlow.has(lastV)) out += ' ';
+          out += '(';
+          if (lastV === 'for') inFor++;
+          if (inFor > 0 && lastV !== 'for') inFor++;
+          lastT = type; lastV = val;
+          continue;
+        }
+        if (type === ')') {
+          while (out.endsWith(' ')) out = out.slice(0, -1);
+          out += ')';
+          if (inFor > 0) inFor = Math.max(0, inFor - 1);
+          lastT = type; lastV = val;
+          continue;
+        }
+
+        if (type === '[') { out += '['; lastT = type; lastV = val; continue; }
+        if (type === ']') { while (out.endsWith(' ')) out = out.slice(0, -1); out += ']'; lastT = type; lastV = val; continue; }
+        if (type === 'dot') { while (out.endsWith(' ')) out = out.slice(0, -1); out += '.'; lastT = type; lastV = val; continue; }
+
+        if (type === 'op' || type === 'inc' || type === 'dec' || type === 'propColon') {
+          if (val === '=>') { while (out.endsWith(' ')) out = out.slice(0, -1); out += ' => '; lastT = type; lastV = val; continue; }
+          if (val === ':') {
+            if (tok.t === 'propColon') { while (out.endsWith(' ')) out = out.slice(0, -1); out += ': '; }
+            else { while (out.endsWith(' ')) out = out.slice(0, -1); out += ' : '; }
+            lastT = type; lastV = val; continue;
+          }
+          if (val === '?') { while (out.endsWith(' ')) out = out.slice(0, -1); out += ' ? '; lastT = type; lastV = val; continue; }
+          if (val === '++' || val === '--') {
+            if (lastT === 'word' || lastT === ')' || lastT === ']') { while (out.endsWith(' ')) out = out.slice(0, -1); out += val; }
+            else { out += val; }
+            lastT = type; lastV = val; continue;
+          }
+
+          const isUnary = (val === '!' || val === '~') || (
+            (val === '+' || val === '-') && (
+              lastT === null || lastT === 'op' || lastT === ',' ||
+              lastT === '(' || lastT === '[' || lastT === '{' ||
+              lastT === ';' || lastT === 'nl' ||
+              (lastT === 'word' && keywordsAfterSpace.has(lastV)) ||
+              lastV === '=' || lastV === '?' || lastV === ':' ||
+              lastV === '!' || lastV === '&' || lastV === '|' || lastV === '^' ||
+              lastV === '*' || lastV === '/' || lastV === '%'
+            )
+          );
+
+          if (isUnary) {
+            if (val === '!' || val === '~') { while (out.endsWith(' ')) out = out.slice(0, -1); out += val; }
+            else { while (out.endsWith(' ')) out = out.slice(0, -1); out += ' ' + val; }
+          } else {
+            while (out.endsWith(' ')) out = out.slice(0, -1);
+            out += ' ' + val + ' ';
+          }
+          lastT = type; lastV = val; continue;
+        }
+
+        if (type === 'word' || type === 'string' || type === 'char') {
+          if (lastT !== null && lastT !== '(' && lastT !== '[' && lastT !== '{' && lastT !== 'dot' &&
+            lastT !== ';' && lastT !== ',' && lastT !== 'inc' && lastT !== 'dec' &&
+            !(lastT === 'op' && (lastV === '!' || lastV === '~'))) {
+            const lastChar = out[out.length - 1] || '';
+            if (lastChar !== ' ' && lastChar !== '\n') {
+              const lastTokenAddedSpace = lastT === ',' || lastT === ';' || lastT === 'nl' ||
+                (lastT === 'op' && lastV !== '!' && lastV !== '~' && lastV !== '++' && lastV !== '--' && lastV !== '?');
+              if (!lastTokenAddedSpace) {
+                if ((lastT === 'word' || lastT === ')' || lastT === ']' || lastV === '}' || lastV === 'propColon') &&
+                  (type === 'word' || type === 'string')) {
+                  out += ' ';
+                }
+              }
+            }
+          }
+
+          if ((val === 'else' || val === 'catch' || val === 'finally') && !out.endsWith(' ') && !out.endsWith('\n')) {
+            while (out.endsWith(' ')) out = out.slice(0, -1);
+            out += ' ' + val;
+            lastT = type; lastV = val; continue;
+          }
+          if (keywordsAfterSpace.has(val)) { out += val + ' '; lastT = type; lastV = val; continue; }
+          out += val;
+          lastT = type; lastV = val; continue;
+        }
+      }
+
+      if (minify) {
+        // Minify: remove newlines except in strings/comments
+        let result = '';
+        let inStr = false;
+        let strQuote = '';
+        let inLineC = false;
+        let inBlockC = false;
+        for (let c = 0; c < out.length; c++) {
+          const ch = out[c];
+          const nxt = out[c + 1] || '';
+          if (inLineC) { if (ch === '\n') inLineC = false; result += ch; continue; }
+          if (inBlockC) { result += ch; if (ch === '*' && nxt === '/') { result += '/'; c++; inBlockC = false; } continue; }
+          if (inStr) { result += ch; if (ch === strQuote && out[c - 1] !== '\\') inStr = false; continue; }
+          if (ch === '/' && nxt === '/') { inLineC = true; result += ch + '/'; c++; continue; }
+          if (ch === '/' && nxt === '*') { inBlockC = true; result += ch + '*'; c++; continue; }
+          if (ch === "'" || ch === '"' || ch === '`') { inStr = true; strQuote = ch; result += ch; continue; }
+          if (ch === '\n' || ch === '\r') { if (nxt === '\n') c++; continue; }
+          result += ch;
+        }
+        return result.trim();
+      }
+
+      // Post-process
+      let lines = out.split('\n');
+      lines = lines.map(l => l.replace(/\s+$/, ''));
+      const cleaned = [];
+      let prevEmpty = false;
+      for (const line of lines) {
+        if (line === '') {
+          if (!prevEmpty && cleaned.length > 0 && cleaned[cleaned.length - 1] !== '') {
+            cleaned.push('');
+            prevEmpty = true;
+          }
+        } else {
+          cleaned.push(line);
+          prevEmpty = false;
+        }
+      }
+      return cleaned.join('\n').trim() + '\n';
+    }
+
+    // ===== UI =====
+    function updateStats(input, output) {
+      const inBytes = new Blob([input]).size;
+      const outBytes = new Blob([output]).size;
+      const diff = inBytes - outBytes;
+      const pct = inBytes > 0 ? ((diff / inBytes) * 100).toFixed(1) : '0.0';
+      originalSize.textContent = inBytes.toLocaleString();
+      minifiedSize.textContent = outBytes.toLocaleString();
+      savings.textContent = `${diff > 0 ? '-' : ''}${Math.abs(diff).toLocaleString()} bytes (${pct}%)`;
+      savings.style.color = diff > 0 ? '#8bc34a' : '#666';
+      inputCount.textContent = `(${input.length} ký tự)`;
+      outputCount.textContent = `(${output.length} ký tự)`;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function handleFormat() {
+      const input = inputText.value;
+      if (!input.trim()) {
+        showToast('⚠️ Vui lòng nhập JavaScript trước!');
+        return;
+      }
+      const minify = optMinify.checked;
+      const preserve = optPreserveLines.checked;
+      const output = formatJS(input, minify);
+      outputText.value = output;
+      updateStats(input, output);
+      showToast(minify ? '✅ Minify thành công!' : '✅ Format thành công!');
+    }
+
+    btnFormat.addEventListener('click', handleFormat);
+
+    btnBeautify.addEventListener('click', () => {
+      optMinify.checked = false;
+      handleFormat();
+    });
+
+    btnCopy.addEventListener('click', () => {
+      if (!outputText.value.trim()) {
+        showToast('⚠️ Không có dữ liệu để copy!');
+        return;
+      }
+      navigator.clipboard.writeText(outputText.value).then(() => {
+        showToast('📋 Đã copy vào clipboard!');
+      }).catch(() => {
+        outputText.select();
+        document.execCommand('copy');
+        showToast('📋 Đã copy vào clipboard!');
+      });
+    });
+
+    btnClear.addEventListener('click', () => {
+      inputText.value = '';
+      outputText.value = '';
+      updateStats('', '');
+      showToast('🗑️ Đã xoá');
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        inputText.value = evt.target.result;
+        outputText.value = '';
+        updateStats(inputText.value, '');
+        handleFormat();
+        fileInput.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    inputText.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        handleFormat();
+      }
+    });
+
+    inputText.addEventListener('input', () => {
+      inputCount.textContent = `(${inputText.value.length} ký tự)`;
+      if (outputText.value) {
+        updateStats(inputText.value, outputText.value);
+      } else {
+        originalSize.textContent = '0';
+        savings.textContent = '0';
+      }
+    });
+
+    // Initial demo
+    inputText.value = `function hello(){const x=1;return x;}
+const obj={a:1,b:2,c:function(){return this.a+this.b;}};
+if(true){console.log('hello');}else{console.log('world');}
+for(let i=0;i<10;i++){console.log(i);}
+const arr=[1,2,3,4,5].map(x=>x*2).filter(x=>x>5);
+class MyClass{constructor(name){this.name=name;}greet(){return\`Hello, \${this.name}!\`;}}`;
+    handleFormat();
+  </script>
+</body>
+</html>

@@ -90,6 +90,12 @@ function minifyCSS(content) {
                 i++;
                 continue;
             }
+            // Nếu gặp @media và chưa xuống dòng thì xuống dòng
+            if (ch === '@' && content.substring(i, i + 6) === '@media') {
+                if (result.length > 0 && !result.endsWith('\n')) {
+                    result += '\n';
+                }
+            }
             result += ch;
             i++;
         }

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video & Voice Merger Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        h1 {
+            text-align: center;
+            color: #302b63;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .upload-section {
+            background: #f8f9ff;
+            border: 2px dashed #302b63;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .upload-section.dragover {
+            background: #e8e6ff;
+            border-color: #ff6b6b;
+        }
+        .upload-section label {
+            display: block;
+            cursor: pointer;
+            color: #302b63;
+            font-weight: 600;
+        }
+        .upload-section .icon { font-size: 40px; margin-bottom: 10px; }
+        .upload-section input[type="file"] { display: none; }
+        .file-info {
+            margin-top: 12px;
+            padding: 10px;
+            background: #e8e6ff;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #333;
+            word-break: break-all;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .row .upload-section { flex: 1; }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #302b63, #24243e);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(48,43,99,0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-container.show { display: block; }
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #302b63, #ff6b6b);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .output-section {
+            margin-top: 20px;
+            display: none;
+        }
+        .output-section.show { display: block; }
+        .output-section video {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .download-btn {
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .error-msg {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎬 Video & Voice Merger</h1>
+    <p class="subtitle">Chọn video template và file voice để gộp tự động</p>
+
+    <div class="info-box">
+        ⚡ Video template ngắn (VD: 10s) sẽ tự động <strong>clone/lặp lại</strong> cho đến khi khớp với độ dài của file voice. Kết quả là video dài = độ dài voice + audio từ voice.
+    </div>
+
+    <div class="upload-section" id="videoDrop">
+        <div class="icon">🎥</div>
+        <label for="videoFile">Chọn Video Template</label>
+        <input type="file" id="videoFile" accept="video/*">
+        <div class="file-info" id="videoInfo" style="display:none;"></div>
+    </div>
+
+    <div class="upload-section" id="voiceDrop">
+        <div class="icon">🎤</div>
+        <label for="voiceFile">Chọn File Voice / Audio</label>
+        <input type="file" id="voiceFile" accept="audio/*,video/*">
+        <div class="file-info" id="voiceInfo" style="display:none;"></div>
+    </div>
+
+    <button class="btn btn-primary" id="processBtn" disabled>🚀 Xử lý & Gộp</button>
+
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Đang xử lý...</div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="output-section" id="outputSection">
+        <video id="outputVideo" controls></video>
+        <a class="download-btn" id="downloadBtn" download>📥 Tải video kết quả</a>
+    </div>
+</div>
+
+<script>
+let selectedVideo = null;
+let selectedVoice = null;
+
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+document.getElementById('videoFile').addEventListener('change', function(e) {
+    selectedVideo = e.target.files[0];
+    if (selectedVideo) {
+        document.getElementById('videoInfo').style.display = 'block';
+        document.getElementById('videoInfo').textContent = `📹 ${selectedVideo.name} (${formatFileSize(selectedVideo.size)})`;
+    }
+    updateBtn();
+});
+
+document.getElementById('voiceFile').addEventListener('change', function(e) {
+    selectedVoice = e.target.files[0];
+    if (selectedVoice) {
+        document.getElementById('voiceInfo').style.display = 'block';
+        document.getElementById('voiceInfo').textContent = `🎵 ${selectedVoice.name} (${formatFileSize(selectedVoice.size)})`;
+    }
+    updateBtn();
+});
+
+// Drag & drop
+['videoDrop', 'voiceDrop'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+    el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+    el.addEventListener('drop', e => {
+        e.preventDefault();
+        el.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const input = el.querySelector('input[type="file"]');
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change'));
+        }
+    });
+});
+
+function updateBtn() {
+    document.getElementById('processBtn').disabled = !(selectedVideo && selectedVoice);
+}
+
+document.getElementById('processBtn').addEventListener('click', async function() {
+    if (!selectedVideo || !selectedVoice) return;
+
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = '⏳ Đang xử lý...';
+
+    document.getElementById('progressContainer').classList.add('show');
+    document.getElementById('outputSection').classList.remove('show');
+    document.getElementById('errorMsg').classList.remove('show');
+
+    const formData = new FormData();
+    formData.append('video', selectedVideo);
+    formData.append('voice', selectedVoice);
+
+    try {
+        const response = await fetch('/process', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err);
+        }
+
+        // Progress tracking
+        const contentLength = response.headers.get('Content-Length');
+        const reader = response.body.getReader();
+        const chunks = [];
+        let received = 0;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            if (contentLength) {
+                const pct = Math.round((received / parseInt(contentLength)) * 100);
+                updateProgress(pct);
+            } else {
+                updateProgress(null, `Đang tải về... ${formatFileSize(received)}`);
+            }
+        }
+
+        const blob = new Blob(chunks);
+        const url = URL.createObjectURL(blob);
+
+        document.getElementById('outputVideo').src = url;
+        document.getElementById('downloadBtn').href = url;
+        document.getElementById('downloadBtn').download = `merged_${Date.now()}.mp4`;
+        document.getElementById('outputSection').classList.add('show');
+        updateProgress(100);
+
+        btn.textContent = '✅ Hoàn tất!';
+        setTimeout(() => {
+            btn.textContent = '🚀 Xử lý & Gộp';
+            btn.disabled = false;
+        }, 2000);
+
+    } catch (err) {
+        document.getElementById('errorMsg').textContent = '❌ Lỗi: ' + err.message;
+        document.getElementById('errorMsg').classList.add('show');
+        btn.textContent = '🚀 Xử lý & Gộp';
+        btn.disabled = false;
+        document.getElementById('progressContainer').classList.remove('show');
+    }
+});
+
+function updateProgress(pct, text) {
+    if (pct !== null) {
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressText').textContent = `Đang xử lý... ${pct}%`;
+    } else if (text) {
+        document.getElementById('progressText').textContent = text;
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video & Voice Merger Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 780px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        h1 {
+            text-align: center;
+            color: #302b63;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .section-title {
+            font-weight: 700;
+            color: #302b63;
+            margin: 20px 0 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: #856404;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        /* ===== TEMPLATE CARDS (RADIO) ===== */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .template-card {
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+        .template-card:hover {
+            border-color: #302b63;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(48,43,99,0.15);
+        }
+        .template-card.selected {
+            border-color: #302b63;
+            background: #e8e6ff;
+            box-shadow: 0 4px 20px rgba(48,43,99,0.3);
+        }
+        .template-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        .template-card video {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+            background: #000;
+        }
+        .template-card .card-body {
+            padding: 8px 10px;
+        }
+        .template-card .card-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .template-card .card-meta {
+            font-size: 11px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .template-card .check-mark {
+            display: none;
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            background: #302b63;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            line-height: 22px;
+            text-align: center;
+            z-index: 2;
+        }
+        .template-card.selected .check-mark {
+            display: block;
+        }
+
+        /* ===== UPLOAD SECTION ===== */
+        .upload-section {
+            background: #f8f9ff;
+            border: 2px dashed #302b63;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .upload-section.dragover {
+            background: #e8e6ff;
+            border-color: #ff6b6b;
+        }
+        .upload-section .icon { font-size: 32px; margin-bottom: 8px; }
+        .upload-section input[type="file"] { display: none; }
+        .file-info {
+            margin-top: 10px;
+            padding: 8px;
+            background: #e8e6ff;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #333;
+            word-break: break-all;
+        }
+
+        /* ===== VOICE SECTION ===== */
+        .voice-section {
+            transition: all 0.3s;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #302b63, #24243e);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(48,43,99,0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220,53,69,0.4);
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-container.show { display: block; }
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #302b63, #ff6b6b);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 5px;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .log-box {
+            margin-top: 15px;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            line-height: 1.6;
+        }
+        .log-box.show { display: block; }
+
+        /* ===== OUTPUT ===== */
+        .output-section {
+            margin-top: 20px;
+            display: none;
+        }
+        .output-section.show {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+        .output-section video {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .download-btn {
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .download-btn:hover { background: #218838; }
+        .error-msg {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+            font-weight: 600;
+        }
+        .error-msg.show { display: block; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .status-badge.ready { background: #d4edda; color: #155724; }
+        .status-badge.loading { background: #fff3cd; color: #856404; }
+        .status-badge.error { background: #f8d7da; color: #721c24; }
+        .loading-templates {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .template-switch {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .template-switch button {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .template-switch button.active {
+            border-color: #302b63;
+            background: #e8e6ff;
+            color: #302b63;
+        }
+        .template-switch button:hover {
+            border-color: #302b63;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+        .slide-down {
+            animation: slideDown 0.4s ease;
+        }
+
+        /* responsive */
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            .template-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎬 Video & Voice Merger</h1>
+    <p class="subtitle">Chọn video template có sẵn + file voice → gộp tự động</p>
+
+    <div id="ffmpegStatus" class="status-badge loading">⏳ Đang tải FFmpeg...</div>
+
+    <div class="info-box">
+        ⚡ <strong>Cách hoạt động:</strong><br>
+        1️⃣ Chọn video template từ thư mục <strong>templates/</strong> hoặc tải lên<br>
+        2️⃣ Chọn file voice / audio<br>
+        3️⃣ Tool tự động <strong>clone/lặp video</strong> cho đến khi khớp độ dài voice<br>
+        4️⃣ Gộp audio từ voice vào video đã clone
+    </div>
+
+    <!-- ===== TEMPLATE SELECTION ===== -->
+    <div class="section-title">📂 Chọn Video Template</div>
+
+    <div class="template-switch">
+        <button id="tabTemplates" class="active" onclick="switchTab('templates')">📁 Template có sẵn</button>
+        <button id="tabUpload" onclick="switchTab('upload')">📤 Tải video lên</button>
+    </div>
+
+    <!-- Templates from server -->
+    <div id="templatesTab">
+        <div id="templateGrid" class="template-grid">
+            <div class="loading-templates">⏳ Đang tải danh sách template...</div>
+        </div>
+        <div class="file-info" id="videoInfoFromTemplate" style="display:none;"></div>
+    </div>
+
+    <!-- Upload custom video -->
+    <div id="uploadTab" style="display:none;">
+        <div class="upload-section" id="videoDrop">
+            <div class="icon">🎥</div>
+            <label for="videoFile"><strong>Chọn Video Template</strong><br><span style="font-size:12px;color:#888;">MP4, WebM, AVI, MOV...</span></label>
+            <input type="file" id="videoFile" accept="video/*">
+            <div class="file-info" id="videoInfoUpload" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- ===== VOICE SELECTION ===== -->
+    <div class="section-title">🎤 Chọn File Voice</div>
+    <div class="upload-section voice-section" id="voiceDrop">
+        <div class="icon">🎵</div>
+        <label for="voiceFile"><strong>Chọn File Voice / Audio</strong><br><span style="font-size:12px;color:#888;">MP3, WAV, M4A, OGG...</span></label>
+        <input type="file" id="voiceFile" accept="audio/*">
+        <div class="file-info" id="voiceInfo" style="display:none;"></div>
+    </div>
+
+    <button class="btn btn-primary" id="processBtn" disabled>🚀 Xử lý & Gộp</button>
+
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Đang xử lý...</div>
+    </div>
+
+    <div class="log-box" id="logBox"></div>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="output-section" id="outputSection">
+        <video id="outputVideo" controls></video>
+        <a class="download-btn" id="downloadBtn" download>📥 Tải video kết quả</a>
+        <button class="btn btn-danger" id="resetBtn" style="margin-top:10px;">🔄 Làm lại</button>
+    </div>
+</div>
+
+<script type="module">
+import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/+esm';
+import { toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/+esm';
+
+// ===== STATE =====
+let ffmpeg = null;
+let loaded = false;
+let selectedVideoFile = null;
+let selectedVideoUrl = null;
+let selectedVideoName = '';
+let selectedVoice = null;
+let activeTab = 'templates';
+
+// ===== DOM REFS =====
+const statusBadge = document.getElementById('ffmpegStatus');
+const templateGrid = document.getElementById('templateGrid');
+const videoInput = document.getElementById('videoFile');
+const voiceInput = document.getElementById('voiceFile');
+const videoInfoFromTemplate = document.getElementById('videoInfoFromTemplate');
+const videoInfoUpload = document.getElementById('videoInfoUpload');
+const voiceInfo = document.getElementById('voiceInfo');
+const processBtn = document.getElementById('processBtn');
+const progressContainer = document.getElementById('progressContainer');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const logBox = document.getElementById('logBox');
+const errorMsg = document.getElementById('errorMsg');
+const outputSection = document.getElementById('outputSection');
+const outputVideo = document.getElementById('outputVideo');
+const downloadBtn = document.getElementById('downloadBtn');
+const resetBtn = document.getElementById('resetBtn');
+const templatesTab = document.getElementById('templatesTab');
+const uploadTab = document.getElementById('uploadTab');
+
+// ===== SMOOTH SCROLL HELPER =====
+function smoothScrollTo(el) {
+    if (!el) return;
+    setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+}
+
+// ===== GLOBAL FUNCTIONS =====
+window.switchTab = function(tab) {
+    activeTab = tab;
+    if (tab === 'templates') {
+        templatesTab.style.display = 'block';
+        uploadTab.style.display = 'none';
+        document.getElementById('tabTemplates').classList.add('active');
+        document.getElementById('tabUpload').classList.remove('active');
+    } else {
+        templatesTab.style.display = 'none';
+        uploadTab.style.display = 'block';
+        document.getElementById('tabUpload').classList.add('active');
+        document.getElementById('tabTemplates').classList.remove('active');
+    }
+    updateBtn();
+};
+
+window.selectTemplate = function(name, url) {
+    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+    const card = document.querySelector(`.template-card[data-name="${name}"]`);
+    if (card) {
+        card.classList.add('selected');
+        card.querySelector('input[type="radio"]').checked = true;
+    }
+    selectedVideoFile = null;
+    selectedVideoUrl = url;
+    selectedVideoName = name;
+    videoInfoFromTemplate.style.display = 'block';
+    videoInfoFromTemplate.textContent = `📹 Đã chọn: ${name}`;
+    videoInfoUpload.style.display = 'none';
+    updateBtn();
+};
+
+// ===== LOGGING =====
+function log(msg, type = 'info') {
+    const div = document.createElement('div');
+    div.className = type;
+    div.textContent = msg;
+    logBox.appendChild(div);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+function showLog(show = true) {
+    logBox.classList.toggle('show', show);
+}
+
+// ===== FFMPEG LOAD =====
+async function loadFFmpeg() {
+    try {
+        statusBadge.textContent = '⏳ Đang tải FFmpeg (~30MB)...';
+        statusBadge.className = 'status-badge loading';
+
+        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+        ffmpeg = new FFmpeg();
+
+        ffmpeg.on('progress', ({ progress: p }) => {
+            const pct = Math.round(p * 100);
+            updateProgress(pct, `Đang xử lý... ${pct}%`);
+        });
+
+        ffmpeg.on('log', ({ message }) => {
+            if (message) log(message, 'info');
+        });
+
+        await ffmpeg.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        });
+
+        loaded = true;
+        statusBadge.textContent = '✅ FFmpeg sẵn sàng';
+        statusBadge.className = 'status-badge ready';
+        showLog(false);
+        loadTemplates();
+    } catch (err) {
+        statusBadge.textContent = '❌ Lỗi tải FFmpeg';
+        statusBadge.className = 'status-badge error';
+        showError('Không thể tải FFmpeg: ' + err.message);
+    }
+}
+
+// ===== LOAD TEMPLATES =====
+async function loadTemplates() {
+    try {
+        const res = await fetch('/api/templates');
+        const templates = await res.json();
+
+        if (!templates || templates.length === 0) {
+            templateGrid.innerHTML = `
+                <div class="loading-templates" style="grid-column:1/-1;">
+                    📂 Chưa có template nào.
+                    <br>Thả file video vào thư mục <strong>templates/</strong>
+                </div>`;
+            return;
+        }
+
+        templateGrid.innerHTML = templates.map((t, idx) => `
+            <div class="template-card ${idx === 0 ? 'selected' : ''}"
+                 data-name="${t.name}"
+                 onclick="selectTemplate('${t.name}', '${t.path}')">
+                <input type="radio" name="template" value="${t.path}"
+                       ${idx === 0 ? 'checked' : ''}>
+                <div class="check-mark">✓</div>
+                <video src="${t.path}#t=0.1" preload="metadata" muted></video>
+                <div class="card-body">
+                    <div class="card-name" title="${t.name}">${t.name}</div>
+                    <div class="card-meta">${t.sizeFormatted}</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Auto-select first
+        if (templates.length > 0) {
+            selectedVideoUrl = templates[0].path;
+            selectedVideoName = templates[0].name;
+            videoInfoFromTemplate.style.display = 'block';
+            videoInfoFromTemplate.textContent = `📹 Đã chọn: ${templates[0].name}`;
+            updateBtn();
+        }
+    } catch (err) {
+        templateGrid.innerHTML = `<div class="loading-templates" style="grid-column:1/-1;color:#dc3545;">
+            ❌ Lỗi tải templates: ${err.message}</div>`;
+    }
+}
+
+// ===== FILE HANDLING =====
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+videoInput.addEventListener('change', (e) => {
+    selectedVideoFile = e.target.files[0];
+    selectedVideoUrl = null;
+    if (selectedVideoFile) {
+        videoInfoUpload.style.display = 'block';
+        videoInfoUpload.textContent = `📹 ${selectedVideoFile.name} (${formatFileSize(selectedVideoFile.size)})`;
+        videoInfoFromTemplate.style.display = 'none';
+        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+    }
+    updateBtn();
+});
+
+voiceInput.addEventListener('change', (e) => {
+    selectedVoice = e.target.files[0];
+    if (selectedVoice) {
+        voiceInfo.style.display = 'block';
+        voiceInfo.textContent = `🎵 ${selectedVoice.name} (${formatFileSize(selectedVoice.size)})`;
+        // Smooth scroll to process button
+        smoothScrollTo(processBtn);
+    }
+    updateBtn();
+});
+
+// Drag & drop
+['videoDrop', 'voiceDrop'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+    el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+    el.addEventListener('drop', e => {
+        e.preventDefault();
+        el.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const input = el.querySelector('input[type="file"]');
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change'));
+        }
+    });
+});
+
+function hasVideoSelected() {
+    if (activeTab === 'upload') return !!selectedVideoFile;
+    return !!selectedVideoUrl;
+}
+
+function updateBtn() {
+    processBtn.disabled = !(loaded && hasVideoSelected() && selectedVoice);
+}
+
+function updateProgress(pct, text) {
+    progressFill.style.width = pct + '%';
+    progressText.textContent = text || `Đang xử lý... ${pct}%`;
+}
+
+function showError(msg) {
+    errorMsg.textContent = '❌ ' + msg;
+    errorMsg.classList.add('show');
+}
+
+function hideError() {
+    errorMsg.classList.remove('show');
+}
+
+// ===== FILE READERS =====
+async function readFileAsBuffer(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(new Uint8Array(reader.result));
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+async function fetchAsBuffer(url) {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(new Uint8Array(reader.result));
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+    });
+}
+
+// ===== DURATION =====
+function getVideoDuration(file) {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = url;
+        video.onloadedmetadata = () => { resolve(video.duration); URL.revokeObjectURL(url); };
+        video.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+    });
+}
+
+function getAudioDuration(file) {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(file);
+        const audio = new Audio();
+        audio.preload = 'metadata';
+        audio.src = url;
+        audio.onloadedmetadata = () => { resolve(audio.duration); URL.revokeObjectURL(url); };
+        audio.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+    });
+}
+
+function getVideoDurationFromUrl(url) {
+    return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = url;
+        video.onloadedmetadata = () => resolve(video.duration);
+        video.onerror = () => resolve(0);
+    });
+}
+
+// ===== MAIN PROCESS =====
+processBtn.addEventListener('click', async () => {
+    if (!ffmpeg || !selectedVoice) return;
+    if (!hasVideoSelected()) return;
+
+    hideError();
+    outputSection.classList.remove('show');
+    progressContainer.classList.add('show');
+    showLog(true);
+    logBox.innerHTML = '';
+    processBtn.disabled = true;
+    processBtn.textContent = '⏳ Đang xử lý...';
+    updateProgress(0, 'Đang chuẩn bị...');
+
+    // Smooth scroll to progress
+    smoothScrollTo(progressContainer);
+
+    try {
+        let videoData, voiceData, videoExt;
+        let videoDuration = 0;
+
+        // --- Get video ---
+        if (activeTab === 'upload' && selectedVideoFile) {
+            log(`📥 Đọc video: ${selectedVideoFile.name}`, 'info');
+            videoData = await readFileAsBuffer(selectedVideoFile);
+            videoExt = selectedVideoFile.name.split('.').pop();
+            videoDuration = await getVideoDuration(selectedVideoFile);
+        } else if (selectedVideoUrl) {
+            log(`📥 Tải template: ${selectedVideoName}`, 'info');
+            videoData = await fetchAsBuffer(selectedVideoUrl);
+            videoExt = selectedVideoName.split('.').pop();
+            videoDuration = await getVideoDurationFromUrl(selectedVideoUrl);
+        } else {
+            throw new Error('Chưa chọn video template.');
+        }
+
+        voiceData = await readFileAsBuffer(selectedVoice);
+        const voiceExt = selectedVoice.name.split('.').pop();
+
+        updateProgress(3, 'Đang phân tích thời lượng...');
+        log('🔍 Đang phân tích thời lượng...', 'info');
+        const voiceDuration = await getAudioDuration(selectedVoice);
+        log(`📊 Video: ${videoDuration.toFixed(2)}s | Voice: ${voiceDuration.toFixed(2)}s`, 'info');
+
+        if (videoDuration <= 0) throw new Error('Không thể đọc thời lượng video.');
+        if (voiceDuration <= 0) throw new Error('File voice không hợp lệ.');
+
+        const videoName = `input_video.${videoExt}`;
+        const voiceName = `input_voice.${voiceExt}`;
+
+        await ffmpeg.writeFile(videoName, videoData);
+        await ffmpeg.writeFile(voiceName, voiceData);
+        log('✅ Đã ghi file vào bộ nhớ ảo', 'success');
+
+        const repeatCount = Math.ceil(voiceDuration / videoDuration);
+        log(`🔄 Lặp video ${repeatCount} lần (${videoDuration}s → ${voiceDuration.toFixed(2)}s)`, 'info');
+
+        updateProgress(8, 'Đang tạo video loop...');
+        let concatContent = '';
+        for (let i = 0; i < repeatCount; i++) {
+            concatContent += `file '${videoName}'\n`;
+        }
+        await ffmpeg.writeFile('concat_list.txt', new TextEncoder().encode(concatContent));
+
+        log('🔄 Đang loop video...', 'info');
+        await ffmpeg.exec([
+            '-f', 'concat', '-safe', '0',
+            '-i', 'concat_list.txt',
+            '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+            '-t', String(voiceDuration),
+            '-c:a', 'aac', '-b:a', '128k',
+            '-y', 'looped_video.mp4'
+        ]);
+        log('✅ Video loop hoàn tất', 'success');
+
+        updateProgress(50, 'Đang gộp voice vào video...');
+        log('🎵 Đang gộp voice vào video...', 'info');
+        await ffmpeg.exec([
+            '-i', 'looped_video.mp4',
+            '-i', voiceName,
+            '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+            '-c:a', 'aac', '-b:a', '192k',
+            '-map', '0:v:0', '-map', '1:a:0',
+            '-shortest', '-y', 'output.mp4'
+        ]);
+        log('✅ Gộp hoàn tất!', 'success');
+
+        updateProgress(90, 'Đang đọc kết quả...');
+        const outputData = await ffmpeg.readFile('output.mp4');
+        const blob = new Blob([outputData.buffer], { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+
+        outputVideo.src = url;
+        downloadBtn.href = url;
+        downloadBtn.download = `merged_${Date.now()}.mp4`;
+        outputSection.classList.add('show');
+        updateProgress(100, '✅ Hoàn tất!');
+        log(`📁 Kích thước: ${formatFileSize(blob.size)}`, 'success');
+        processBtn.textContent = '✅ Hoàn tất!';
+
+        // Smooth scroll to output
+        smoothScrollTo(outputSection);
+
+        // Cleanup
+        try {
+            await ffmpeg.deleteFile(videoName);
+            await ffmpeg.deleteFile(voiceName);
+            await ffmpeg.deleteFile('concat_list.txt');
+            await ffmpeg.deleteFile('looped_video.mp4');
+            await ffmpeg.deleteFile('output.mp4');
+        } catch (e) { /* ignore */ }
+
+    } catch (err) {
+        console.error(err);
+        showError(err.message || 'Lỗi xử lý');
+        log(`❌ ${err.message}`, 'error');
+        processBtn.textContent = '🚀 Xử lý & Gộp';
+        processBtn.disabled = false;
+    }
+});
+
+// ===== RESET =====
+resetBtn.addEventListener('click', () => {
+    outputSection.classList.remove('show');
+    progressContainer.classList.remove('show');
+    showLog(false);
+    hideError();
+    processBtn.textContent = '🚀 Xử lý & Gộp';
+    processBtn.disabled = false;
+    updateProgress(0, '');
+    voiceInput.value = '';
+    selectedVoice = null;
+    voiceInfo.style.display = 'none';
+
+    // Smooth scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ===== INIT =====
+loadFFmpeg();
+</script>
+</body>
+</html>
