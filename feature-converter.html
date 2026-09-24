@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Converter - Chuyển diff_cont thành depart-feature</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1200px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: nowrap; }
+        input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="number"] { width: 72px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="number"]:focus { border-color: #666666; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+        textarea { width: 100%; height: 420px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .stat-item .added { color: #8bc34a; font-weight: 700; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 240px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+        }
+        </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            🔁 Feature Converter
+            <span>diff_cont → depart-feature</span>
+        </h1>
+        <p class="subtitle">
+            Dán HTML dạng <code>&lt;div class="diff_cont"&gt;</code> vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận HTML mới dạng:
+            <code>&lt;div class="depart-feature"&gt;</code>. Features <strong>01–03 → feature-row</strong>, những feature còn lại → <strong>feature-column</strong>.
+            <br>Quy tắc map: <code>Features. 01</code> → <code>&lt;p class="label"&gt;</code>, <code>&lt;dt&gt;&lt;p&gt;</code> → <code>&lt;p class="txt01"&gt;</code>,
+            <code>&lt;ul class="dot_list"&gt;</code> → <code>&lt;ul class="ul-dot cir"&gt;</code>, <code>&lt;div class="thumb_img"&gt;</code> → <code>&lt;div class="img"&gt;</code>, tự thêm link <code>view</code> cho mỗi feature.
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🧩 Phân chia</div>
+                <label>
+                    Số Features trong feature-row:
+                    <input type="number" id="optRowCount" value="3" min="1" max="50">
+                </label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🖼️ Ảnh thumb</div>
+                <label><input type="checkbox" id="optColImg"> Giữ ảnh <code>.thumb_img</code> trong feature-column (mặc định bỏ — khớp mẫu)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optView" checked> Thêm link <code>view</code> (펼쳐보기/접기) cho mỗi feature</label>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán input</label>
+            </div>
+        </div>
+
+        <div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input HTML (diff_cont)
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;diff_cont&quot;&gt;&lt;dl&gt;...&lt;/dl&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML (depart-feature)
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quả chuyển đổi sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnConvert">⚡ Chuyển đổi</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🔢 Tổng features: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">📦 feature-row: <strong id="statRow">0</strong></div>
+            <div class="stat-item">🗂️ feature-column: <strong class="added" id="statCol">0</strong></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // ===== Core converter: diff_cont -> depart-feature =====
+        const VIEW_LINK = '<a class="view" href="#a" title="펼쳐보기/접기"><span>펼쳐보기</span><span>접기</span></a>';
+
+        function normalizeLabel(text) {
+            // "Features. 01" -> "Features 01"
+            return (text || '').replace(/\./g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        function reindentHtml(html, baseIndent) {
+            // Căn lại thụt dòng theo baseIndent (tabs), giữ nguyên cấp lồng nhau tương đối.
+            // Không trim() toàn chuỗi để tránh nuốt mất indent của dòng đầu tiên.
+            const rawLines = String(html).split('\n');
+            const pad = '\t'.repeat(baseIndent);
+            const indents = [];
+            rawLines.forEach((l) => {
+                if (l.trim()) indents.push((l.match(/^\t*/) || [''])[0].length);
+            });
+            if (!indents.length) return '';
+            const min = Math.min.apply(null, indents);
+            const out = [];
+            for (const l of rawLines) {
+                out.push(l.trim()
+                    ? pad + '\t'.repeat(Math.max(0, (l.match(/^\t*/) || [''])[0].length - min)) + l.trim()
+                    : '');
+            }
+            while (out.length && !out[0]) out.shift();
+            while (out.length && !out[out.length - 1]) out.pop();
+            return out.join('\n');
+        }
+
+        function buildLi(dl, withImg, withView) {
+            const dt = dl.querySelector(':scope > dt');
+            const dd = dl.querySelector(':scope > dd');
+
+            const span = dt ? dt.querySelector(':scope > span') : null;
+            const titleEl = dt ? dt.querySelector(':scope > p') : null;
+            const label = normalizeLabel(span ? span.textContent : '');
+            const txt01 = titleEl ? titleEl.innerHTML.trim() : '';
+
+            const parts = [];
+            parts.push('\t\t\t<li>');
+            parts.push('\t\t\t\t<p class="label">' + label + '</p>');
+
+            if (withImg && dd) {
+                const img = dd.querySelector('.thumb_img img');
+                if (img) parts.push('\t\t\t\t<div class="img">' + img.outerHTML.trim() + '</div>');
+            }
+
+            parts.push('\t\t\t\t<div class="txt">');
+            parts.push('\t\t\t\t\t<p class="txt01">' + txt01 + '</p>');
+            parts.push('\t\t\t\t\t<div class="txt02">');
+
+            if (dd) {
+                const uls = Array.from(dd.querySelectorAll(':scope > ul'));
+                for (const ul of uls) {
+                    parts.push('\t\t\t\t\t\t<ul class="ul-dot cir">');
+                    const inner = reindentHtml(ul.innerHTML, 7);
+                    if (inner) parts.push(inner);
+                    parts.push('\t\t\t\t\t\t</ul>');
+                }
+            }
+
+            if (withView) {
+                parts.push('\t\t\t\t\t</div>' + VIEW_LINK + '</div>');
+            } else {
+                parts.push('\t\t\t\t\t</div>');
+                parts.push('\t\t\t\t</div>');
+            }
+            parts.push('\t\t\t</li>');
+            return parts.join('\n');
+        }
+
+        function buildSection(className, items, withImg, withView) {
+            if (!items.length) return '';
+            const lis = items.map(function (dl) {
+                return buildLi(dl, withImg, withView);
+            });
+            return '\t<div class="' + className + '">\n' +
+                '\t\t<ul>\n' +
+                lis.join('\n') + '\n' +
+                '\t\t</ul>\n' +
+                '\t</div>';
+        }
+
+        function convertFeatures(inputHtml, opts) {
+            opts = opts || {};
+            const doc = new DOMParser().parseFromString(inputHtml, 'text/html');
+            if (doc.querySelector('parsererror')) {
+                throw new Error('HTML không hợp lệ!');
+            }
+
+            let container = doc.querySelector('.diff_cont');
+            let dls = container
+                ? Array.from(container.querySelectorAll(':scope > dl'))
+                : Array.from(doc.body.querySelectorAll('dl'));
+
+            if (!dls.length) {
+                throw new Error('Không tìm thấy thẻ <dl> nào (định dạng diff_cont)!');
+            }
+
+            const rowCount = Math.max(1, parseInt(opts.rowCount, 10) || 3);
+            const rowItems = dls.slice(0, rowCount);
+            const colItems = dls.slice(rowCount);
+
+            const row = buildSection('feature-row', rowItems, true, opts.withView !== false);
+            const col = buildSection('feature-column', colItems, !!opts.keepColImg, opts.withView !== false);
+
+            const out = ['<div class="depart-feature">'];
+            if (row) out.push(row);
+            if (col) out.push(col);
+            out.push('</div>');
+
+            return { html: out.join('\n'), row: rowItems.length, col: colItems.length, total: dls.length };
+        }
+    </script>
+
+    <script>
+        const SAMPLE = `<div class="diff_cont">
+		<dl data-aos="fade-up" class="aos-init aos-animate">
+			<dt><span>Features. 01</span>
+				<p>공무원 준비를 위한 맞춤형 교과 운영</p>
+			</dt>
+			<dd>
+				<ul class="dot_list">
+					<li>공무원 수험 준비 어려우시죠?<br>소방공무원 관련 필수 교과 및 방재직렬공무원 관련 교과를 풍부한 실전 경험과 강의 경력이 있는 교수님들과 학점 이수와 수험 준비에 최적화된 맞춤형 학습으로 한 발 앞서가세요~</li>
+				</ul>
+				<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/fire_administration_intro_diff_img_1.jpg" alt=""></div>
+			</dd>
+		</dl>
+		<dl data-aos="fade-up" class="aos-init aos-animate">
+			<dt><span>Features. 02</span>
+				<p>소방공무원 특별채용 응시자격 부여</p>
+			</dt>
+			<dd>
+				<ul class="dot_list">
+					<li>특별채용 기준 조건(45학점)에 부합되는 필수 교과 운영으로 재학 중 응시 기회를 획득할 수 있는 체계적 교과 운영</li>
+					<li>소방학개론, 위험물질론, 건축법, 행정법, 소방법규해설 등</li>
+					<li>재난관리론, 재난대응사례론, 재난관계법규 등 재난행정전문가 과정 운영</li>
+				</ul>
+				<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/fire_administration_intro_diff_img_2.jpg" alt=""></div>
+			</dd>
+		</dl>
+		<dl data-aos="fade-up" class="aos-init aos-animate">
+			<dt><span>Features. 03</span>
+				<p>전문 기술 자격 취득을 위한 맞춤형 교육과정</p>
+			</dt>
+			<dd>
+				<ul class="dot_list">
+					<li>자격증 응시과목 별 2학기 체제로 운영하여 기초부터 심화까지 집중 학습이 가능하도록 운영</li>
+					<li>소방유체역학 – 소방수리학<br>소방전기회로 – 소방전기설비 공학<br>소방전기설비구조원리 – 소방전기시설의 설계 및 시공<br>소방점검실무 1 – 소방점검실무 2 등</li>
+					<li>화재폭발조사전문가 과정 운영</li>
+				</ul>
+				<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/fire_administration_intro_diff_img_3.jpg" alt=""></div>
+			</dd>
+		</dl>
+		<dl class="more aos-init aos-animate" data-aos="fade-up">
+			<dt><span>Features. 04</span>
+				<p>실무 능력 강화에 특화된 교육과정</p>
+			</dt>
+			<dd>
+				<ul class="dot_list">
+					<li>소방기술사 및 미국소방기술사 등 실무에 강한 전문 자격 보유 교수진 강의<br>화재피난시뮬레이션, 제연설비론 등</li>
+					<li>실무 능력 강화를 위한 교과 과정 운영<br>CAD와 스케치업, 건축법, 소방점검실무 1, 2</li>
+					<li>전문가 특강(격월 운영)을 통한 실무 정보 제공</li>
+					<li>재난관리론, 재난대응사례론, 재난관계법규 등 현장 재난행정전문가 과정 운영</li>
+				</ul>
+				<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/fire_administration_intro_diff_img_4.jpg" alt=""></div>
+			</dd>
+		</dl>
+		<dl data-aos="fade-up" class="aos-init">
+			<dt><span>Features. 05</span>
+				<p>자기주도적 무한 복습 환경 제공</p>
+			</dt>
+			<dd>
+				<ul class="dot_list">
+					<li>소방설비기사 등 관련 응시자격 획득 이전 이수 교과에 대한 무한 복습환경 운영</li>
+					<li>자격증 응시를 위한 복습 환경 제공<br>소방설비기사(전기/기계분야), 소방시설관리사 등</li>
+				</ul>
+				<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/fire_administration_intro_diff_img_5.jpg" alt=""></div>
+			</dd>
+		</dl>
+		<dl data-aos="fade-up" class="aos-init">
+			<dt><span>Features. 06</span>
+				<p>평생학습 지원 환경 제공</p>
+			</dt>
+			<dd>
+				<ul class="dot_list">
+					<li>급속한 변화의 시대에 대응하기 위한 능력 배양을 위하여 졸업 후 무료 청강 환경 운영 ( 1학기 1과목)</li>
+				</ul>
+				<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/fire_administration_intro_diff_img_6.jpg" alt=""></div>
+			</dd>
+		</dl>
+	</div>`;
+    </script>
+
+    <script>
+        // DOM refs
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const btnConvert = document.getElementById('btnConvert');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnSample = document.getElementById('btnSample');
+        const btnDownload = document.getElementById('btnDownload');
+        const fileInput = document.getElementById('fileInput');
+        const optRowCount = document.getElementById('optRowCount');
+        const optColImg = document.getElementById('optColImg');
+        const optView = document.getElementById('optView');
+        const optAutoRun = document.getElementById('optAutoRun');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statTotal = document.getElementById('statTotal');
+        const statRow = document.getElementById('statRow');
+        const statCol = document.getElementById('statCol');
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function updateStats(input, res) {
+            inputCount.textContent = `(${input.length} ký tự)`;
+            outputCount.textContent = res ? `(${res.html.length} ký tự)` : '(0 ký tự)';
+            if (res) {
+                statTotal.textContent = res.total;
+                statRow.textContent = res.row;
+                statCol.textContent = res.col;
+            } else {
+                statTotal.textContent = 0;
+                statRow.textContent = 0;
+                statCol.textContent = 0;
+            }
+        }
+
+        function handleConvert() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Dán HTML diff_cont vào trước!');
+                return;
+            }
+            try {
+                const res = convertFeatures(input, {
+                    rowCount: optRowCount.value,
+                    keepColImg: optColImg.checked,
+                    withView: optView.checked
+                });
+                outputText.value = res.html;
+                updateStats(input, res);
+                showToast(`✅ Đã chuyển ${res.total} features (row: ${res.row}, column: ${res.col})!`);
+            } catch (e) {
+                outputText.value = '';
+                updateStats(input, null);
+                showToast('❌ ' + e.message);
+            }
+        }
+
+        function fillSample() {
+            inputText.value = SAMPLE;
+            if (optAutoRun.checked) {
+                handleConvert();
+            }
+        }
+
+        btnConvert.addEventListener('click', handleConvert);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ liệu để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+
+        btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', null);
+            showToast('🗑️ Đã xoá');
+        });
+
+        btnSample.addEventListener('click', fillSample);
+
+        btnDownload.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Xử lý trước đã!');
+                return;
+            }
+            const blob = new Blob([outputText.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'depart-feature.html';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            showToast('⬇️ Đã tải depart-feature.html');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                fileInput.value = '';
+                handleConvert();
+            };
+            reader.readAsText(file);
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = `(${inputText.value.length} ký tự)`;
+            if (optAutoRun.checked && inputText.value.trim()) {
+                handleConvert();
+            }
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleConvert();
+            }
+        });
+    </script>

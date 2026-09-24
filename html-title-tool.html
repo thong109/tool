@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Title Tool - Thêm title cho thẻ &lt;a&gt;</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1100px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: nowrap; }
+        input[type="radio"], input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        .fixed-title-row { display: flex; align-items: center; gap: 10px; }
+        #fixedTitle { padding: 8px 12px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; width: 280px; }
+        #fixedTitle:focus { border-color: #666666; }
+        #fixedTitle:disabled { opacity: 0.4; cursor: not-allowed; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+        textarea { width: 100%; height: 380px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .stat-item .added { color: #8bc34a; font-weight: 700; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 220px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+            #fixedTitle { width: 100%; }
+        }
+        </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            🏷️ HTML Title
+            <span>Tool</span>
+        </h1>
+        <p class="subtitle">
+            Dán HTML có thẻ <code>&lt;a&gt;</code> vào ô bên trái → bấm <strong>⚡ Thêm Title</strong> →
+            nhận lại HTML <strong>y chang bản gốc</strong>, chỉ thêm thuộc tính <code>title="..."</code> vào thẻ <code>&lt;a&gt;</code>.
+            <br>Giá trị mặc định lấy tự động từ text bên trong thẻ (ví dụ <code>&lt;a&gt;공예의이해&lt;/a&gt;</code> → <code>&lt;a title="공예의이해"&gt;</code>).
+        </p>
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🎯 Nguồn title</div>
+                <label><input type="radio" name="titleMode" value="auto" checked> Tự động lấy text bên trong thẻ <code>&lt;a&gt;</code></label>
+                <label><input type="radio" name="titleMode" value="fixed"> Dùng title cố định</label>
+                <div class="fixed-title-row">
+                    <input type="text" id="fixedTitle" placeholder="Nhập title áp dụng cho mọi thẻ a..." disabled>
+                </div>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Phạm vi</div>
+                <label><input type="radio" name="scopeMode" value="all" checked> Tất cả thẻ <code>&lt;a&gt;</code></label>
+                <label><input type="radio" name="scopeMode" value="popup"> Chỉ thẻ <code>&lt;a&gt;</code> có class <code>popup-click</code></label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">⚙️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optOverwrite"> Ghi đè title đã có v thẻ <code>&lt;a&gt;</code></label>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán</label>
+            </div>
+        </div>
+
+        <div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input HTML
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML chứa thẻ &lt;a&gt; vào đây hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quả sẽ hiển thị ở đây — y chang input, chỉ thêm title..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnProcess">⚡ Thêm Title</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🔗 Thẻ <code>&lt;a&gt;</code> phát hiện: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">✅ Đã thêm title: <strong class="added" id="statAdded">0</strong></div>
+            <div class="stat-item">⏭️ Bỏ qua: <strong id="statSkipped">0</strong></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // DOM refs
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const btnProcess = document.getElementById('btnProcess');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnSample = document.getElementById('btnSample');
+        const btnDownload = document.getElementById('btnDownload');
+        const fileInput = document.getElementById('fileInput');
+        const fixedTitle = document.getElementById('fixedTitle');
+        const optOverwrite = document.getElementById('optOverwrite');
+        const optAutoRun = document.getElementById('optAutoRun');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statTotal = document.getElementById('statTotal');
+        const statAdded = document.getElementById('statAdded');
+        const statSkipped = document.getElementById('statSkipped');
+
+        function escapeAttr(v) {
+            return v.replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+        }
+
+        function decodeEntities(s) {
+            return s.replace(/&(#x?[0-9a-f]+|amp|lt|gt|quot|nbsp|apos|#\d+);/gi, (m, e) => {
+                const lower = e.toLowerCase();
+                if (lower.startsWith('#x')) return String.fromCodePoint(parseInt(e.slice(2), 16));
+                if (lower.startsWith('#')) return String.fromCodePoint(parseInt(e.slice(1), 10));
+                return { amp: '&', lt: '<', gt: '>', quot: '"', nbsp: ' ', apos: "'" }[lower] || m;
+            });
+        }
+
+        // Core: add title attribute to <a> tags, keep everything else byte-for-byte
+        function addTitleAttribute(html) {
+            const titleMode = document.querySelector('input[name="titleMode"]:checked').value;
+            const scopeMode = document.querySelector('input[name="scopeMode"]:checked').value;
+            const overwrite = optOverwrite.checked;
+            const fixedVal = fixedTitle.value.trim();
+
+            // Match "<a opening-tag>content</a>"; opening-tag regex tolerates ">" inside quoted values
+            const rgx = /<a\b((?:"[^"]*"|'[^']*'|[^'"<>])*)>([\s\S]*?)(<\/a\s*>)/gi;
+
+            let result = '';
+            let lastIndex = 0;
+            let total = 0, added = 0, skipped = 0;
+            let m;
+
+            while ((m = rgx.exec(html)) !== null) {
+                const attrs = m[1];
+                const content = m[2];
+                const closing = m[3];
+                total++;
+
+                const hasTitle = /\btitle\s*=\s*(?:"[^"]*"|'[^']*')/i.test(attrs);
+                const isPopup = /\bclass\s*=\s*(?:"[^"]*popup-click[^"]*"|'[^']*popup-click[^']*')/i.test(attrs);
+
+                result += html.slice(lastIndex, m.index);
+                lastIndex = rgx.lastIndex;
+
+                const skipByScope = scopeMode === 'popup' && !isPopup;
+                const skipByTitle = hasTitle && !overwrite;
+
+                if (skipByScope || skipByTitle) {
+                    skipped++;
+                    result += m[0];
+                    continue;
+                }
+
+                let value = titleMode === 'fixed'
+                    ? fixedVal
+                    : decodeEntities(content.replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim();
+
+                if (value === '') {
+                    skipped++;
+                    result += m[0];
+                    continue;
+                }
+
+                const escaped = escapeAttr(value);
+                let newAttrs = attrs;
+                if (hasTitle) {
+                    newAttrs = attrs
+                        .replace(/\s*title\s*=\s*(?:"[^"]*"|'[^']*')/i, ' ')
+                        .replace(/ {2,}/g, ' ');
+                }
+                newAttrs = newAttrs.trim();
+
+                result += '<a title="' + escaped + '"' + (newAttrs ? ' ' + newAttrs : '') + '>';
+                result += content + closing;
+                added++;
+            }
+            result += html.slice(lastIndex);
+            return { result, total, added, skipped };
+        }
+        const SAMPLE = `<tbody>
+  <tr>
+    <td rowspan="3">1</td>
+    <td>
+      <a href="#a" class="popup-click" id="detail-503848">공예의이해</a>
+    </td>
+    <td><span class="dot">&nbsp;</span></td>
+    <td></td>
+    <td>
+      <a href="#a" class="popup-click" id="detail-503848">공예디자인이야기</a>
+    </td>
+    <td><span class="dot">&nbsp;</span></td>
+    <td></td>
+  </tr>
+</tbody>`;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function updateStats(input, output, s) {
+            inputCount.textContent = `(${input.length} ký tự)`;
+            outputCount.textContent = `(${output.length} ký tự)`;
+            statTotal.textContent = s ? s.total : 0;
+            statAdded.textContent = s ? s.added : 0;
+            statSkipped.textContent = s ? s.skipped : 0;
+        }
+
+        function handleProcess() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Dán HTML trước!');
+                return;
+            }
+            const { result, total, added, skipped } = addTitleAttribute(input);
+            outputText.value = result;
+            updateStats(input, result, { total, added, skipped });
+            showToast(`✅ Thêm title pentru ${added} thẻ <a>`);
+        }
+
+        function fillSample() {
+            inputText.value = SAMPLE;
+            outputText.value = '';
+            handleProcess();
+        }
+
+        btnProcess.addEventListener('click', handleProcess);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ liệu để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+
+        btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', '', null);
+            showToast('🗑️ Đã xoá');
+        });
+
+        btnSample.addEventListener('click', fillSample);
+
+        btnDownload.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Xử lý trước đã!');
+                return;
+            }
+            const blob = new Blob([outputText.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'html-with-title.html';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            showToast('⬇️ Đã tải html-with-title.html');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                fileInput.value = '';
+                handleProcess();
+            };
+            reader.readAsText(file);
+        });
+
+        document.querySelectorAll('input[name="titleMode"]').forEach(r => {
+            r.addEventListener('change', () => {
+                fixedTitle.disabled = document.querySelector('input[name="titleMode"]:checked').value !== 'fixed';
+            });
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = `(${inputText.value.length} ký tự)`;
+            if (optAutoRun.checked && inputText.value.trim()) {
+                handleProcess();
+            }
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleProcess();
+            }
+        });
+    </script>
+</body>
+</html>

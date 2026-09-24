@@ -3,16 +3,64 @@ const cors = require('cors');
 const axios = require('axios');
 const xml2js = require('xml2js');
 const cheerio = require('cheerio');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { exec, execSync } = require('child_process');
+const ffmpeg = require('fluent-ffmpeg');
 const app = express();
 const DEFAULT_PORT = 3000;
 
+// Azure TTS Configuration
+const AZURE_TTS_KEY = process.env.AZURE_TTS_KEY || 'YOUR_AZURE_TTS_KEY';
+const AZURE_TTS_REGION = process.env.AZURE_TTS_REGION || 'eastasia';
+
+// Video Cutter Configuration
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+const OUTPUT_DIR = path.join(__dirname, 'cuts');
+const TEMPLATES_DIR = path.join(__dirname, 'templates');
+const MERGED_DIR = path.join(__dirname, 'uploads', 'merged');
+
+// Create directories if not exist
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+if (!fs.existsSync(TEMPLATES_DIR)) fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
+if (!fs.existsSync(MERGED_DIR)) fs.mkdirSync(MERGED_DIR, { recursive: true });
+
+// Multer config for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 500 * 1024 * 1024 }, // 500MB limit
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-matroska'];
+        if (allowedTypes.includes(file.mimetype) || file.mimetype.startsWith('video/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only video files are allowed.'));
+        }
+    }
+});
+
 // Middleware
 app.use(cors({
-    origin: true, // Allow all origins including 'null'
+    origin: true,
     credentials: true
 }));
 app.use(express.json());
 app.use(express.static('.'));
+app.use('/cuts', express.static(OUTPUT_DIR));
+app.use('/templates', express.static(TEMPLATES_DIR));
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 // Helper function to fetch full article content from URL
 async function fetchFullArticle(url, sourceId) {
@@ -58,8 +106,8 @@ async function fetchFullArticle(url, sourceId) {
         
         // Clean up the content
         content = content
-            .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
-            .replace(/\n\s*\n/g, '\n\n')  // Clean up newlines
+            .replace(/\s+/g, ' ')
+            .replace(/\n\s*\n/g, '\n\n')
             .trim();
         
         // Extract images from article
@@ -69,7 +117,6 @@ async function fetchFullArticle(url, sourceId) {
         $(imageSelectors).find('img').each((i, elem) => {
             const src = $(elem).attr('src') || $(elem).attr('data-src');
             if (src) {
-                // Convert relative URL to absolute
                 try {
                     const absoluteUrl = new URL(src, url).href;
                     images.push(absoluteUrl);
@@ -82,7 +129,7 @@ async function fetchFullArticle(url, sourceId) {
         // If no images found in content, try to find in page
         if (images.length === 0) {
             $('img').each((i, elem) => {
-                if (i < 5) {  // Max 5 images from page
+                if (i < 5) {
                     const src = $(elem).attr('src') || $(elem).attr('data-src');
                     if (src && !src.includes('icon') && !src.includes('logo')) {
                         try {
@@ -179,14 +226,11 @@ async function fetchRSSFeed(url) {
 
 // Extract article info from RSS item
 function extractArticle(item, sourceId, sourceName) {
-    // Helper to get value from either array or direct value
     const getValue = (field) => {
         if (!field) return '';
-        // If it's an array, get first element
         if (Array.isArray(field)) {
             return field[0] || '';
         }
-        // Otherwise return as is
         return String(field);
     };
     
@@ -195,11 +239,10 @@ function extractArticle(item, sourceId, sourceName) {
     const rawDescription = getValue(item.description);
     const rawPubDate = getValue(item.pubDate);
     
-    // Clean and decode HTML entities
     const decodeHTML = (text) => {
         if (!text) return '';
         return text
-            .replace(/<[^>]*>/g, '')  // Remove HTML tags
+            .replace(/<[^>]*>/g, '')
             .replace(/&nbsp;/g, ' ')
             .replace(/</g, '<')
             .replace(/>/g, '>')
@@ -213,8 +256,6 @@ function extractArticle(item, sourceId, sourceName) {
     const title = decodeHTML(rawTitle);
     const fullContent = decodeHTML(rawDescription);
     
-    // Use FULL content for video (no truncation for content field)
-    // Only truncate the short summary for display
     const shortSummary = fullContent.substring(0, 200) + (fullContent.length > 200 ? '...' : '');
     const url = rawLink;
     const publishedAt = rawPubDate ? new Date(rawPubDate).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
@@ -224,11 +265,11 @@ function extractArticle(item, sourceId, sourceName) {
         source: sourceName,
         sourceId: sourceId,
         title: title,
-        summary: shortSummary,  // Short version for list view
+        summary: shortSummary,
         url: url,
         publishedAt: publishedAt,
-        content: fullContent,  // FULL content for AI summary/video
-        images: []  // Will be populated if fullContent=true
+        content: fullContent,
+        images: []
     };
 }
 
@@ -252,7 +293,6 @@ app.get('/api/articles', async (req, res) => {
         
         console.log(`Fetching articles from ${sourceArray.join(', ')}...`);
         
-        // Fetch articles from all selected sources
         const fetchPromises = sourceArray.map(async (sourceId) => {
             const source = NEWS_SOURCES[sourceId];
             if (!source) {
@@ -268,13 +308,12 @@ app.get('/api/articles', async (req, res) => {
                 items.slice(0, countPerSource).map(async (item) => {
                     const article = extractArticle(item, sourceId, source.name);
                     
-                    // Fetch full content if requested
                     if (fetchFull && article.url) {
                         const fullData = await fetchFullArticle(article.url, sourceId);
                         if (fullData.content && fullData.content.length > article.content.length) {
                             article.content = fullData.content;
                             article.summary = fullData.content.substring(0, 500) + (fullData.content.length > 500 ? '...' : '');
-                            article.images = fullData.images;  // Add images to article
+                            article.images = fullData.images;
                         }
                     }
                     
@@ -288,7 +327,6 @@ app.get('/api/articles', async (req, res) => {
         const results = await Promise.all(fetchPromises);
         const allArticles = results.flat();
         
-        // Sort by published date (newest first)
         allArticles.sort((a, b) => {
             const dateA = new Date(a.publishedAt);
             const dateB = new Date(b.publishedAt);
@@ -328,7 +366,7 @@ app.get('/api/sources', (req, res) => {
     });
 });
 
-// Text-to-Speech endpoint using Google TTS (free)
+// Text-to-Speech endpoint using Azure Cognitive Services
 app.get('/api/tts', async (req, res) => {
     try {
         const { text, lang = 'vi-VN' } = req.query;
@@ -338,27 +376,524 @@ app.get('/api/tts', async (req, res) => {
         }
         
         console.log(`TTS request: ${text.substring(0, 50)}...`);
+        console.log(`Language: ${lang}`);
         
-        // Use Google Translate TTS (free, no API key needed)
-        const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
+        if (AZURE_TTS_KEY === 'YOUR_AZURE_TTS_KEY') {
+            console.error('Azure TTS not configured. Please set AZURE_TTS_KEY environment variable.');
+            return res.status(500).json({ 
+                error: 'TTS service not configured',
+                message: 'Azure TTS API key not set. Please configure AZURE_TTS_KEY environment variable.',
+                setup: 'See HOW_TO_RUN.md for Azure TTS setup instructions'
+            });
+        }
         
-        const response = await axios.get(ttsUrl, {
+        const azureTtsUrl = `https://${AZURE_TTS_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`;
+        
+        const voiceLang = lang || 'vi-VN';
+        const voiceName = voiceLang === 'vi-VN' ? 'vi-VN-HoaiAnNeural' : 'en-US-JennyNeural';
+        
+        const ssml = `
+            <speak version='1.0' xml:lang='${voiceLang}'>
+                <voice xml:lang='${voiceLang}' xml:gender='Female' name='${voiceName}'>
+                    <prosody rate="0%" pitch="0%">
+                        ${text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')}
+                    </prosody>
+                </voice>
+            </speak>
+        `;
+        
+        console.log(`Calling Azure TTS: ${azureTtsUrl}`);
+        
+        const response = await axios.post(azureTtsUrl, ssml, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer': 'https://translate.google.com/'
+                'Ocp-Apim-Subscription-Key': AZURE_TTS_KEY,
+                'Content-Type': 'application/ssml+xml',
+                'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3',
+                'User-Agent': 'MKT-Software-TTS/1.0'
             },
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            timeout: 30000
         });
+        
+        console.log(`Azure TTS response status: ${response.status}`);
+        console.log(`Azure TTS response size: ${response.data.length} bytes`);
+        
+        if (response.data.length < 100) {
+            console.error('Azure TTS returned very small file:', response.data.length, 'bytes');
+            return res.status(500).json({ 
+                error: 'TTS returned empty or invalid audio',
+                size: response.data.length
+            });
+        }
         
         res.set('Content-Type', 'audio/mpeg');
         res.set('Content-Disposition', 'attachment; filename=speech.mp3');
+        res.set('Content-Length', response.data.length);
         res.send(response.data);
         
     } catch (error) {
-        console.error('TTS error:', error.message);
-        res.status(500).json({ error: 'TTS failed', message: error.message });
+        console.error('Azure TTS error:', error.message);
+        if (error.response) {
+            console.error('Azure TTS error response status:', error.response.status);
+            console.error('Azure TTS error response data:', error.response.data?.toString().substring(0, 200));
+        }
+        res.status(500).json({ 
+            error: 'TTS failed', 
+            message: error.message,
+            details: error.response?.status || 'no response',
+            provider: 'Azure Cognitive Services'
+        });
     }
 });
+
+// Video Cutter API
+app.post('/api/cut-video', upload.single('video'), async (req, res) => {
+    try {
+        if (!req.file) {
+            console.error('No video file uploaded');
+            return res.status(400).json({ error: 'No video file uploaded' });
+        }
+
+        const { mode, outputFolder, segmentCount, customSegments, intervalSeconds } = req.body;
+        const videoPath = req.file.path;
+        const outputPath = path.join(OUTPUT_DIR, outputFolder || 'cuts');
+        
+        console.log(`\n=== Video Cut Request ===`);
+        console.log(`Input: ${videoPath}`);
+        console.log(`Mode: ${mode}`);
+        console.log(`Output: ${outputPath}`);
+        console.log(`File size: ${req.file.size} bytes`);
+
+        // Create output folder if not exists
+        if (!fs.existsSync(outputPath)) {
+            fs.mkdirSync(outputPath, { recursive: true });
+            console.log(`Created output folder: ${outputPath}`);
+        }
+
+        // Get video duration using FFprobe
+        console.log('Getting video duration...');
+        const duration = await getVideoDuration(videoPath);
+        console.log(`Video duration: ${duration}s`);
+
+        let cuts = [];
+
+        if (mode === 'equal') {
+            // Cut into equal segments
+            const count = parseInt(segmentCount) || 3;
+            const segmentDuration = duration / count;
+            
+            for (let i = 0; i < count; i++) {
+                const startTime = i * segmentDuration;
+                const endTime = (i === count - 1) ? duration : (i + 1) * segmentDuration;
+                const outputFile = path.join(outputPath, `segment_${i + 1}.mp4`);
+                
+                await cutVideoSegment(videoPath, outputFile, startTime, endTime);
+                
+                const fileStats = fs.statSync(outputFile);
+                cuts.push({
+                    filename: `segment_${i + 1}.mp4`,
+                    duration: endTime - startTime,
+                    size: fileStats.size,
+                    startTime: startTime,
+                    endTime: endTime
+                });
+            }
+        } else if (mode === 'custom') {
+            // Cut custom segments
+            const segments = customSegments.split('\n').filter(line => line.trim());
+            
+            for (let i = 0; i < segments.length; i++) {
+                const [start, end] = segments[i].split('-').map(t => parseTimeToSeconds(t.trim()));
+                const outputFile = path.join(outputPath, `segment_${i + 1}.mp4`);
+                
+                await cutVideoSegment(videoPath, outputFile, start, end);
+                
+                const fileStats = fs.statSync(outputFile);
+                cuts.push({
+                    filename: `segment_${i + 1}.mp4`,
+                    duration: end - start,
+                    size: fileStats.size,
+                    startTime: start,
+                    endTime: end
+                });
+            }
+        } else if (mode === 'interval') {
+            // Cut by interval
+            const interval = parseInt(intervalSeconds) || 30;
+            let startTime = 0;
+            let index = 1;
+            
+            while (startTime < duration) {
+                const endTime = Math.min(startTime + interval, duration);
+                const outputFile = path.join(outputPath, `segment_${index}.mp4`);
+                
+                await cutVideoSegment(videoPath, outputFile, startTime, endTime);
+                
+                const fileStats = fs.statSync(outputFile);
+                cuts.push({
+                    filename: `segment_${index}.mp4`,
+                    duration: endTime - startTime,
+                    size: fileStats.size,
+                    startTime: startTime,
+                    endTime: endTime
+                });
+                
+                startTime = endTime;
+                index++;
+            }
+        }
+
+        // Clean up uploaded file
+        try {
+            fs.unlinkSync(videoPath);
+            console.log(`Cleaned up uploaded file: ${videoPath}`);
+        } catch (e) {
+            console.error('Error cleaning up file:', e);
+        }
+
+        console.log(`✅ Successfully cut video into ${cuts.length} segments`);
+        console.log(`=== End Video Cut ===\n`);
+
+        res.json({
+            success: true,
+            cuts: cuts,
+            outputFolder: outputFolder
+        });
+
+    } catch (error) {
+        console.error('Error cutting video:', error);
+        console.error('Error stack:', error.stack);
+        
+        // Clean up uploaded file on error
+        if (req.file && req.file.path) {
+            try {
+                fs.unlinkSync(req.file.path);
+            } catch (e) {
+                console.error('Error cleaning up file:', e);
+            }
+        }
+        
+        res.status(500).json({ 
+            error: 'Failed to cut video',
+            message: error.message,
+            details: error.stack
+        });
+    }
+});
+
+// Download cut video
+app.get('/api/download-cut', (req, res) => {
+    try {
+        const { folder, filename } = req.query;
+        const filePath = path.join(OUTPUT_DIR, folder, filename);
+        
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+        
+        res.download(filePath, filename, (err) => {
+            if (err) {
+                console.error('Download error:', err);
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Download failed', message: error.message });
+    }
+});
+
+// Get available templates
+app.get('/api/templates', (req, res) => {
+    try {
+        if (!fs.existsSync(TEMPLATES_DIR)) {
+            return res.json({ success: true, templates: [] });
+        }
+
+        const files = fs.readdirSync(TEMPLATES_DIR).filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return ['.mp4', '.webm', '.avi', '.mov', '.mkv'].includes(ext);
+        });
+
+        const templates = files.map(file => {
+            const filePath = path.join(TEMPLATES_DIR, file);
+            const stats = fs.statSync(filePath);
+            const url = `/templates/${file}`;
+            
+            return {
+                name: file,
+                path: url,
+                size: stats.size,
+                sizeFormatted: formatFileSize(stats.size)
+            };
+        });
+
+        res.json({ success: true, templates });
+    } catch (error) {
+        console.error('Error fetching templates:', error);
+        res.json({ success: true, templates: [] });
+    }
+});
+
+// Merge video with voice endpoint
+app.post('/api/merge-video', upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'voice', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        if (!req.files || (!req.files['video'] && !req.body.videoPath)) {
+            return res.status(400).json({ error: 'No video file provided' });
+        }
+        if (!req.files || !req.files['voice']) {
+            return res.status(400).json({ error: 'No voice file provided' });
+        }
+
+        const videoFile = req.files['video'] ? req.files['video'][0] : null;
+        const voiceFile = req.files['voice'][0];
+        const videoPath = req.body.videoPath || (videoFile ? videoFile.path : null);
+
+        if (!videoPath && !videoFile) {
+            return res.status(400).json({ error: 'No video file provided' });
+        }
+
+        console.log(`\n=== Video Merge Request ===`);
+        console.log(`Video: ${videoPath || videoFile.path}`);
+        console.log(`Voice: ${voiceFile.path}`);
+
+        const outputFilename = `merged_${Date.now()}.mp4`;
+        const outputPath = path.join(MERGED_DIR, outputFilename);
+
+        // Get video duration
+        const videoDuration = await getVideoDuration(videoPath || videoFile.path);
+        console.log(`Video duration: ${videoDuration}s`);
+
+        // Get voice duration
+        const voiceDuration = await getVideoDuration(voiceFile.path);
+        console.log(`Voice duration: ${voiceDuration}s`);
+
+        // Calculate repeat count
+        const repeatCount = Math.ceil(voiceDuration / videoDuration);
+        console.log(`Repeating video ${repeatCount} times`);
+
+        // Create concat file
+        const concatPath = path.join(MERGED_DIR, `concat_${Date.now()}.txt`);
+        let concatContent = '';
+        const actualVideoPath = videoPath || videoFile.path;
+
+        for (let i = 0; i < repeatCount; i++) {
+            concatContent += `file '${actualVideoPath}'\n`;
+        }
+        fs.writeFileSync(concatPath, concatContent);
+
+        // Step 1: Loop video to match voice duration
+        const loopedPath = path.join(MERGED_DIR, `looped_${Date.now()}.mp4`);
+        await new Promise((resolve, reject) => {
+            ffmpeg()
+                .input(concatPath)
+                .inputOptions(['-f', 'concat', '-safe', '0'])
+                .outputOptions([
+                    '-c:v', 'libx264',
+                    '-preset', 'fast',
+                    '-crf', '23',
+                    '-t', String(voiceDuration),
+                    '-c:a', 'aac',
+                    '-b:a', '128k'
+                ])
+                .output(loopedPath)
+                .on('start', (cmd) => console.log('Looping video:', cmd))
+                .on('progress', (p) => {
+                    console.log(`Looping: ${Math.round(p.percent || 0)}%`);
+                })
+                .on('end', () => {
+                    console.log('Video looping completed');
+                    resolve();
+                })
+                .on('error', (err) => {
+                    console.error('Error looping video:', err);
+                    reject(err);
+                })
+                .run();
+        });
+
+        // Step 2: Merge looped video with voice
+        await new Promise((resolve, reject) => {
+            ffmpeg(loopedPath)
+                .input(voiceFile.path)
+                .outputOptions([
+                    '-c:v', 'libx264',
+                    '-preset', 'fast',
+                    '-crf', '23',
+                    '-c:a', 'aac',
+                    '-b:a', '192k',
+                    '-map', '0:v:0',
+                    '-map', '1:a:0',
+                    '-shortest'
+                ])
+                .output(outputPath)
+                .on('start', (cmd) => console.log('Merging:', cmd))
+                .on('progress', (p) => {
+                    console.log(`Merging: ${Math.round(p.percent || 0)}%`);
+                })
+                .on('end', () => {
+                    console.log('Merge completed');
+                    resolve();
+                })
+                .on('error', (err) => {
+                    console.error('Error merging:', err);
+                    reject(err);
+                })
+                .run();
+        });
+
+        // Get output file info
+        const outputStats = fs.statSync(outputPath);
+        const downloadUrl = `/uploads/merged/${outputFilename}`;
+
+        // Cleanup temporary files
+        try {
+            if (videoFile) fs.unlinkSync(videoFile.path);
+            fs.unlinkSync(voiceFile.path);
+            fs.unlinkSync(concatPath);
+            fs.unlinkSync(loopedPath);
+        } catch (e) {
+            console.error('Cleanup error:', e);
+        }
+
+        console.log(`✅ Merge complete: ${outputFilename}`);
+        console.log(`=== End Video Merge ===\n`);
+
+        res.json({
+            success: true,
+            message: 'Video merged successfully',
+            data: {
+                filename: outputFilename,
+                url: downloadUrl,
+                size: outputStats.size,
+                sizeFormatted: formatFileSize(outputStats.size),
+                duration: voiceDuration
+            }
+        });
+
+    } catch (error) {
+        console.error('Merge error:', error);
+        
+        // Cleanup on error
+        try {
+            if (req.files) {
+                Object.values(req.files).forEach(files => {
+                    files.forEach(file => {
+                        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+                    });
+                });
+            }
+        } catch (e) { /* ignore */ }
+
+        res.status(500).json({ 
+            error: 'Failed to merge video',
+            message: error.message,
+            details: error.stack
+        });
+    }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        ffmpeg: checkFFmpegInstalled(),
+        azureTTS: AZURE_TTS_KEY !== 'YOUR_AZURE_TTS_KEY'
+    });
+});
+
+// Check FFmpeg installation
+function checkFFmpegInstalled() {
+    try {
+        const result = execSync('ffmpeg -version', { encoding: 'utf-8' });
+        const version = result.split('\n')[0];
+        return { installed: true, version: version };
+    } catch (error) {
+        return { installed: false, error: error.message };
+    }
+}
+
+// FFmpeg diagnostic endpoint
+app.get('/api/diagnostic', (req, res) => {
+    try {
+        const ffmpegCheck = checkFFmpegInstalled();
+        const ffprobeCheck = checkFFmpegInstalled();
+        
+        res.json({
+            ffmpeg: ffmpegCheck,
+            ffprobe: ffprobeCheck,
+            uploadDir: fs.existsSync(UPLOAD_DIR) ? 'exists' : 'missing',
+            outputDir: fs.existsSync(OUTPUT_DIR) ? 'exists' : 'missing',
+            templatesDir: fs.existsSync(TEMPLATES_DIR) ? 'exists' : 'missing',
+            mergedDir: fs.existsSync(MERGED_DIR) ? 'exists' : 'missing',
+            azureTTS: {
+                configured: AZURE_TTS_KEY !== 'YOUR_AZURE_TTS_KEY',
+                region: AZURE_TTS_REGION
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Helper function to format file size
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Helper function to get video duration
+function getVideoDuration(videoPath) {
+    return new Promise((resolve, reject) => {
+        console.log(`Running ffprobe on: ${videoPath}`);
+        exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`, (error, stdout, stderr) => {
+            if (error) {
+                console.error('FFprobe error:', error.message);
+                console.error('FFprobe stderr:', stderr);
+                reject(new Error(`FFprobe failed: ${error.message}. Make sure FFmpeg is installed and in PATH.`));
+                return;
+            }
+            const duration = parseFloat(stdout.trim());
+            console.log(`Video duration: ${duration}s`);
+            resolve(duration);
+        });
+    });
+}
+
+// Helper function to cut video segment
+function cutVideoSegment(inputPath, outputPath, startTime, endTime) {
+    return new Promise((resolve, reject) => {
+        const duration = endTime - startTime;
+        console.log(`Cutting segment: ${startTime}s - ${endTime}s (duration: ${duration}s)`);
+        console.log(`Output: ${outputPath}`);
+        
+        exec(`ffmpeg -ss ${startTime} -i "${inputPath}" -t ${duration} -c copy "${outputPath}" -y`, (error, stdout, stderr) => {
+            if (error) {
+                console.error('FFmpeg error:', error.message);
+                console.error('FFmpeg stderr:', stderr);
+                reject(new Error(`FFmpeg error: ${error.message}`));
+                return;
+            }
+            console.log(`Successfully created: ${outputPath}`);
+            resolve();
+        });
+    });
+}
+
+// Helper function to parse time string to seconds
+function parseTimeToSeconds(timeStr) {
+    const parts = timeStr.split(':').map(Number);
+    if (parts.length === 2) {
+        return parts[0] * 60 + parts[1];
+    } else if (parts.length === 3) {
+        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+    return parseInt(timeStr) || 0;
+}
 
 // Create video endpoint
 app.post('/api/create-video', async (req, res) => {
@@ -368,9 +903,6 @@ app.post('/api/create-video', async (req, res) => {
         console.log(`\n=== Video Creation Request ===`);
         console.log(`Articles: ${articles.length}`);
         console.log(`Voice: ${voiceType}`);
-        
-        // This is a placeholder - actual video creation requires FFmpeg
-        // For now, return the data needed for video creation
         
         const videoData = {
             success: true,
@@ -382,7 +914,7 @@ app.post('/api/create-video', async (req, res) => {
                     images: article.images || [],
                     audioUrl: `/api/tts?text=${encodeURIComponent(article.content.substring(0, 200))}&lang=vi-VN`
                 })),
-                totalDuration: articles.length * 30,  // Estimate 30s per article
+                totalDuration: articles.length * 30,
                 voiceType: voiceType
             }
         };
@@ -395,17 +927,15 @@ app.post('/api/create-video', async (req, res) => {
     }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
 // Start server with auto port selection
 function startServer(port) {
     const server = app.listen(port, () => {
         console.log(`\n🚀 Server running at http://localhost:${port}`);
         console.log(`📰 News API available at http://localhost:${port}/api/articles`);
-        console.log(`📋 Sources list at http://localhost:${port}/api/sources\n`);
+        console.log(`📋 Sources list at http://localhost:${port}/api/sources`);
+        console.log(`✂️ Video Cutter API available at http://localhost:${port}/api/cut-video`);
+        console.log(`🎬 Video Merge API available at http://localhost:${port}/api/merge-video`);
+        console.log(`📁 Templates available at http://localhost:${port}/templates/\n`);
     });
 
     server.on('error', (e) => {

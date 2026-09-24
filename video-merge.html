@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video & Voice Merger Tool</title>
+    <link rel="stylesheet" href="header-menu.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -340,11 +341,14 @@
     </style>
 </head>
 <body>
-<div class="container">
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container" style="margin-top: 20px;">
     <h1>🎬 Video & Voice Merger</h1>
     <p class="subtitle">Chọn video template có sẵn + file voice → gộp tự động</p>
 
-    <div id="ffmpegStatus" class="status-badge loading">⏳ Đang tải FFmpeg...</div>
+    <div id="serverStatus" class="status-badge loading">⏳ Đang kết nối server...</div>
 
     <div class="info-box">
         ⚡ <strong>Cách hoạt động:</strong><br>
@@ -401,6 +405,21 @@
     <div class="log-box" id="logBox"></div>
     <div class="error-msg" id="errorMsg"></div>
 
+    <!-- Load Header Menu -->
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                // Load header menu JS
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
     <div class="output-section" id="outputSection">
         <video id="outputVideo" controls></video>
         <a class="download-btn" id="downloadBtn" download>📥 Tải video kết quả</a>
@@ -408,21 +427,17 @@
     </div>
 </div>
 
-<script type="module">
-import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/+esm';
-import { toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/+esm';
-
+<script>
 // ===== STATE =====
-let ffmpeg = null;
-let loaded = false;
 let selectedVideoFile = null;
 let selectedVideoUrl = null;
 let selectedVideoName = '';
 let selectedVoice = null;
 let activeTab = 'templates';
+let serverReady = false;
 
 // ===== DOM REFS =====
-const statusBadge = document.getElementById('ffmpegStatus');
+const statusBadge = document.getElementById('serverStatus');
 const templateGrid = document.getElementById('templateGrid');
 const videoInput = document.getElementById('videoFile');
 const voiceInput = document.getElementById('voiceFile');
@@ -496,38 +511,28 @@ function showLog(show = true) {
     logBox.classList.toggle('show', show);
 }
 
-// ===== FFMPEG LOAD =====
-async function loadFFmpeg() {
+// ===== SERVER CHECK =====
+async function checkServer() {
     try {
-        statusBadge.textContent = '⏳ Đang tải FFmpeg (~30MB)...';
+        statusBadge.textContent = '⏳ Đang kết nối server...';
         statusBadge.className = 'status-badge loading';
-
-        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
-        ffmpeg = new FFmpeg();
-
-        ffmpeg.on('progress', ({ progress: p }) => {
-            const pct = Math.round(p * 100);
-            updateProgress(pct, `Đang xử lý... ${pct}%`);
-        });
-
-        ffmpeg.on('log', ({ message }) => {
-            if (message) log(message, 'info');
-        });
-
-        await ffmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        });
-
-        loaded = true;
-        statusBadge.textContent = '✅ FFmpeg sẵn sàng';
-        statusBadge.className = 'status-badge ready';
-        showLog(false);
-        loadTemplates();
+        
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        
+        if (data.status === 'ok') {
+            serverReady = true;
+            statusBadge.textContent = '✅ Server sẵn sàng';
+            statusBadge.className = 'status-badge ready';
+            loadTemplates();
+        } else {
+            throw new Error('Server không phản hồi');
+        }
     } catch (err) {
-        statusBadge.textContent = '❌ Lỗi tải FFmpeg';
+        statusBadge.textContent = '❌ Không thể kết nối server';
         statusBadge.className = 'status-badge error';
-        showError('Không thể tải FFmpeg: ' + err.message);
+        showError('Không thể kết nối đến server. Vui lòng đảm bảo server đang chạy (node server.js)');
+        log('❌ Lỗi kết nối server: ' + err.message, 'error');
     }
 }
 
@@ -535,13 +540,14 @@ async function loadFFmpeg() {
 async function loadTemplates() {
     try {
         const res = await fetch('/api/templates');
-        const templates = await res.json();
+        const data = await res.json();
+        const templates = data.templates || [];
 
-        if (!templates || templates.length === 0) {
+        if (templates.length === 0) {
             templateGrid.innerHTML = `
                 <div class="loading-templates" style="grid-column:1/-1;">
-                    📂 Chưa có template nào.
-                    <br>Thả file video vào thư mục <strong>templates/</strong>
+                    📂 Chưa có template nào.<br>
+                    Thả file video vào thư mục <strong>templates/</strong>
                 </div>`;
             return;
         }
@@ -631,7 +637,7 @@ function hasVideoSelected() {
 }
 
 function updateBtn() {
-    processBtn.disabled = !(loaded && hasVideoSelected() && selectedVoice);
+    processBtn.disabled = !(serverReady && hasVideoSelected() && selectedVoice);
 }
 
 function updateProgress(pct, text) {
@@ -648,64 +654,9 @@ function hideError() {
     errorMsg.classList.remove('show');
 }
 
-// ===== FILE READERS =====
-async function readFileAsBuffer(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(new Uint8Array(reader.result));
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-async function fetchAsBuffer(url) {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(new Uint8Array(reader.result));
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(blob);
-    });
-}
-
-// ===== DURATION =====
-function getVideoDuration(file) {
-    return new Promise((resolve) => {
-        const url = URL.createObjectURL(file);
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.src = url;
-        video.onloadedmetadata = () => { resolve(video.duration); URL.revokeObjectURL(url); };
-        video.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
-    });
-}
-
-function getAudioDuration(file) {
-    return new Promise((resolve) => {
-        const url = URL.createObjectURL(file);
-        const audio = new Audio();
-        audio.preload = 'metadata';
-        audio.src = url;
-        audio.onloadedmetadata = () => { resolve(audio.duration); URL.revokeObjectURL(url); };
-        audio.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
-    });
-}
-
-function getVideoDurationFromUrl(url) {
-    return new Promise((resolve) => {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.src = url;
-        video.onloadedmetadata = () => resolve(video.duration);
-        video.onerror = () => resolve(0);
-    });
-}
-
 // ===== MAIN PROCESS =====
 processBtn.addEventListener('click', async () => {
-    if (!ffmpeg || !selectedVoice) return;
-    if (!hasVideoSelected()) return;
+    if (!hasVideoSelected() || !selectedVoice) return;
 
     hideError();
     outputSection.classList.remove('show');
@@ -720,99 +671,78 @@ processBtn.addEventListener('click', async () => {
     smoothScrollTo(progressContainer);
 
     try {
-        let videoData, voiceData, videoExt;
-        let videoDuration = 0;
-
-        // --- Get video ---
+        const formData = new FormData();
+        
+        // Add video
         if (activeTab === 'upload' && selectedVideoFile) {
-            log(`📥 Đọc video: ${selectedVideoFile.name}`, 'info');
-            videoData = await readFileAsBuffer(selectedVideoFile);
-            videoExt = selectedVideoFile.name.split('.').pop();
-            videoDuration = await getVideoDuration(selectedVideoFile);
+            formData.append('video', selectedVideoFile);
         } else if (selectedVideoUrl) {
-            log(`📥 Tải template: ${selectedVideoName}`, 'info');
-            videoData = await fetchAsBuffer(selectedVideoUrl);
-            videoExt = selectedVideoName.split('.').pop();
-            videoDuration = await getVideoDurationFromUrl(selectedVideoUrl);
+            // For template, we need to fetch and send the file
+            log(`📥 Đang tải template: ${selectedVideoName}`, 'info');
+            updateProgress(5, 'Đang tải template...');
+            
+            const videoResponse = await fetch(selectedVideoUrl);
+            const videoBlob = await videoResponse.blob();
+            const videoFile = new File([videoBlob], selectedVideoName, { type: 'video/mp4' });
+            formData.append('video', videoFile);
+        }
+        
+        // Add voice
+        formData.append('voice', selectedVoice);
+
+        updateProgress(10, 'Đang gửi lên server...');
+        log('📤 Đang gửi file lên server...', 'info');
+
+        // Send to server
+        const xhr = new XMLHttpRequest();
+        
+        const uploadPromise = new Promise((resolve, reject) => {
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 20);
+                    updateProgress(10 + percent, `Đang tải lên... ${percent}%`);
+                }
+            });
+            
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        resolve(result);
+                    } catch (e) {
+                        reject(new Error('Phản hồi không hợp lệ từ server'));
+                    }
+                } else {
+                    reject(new Error(`Server error: ${xhr.status}`));
+                }
+            };
+            
+            xhr.onerror = () => reject(new Error('Lỗi kết nối mạng'));
+        });
+
+        xhr.open('POST', '/api/merge-video');
+        xhr.send(formData);
+
+        const result = await uploadPromise;
+        
+        if (result.success) {
+            updateProgress(100, '✅ Hoàn tất!');
+            log('✅ Gộp video thành công!', 'success');
+            log(`📁 Kích thước: ${result.data.sizeFormatted}`, 'success');
+            log(`⏱️ Thời lượng: ${result.data.duration.toFixed(2)}s`, 'success');
+            
+            // Show output
+            outputVideo.src = result.data.url;
+            downloadBtn.href = result.data.url;
+            downloadBtn.download = result.data.filename;
+            outputSection.classList.add('show');
+            processBtn.textContent = '✅ Hoàn tất!';
+            
+            // Smooth scroll to output
+            smoothScrollTo(outputSection);
         } else {
-            throw new Error('Chưa chọn video template.');
+            throw new Error(result.error || 'Không thể gộp video');
         }
-
-        voiceData = await readFileAsBuffer(selectedVoice);
-        const voiceExt = selectedVoice.name.split('.').pop();
-
-        updateProgress(3, 'Đang phân tích thời lượng...');
-        log('🔍 Đang phân tích thời lượng...', 'info');
-        const voiceDuration = await getAudioDuration(selectedVoice);
-        log(`📊 Video: ${videoDuration.toFixed(2)}s | Voice: ${voiceDuration.toFixed(2)}s`, 'info');
-
-        if (videoDuration <= 0) throw new Error('Không thể đọc thời lượng video.');
-        if (voiceDuration <= 0) throw new Error('File voice không hợp lệ.');
-
-        const videoName = `input_video.${videoExt}`;
-        const voiceName = `input_voice.${voiceExt}`;
-
-        await ffmpeg.writeFile(videoName, videoData);
-        await ffmpeg.writeFile(voiceName, voiceData);
-        log('✅ Đã ghi file vào bộ nhớ ảo', 'success');
-
-        const repeatCount = Math.ceil(voiceDuration / videoDuration);
-        log(`🔄 Lặp video ${repeatCount} lần (${videoDuration}s → ${voiceDuration.toFixed(2)}s)`, 'info');
-
-        updateProgress(8, 'Đang tạo video loop...');
-        let concatContent = '';
-        for (let i = 0; i < repeatCount; i++) {
-            concatContent += `file '${videoName}'\n`;
-        }
-        await ffmpeg.writeFile('concat_list.txt', new TextEncoder().encode(concatContent));
-
-        log('🔄 Đang loop video...', 'info');
-        await ffmpeg.exec([
-            '-f', 'concat', '-safe', '0',
-            '-i', 'concat_list.txt',
-            '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
-            '-t', String(voiceDuration),
-            '-c:a', 'aac', '-b:a', '128k',
-            '-y', 'looped_video.mp4'
-        ]);
-        log('✅ Video loop hoàn tất', 'success');
-
-        updateProgress(50, 'Đang gộp voice vào video...');
-        log('🎵 Đang gộp voice vào video...', 'info');
-        await ffmpeg.exec([
-            '-i', 'looped_video.mp4',
-            '-i', voiceName,
-            '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-map', '0:v:0', '-map', '1:a:0',
-            '-shortest', '-y', 'output.mp4'
-        ]);
-        log('✅ Gộp hoàn tất!', 'success');
-
-        updateProgress(90, 'Đang đọc kết quả...');
-        const outputData = await ffmpeg.readFile('output.mp4');
-        const blob = new Blob([outputData.buffer], { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
-
-        outputVideo.src = url;
-        downloadBtn.href = url;
-        downloadBtn.download = `merged_${Date.now()}.mp4`;
-        outputSection.classList.add('show');
-        updateProgress(100, '✅ Hoàn tất!');
-        log(`📁 Kích thước: ${formatFileSize(blob.size)}`, 'success');
-        processBtn.textContent = '✅ Hoàn tất!';
-
-        // Smooth scroll to output
-        smoothScrollTo(outputSection);
-
-        // Cleanup
-        try {
-            await ffmpeg.deleteFile(videoName);
-            await ffmpeg.deleteFile(voiceName);
-            await ffmpeg.deleteFile('concat_list.txt');
-            await ffmpeg.deleteFile('looped_video.mp4');
-            await ffmpeg.deleteFile('output.mp4');
-        } catch (e) { /* ignore */ }
 
     } catch (err) {
         console.error(err);
@@ -841,7 +771,7 @@ resetBtn.addEventListener('click', () => {
 });
 
 // ===== INIT =====
-loadFFmpeg();
+checkServer();
 </script>
 </body>
 </html>

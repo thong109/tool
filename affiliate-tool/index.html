@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopee Affiliate Tool - Reup Video Pro</title>
+    <link rel="stylesheet" href="../header-menu.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -131,7 +132,10 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="header" style="margin-top: 64px;">
         <h1>
             🎬 Shopee Affiliate Pro
             <small>Reup Video & Auto Đăng FB Page</small>
@@ -517,6 +521,21 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Load Header Menu -->
+    <script>
+        // Load header menu HTML
+        fetch('../header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                // Load header menu JS
+                const script = document.createElement('script');
+                script.src = '../header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
 
     <script>
         // ==================== DATA ====================

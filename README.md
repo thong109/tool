@@ -4,11 +4,33 @@ Hệ thống tự động tạo video từ tin tức với AI tóm tắt nội d
 
 ## 🚀 Tính năng
 
+### Video Creation Platform
 - ✅ Chọn nhiều nguồn báo (VnExpress, Tuổi Trẻ, Thanh Niên, Dân Trí, VietnamNet...)
 - ✅ Lấy tin mới nhất từ RSS feeds thực tế
 - ✅ Tóm tắt nội dung bài viết bằng AI
 - ✅ Tự động tạo video từ tin tức
+- ✅ Azure TTS integration (Text-to-Speech)
+- ✅ Kho Audio storage (lưu audio đã tạo)
 - ✅ Dark theme UI giống screenshot
+
+### Video Cutter (2 phiên bản)
+
+#### Server Mode (video-cutter.html)
+- ✅ Upload video (drag & drop, click)
+- ✅ 3 mode cắt: đều, tùy chỉnh, theo khoảng thời gian
+- ✅ FFmpeg-powered video processing
+- ✅ Download từng đoạn video đã cắt
+- ✅ Lưu vào thư mục `cuts/`
+- ⚠️ Cần cài FFmpeg trên server
+
+#### WASM Mode (video-cutter-wasm.html) - KHUYẾN NGHỊ
+- ✅ Upload video (drag & drop, click)
+- ✅ 3 mode cắt: đều, tùy chỉnh, theo khoảng thời gian
+- ✅ FFmpeg.wasm từ CDN (không cần cài FFmpeg)
+- ✅ Xử lý trong browser (client-side)
+- ✅ Privacy: Video không upload lên server
+- ✅ Download từng đoạn video đã cắt
+- ⚠️ Cần browser hỗ trợ WebAssembly
 
 ## 📋 Yêu cầu hệ thống
 
@@ -17,29 +39,74 @@ Hệ thống tự động tạo video từ tin tức với AI tóm tắt nội d
 
 ## 🔧 Cài đặt
 
-### 1. Clone hoặc tải project
+### ⚡ Cách 1: Setup TỰ ĐỘNG (Khuyến nghị - 1 click)
+
+Chạy script setup để tự động cài đặt tất cả:
+
+**Windows:**
+```bash
+# Right-click vào file setup.bat
+# Chọn "Run as administrator"
+# Script sẽ tự động:
+# - Cài Node.js dependencies
+# - Download và cài FFmpeg
+# - Verify installation
+```
+
+**macOS/Linux:**
+```bash
+chmod +x setup.sh
+./setup.sh  # macOS
+sudo ./setup.sh  # Linux
+```
+
+### Cách 2: Cài thủ công
+
+#### 1. Clone hoặc tải project
 
 ```bash
 cd C:\ThongPhan\tool
 ```
 
-### 2. Cài đặt dependencies
+#### 2. Cài đặt dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Chạy server
+#### 3. Cài đặt FFmpeg
+
+**Windows:**
+```bash
+# Right-click vào file install-ffmpeg.bat
+# Chọn "Run as administrator"
+```
+
+**macOS/Linux:**
+```bash
+chmod +x install-ffmpeg.sh
+./install-ffmpeg.sh  # macOS
+sudo ./install-ffmpeg.sh  # Linux
+```
+
+Hoặc cài thủ công:
+- Windows: https://www.gyan.dev/ffmpeg/builds/
+- macOS: `brew install ffmpeg`
+- Linux: `sudo apt install ffmpeg`
+
+#### 4. Chạy server
 
 ```bash
-npm start
+node server.js
 ```
 
 Server sẽ chạy tại: `http://localhost:3000`
 
-### 4. Mở trình duyệt
+#### 5. Mở trình duyệt
 
-Truy cập: `http://localhost:3000/video-creation-platform.html`
+Truy cập: `http://localhost:3000/video-cutter-wasm.html` (WASM mode - không cần FFmpeg)
+
+Hoặc: `http://localhost:3000/video-cutter.html` (Server mode - cần FFmpeg)
 
 ## 📁 Cấu trúc project
 
@@ -190,6 +257,30 @@ const PORT = 3001; // Thay đổi port
 ### CORS error
 - Đảm bảo backend server đang chạy
 - Frontend đang gọi đúng `http://localhost:3000`
+
+## 🔁 Feature Converter Tool
+
+Tool chuyển đổi HTML khối `diff_cont` (danh sách `<dl><dt><dd>`) thành HTML `depart-feature` mới:
+- Features đầu tiên (mặc định 01–03) → `feature-row`, các features còn lại → `feature-column`
+- `Features. 01` → `<p class="label">Features 01</p>`
+- Tiêu đề `<dt><p>` → `<p class="txt01">`
+- `<ul class="dot_list">` → `<ul class="ul-dot cir">`
+- `<div class="thumb_img">` → `<div class="img">` (chỉ giữ trong feature-row theo mặc định, có tuỳ chọn giữ trong column)
+- Tự chèn link `view` (펼쳐보기/접기) cho mỗi feature
+
+**Cách dùng:** mở `feature-converter.html` trong trình duyệt, dán HTML `diff_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-feature-converter.js` để kiểm thử logic.
+
+## 🎓 Course Converter Tool
+
+Tool chuyển đổi danh sách môn học thành HTML `<ul class="course">`:
+- Nhận 2 dạng input: HTML chứa `<span class="label">` (tự động quét toàn bộ input) hoặc text thuần (mỗi dòng một môn học)
+- Mỗi `<span class="label">...` → `<li><a class="popup-click" href="#a" id="detail-888" title="...">...</a></li>`
+- Tự động bỏ `&nbsp;`, trim khoảng trắng và lọc dòng trống
+- Tuỳ chọn ID: giữ cố định số bắt đầu (mặc định `888`) hoặc tăng dần theo từng môn
+- Tuỳ chọn tuỳ chỉnh `href` (mặc định `#a`), tự động xử lý khi dán input
+- Hỗ trợ copy, tải file `.html`, load file có sẵn, ví dụ mẫu
+
+**Cách dùng:** mở `course-converter.html` trong trình duyệt, dán HTML/text môn học vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-course-converter.js` để kiểm thử logic.
 
 ## 📝 License
 

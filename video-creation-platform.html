@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MKT Software - Studio đa năng tầng</title>
+    <link rel="stylesheet" href="header-menu.css">
     <style>
         * {
             margin: 0;
@@ -985,7 +986,10 @@
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="app-container" style="margin-top: 64px;">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
@@ -1032,6 +1036,11 @@
                     <span class="nav-item-icon">📦</span>
                     <span>Kho bài viết</span>
                     <span class="nav-badge" id="storageCount" style="display: none;">0</span>
+                </a>
+                <a href="#" class="nav-item" onclick="openAudioStorage(event)">
+                    <span class="nav-item-icon">🎵</span>
+                    <span>Kho Audio</span>
+                    <span class="nav-badge" id="audioStorageCount" style="display: none;">0</span>
                 </a>
                 <a href="#" class="nav-item">
                     <span class="nav-item-icon">📹</span>
@@ -1251,7 +1260,7 @@
                             <div class="voice-option" onclick="selectVoice(this)">
                                 <div class="voice-option-header">
                                     <span class="voice-option-icon">🎙️</span>
-                                    <span class="voice-option-title">Giọng đọc (TTS)</span>
+                                    <span class="voice-option-title">Giọng đọc (Azure TTS)</span>
                                 </div>
                                 <div class="voice-option-desc">Chọn giọng đọc tự động cho video</div>
                             </div>
@@ -1261,6 +1270,57 @@
                                     <span class="voice-option-title">Nhạc nền</span>
                                 </div>
                                 <div class="voice-option-desc">Thêm nhạc nền vào video</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a2d3a;">
+                            <div style="font-size: 14px; color: #b0b3b8; margin-bottom: 12px;">
+                                🎵 <strong>Tạo & Lưu Audio (Azure TTS)</strong>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; color: #8b8d98; margin-bottom: 6px;">Nhập text để tạo audio:</label>
+                                <textarea id="ttsText" rows="3" placeholder="Nhập nội dung cần chuyển thành giọng nói..." style="width: 100%; padding: 10px; background-color: #252836; border: 1px solid #2a2d3a; border-radius: 6px; color: #e4e6eb; font-size: 13px; resize: vertical;"></textarea>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; color: #8b8d98; margin-bottom: 6px;">Chọn giọng:</label>
+                                <select id="voiceSelect" style="width: 100%; padding: 10px; background-color: #252836; border: 1px solid #2a2d3a; border-radius: 6px; color: #e4e6eb; font-size: 13px;">
+                                    <option value="vi-VN-HoaiAnNeural">🎙️ Hoài An (Nữ - Tiếng Việt)</option>
+                                    <option value="vi-VN-NamMinhNeural">🎙️ Nam Minh (Nam - Tiếng Việt)</option>
+                                    <option value="en-US-JennyNeural">🎙️ Jenny (Nữ - Tiếng Anh)</option>
+                                    <option value="en-US-GuyNeural">🎙️ Guy (Nam - Tiếng Anh)</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-small" onclick="generateAndSaveTTS()" style="flex: 1; justify-content: center;">
+                                    <span>🎙️</span> Tạo & Lưu Audio
+                                </button>
+                                <button class="btn-small btn-link" onclick="openAudioStorage(event)" style="flex: 1; justify-content: center;">
+                                    <span>🎵</span> Mở Kho Audio
+                                </button>
+                            </div>
+                            <div style="margin-top: 10px; padding: 10px; background-color: #1a1d28; border-left: 3px solid #f59e0b; border-radius: 4px; font-size: 12px; color: #b0b3b8;">
+                                ⚠️ <strong>Lưu ý:</strong> TTS sử dụng Azure Cognitive Services (Free tier: 5 triệu ký tự/tháng). Cần cấu hình API key. Xem <a href="HOW_TO_RUN.md" target="_blank" style="color: #667eea;">hướng dẫn</a>.
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a2d3a;">
+                            <div style="font-size: 14px; color: #b0b3b8; margin-bottom: 12px;">
+                                🎵 <strong>Tạo & Lưu Audio</strong>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; color: #8b8d98; margin-bottom: 6px;">Nhập text để tạo audio (TTS):</label>
+                                <textarea id="ttsText" rows="3" placeholder="Nhập nội dung cần chuyển thành giọng nói..." style="width: 100%; padding: 10px; background-color: #252836; border: 1px solid #2a2d3a; border-radius: 6px; color: #e4e6eb; font-size: 13px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-small" onclick="generateAndSaveTTS()" style="flex: 1; justify-content: center;">
+                                    <span>🎙️</span> Tạo & Lưu Audio
+                                </button>
+                                <button class="btn-small btn-link" onclick="openAudioStorage(event)" style="flex: 1; justify-content: center;">
+                                    <span>🎵</span> Mở Kho Audio
+                                </button>
+                            </div>
+                            <div style="margin-top: 10px; padding: 10px; background-color: #1a1d28; border-left: 3px solid #f59e0b; border-radius: 4px; font-size: 12px; color: #b0b3b8;">
+                                ⚠️ <strong>Lưu ý:</strong> TTS sử dụng Google Translate API (miễn phí). Nếu gặp lỗi, có thể Google đã thay đổi chính sách. Thử lại sau hoặc sử dụng audio có sẵn.
                             </div>
                         </div>
                     </div>
@@ -1349,6 +1409,21 @@
         </main>
     </div>
 
+    <!-- Load Header Menu -->
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                // Load header menu JS
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
     <script>
         // State management
         let selectedSources = new Set(['vnexpress', 'tuoitre', 'dantri']);
@@ -1434,6 +1509,9 @@
             btn.disabled = true;
             
             try {
+                // Check if server is running first
+                await checkServerStatus();
+                
                 // Call backend API to fetch real articles
                 const articles = await fetchArticlesFromBackend(selectedSources, articleCount);
                 currentArticles = articles;
@@ -1444,10 +1522,42 @@
                 document.getElementById('createBtn').disabled = false;
             } catch (error) {
                 console.error('Error fetching articles:', error);
-                document.getElementById('warningText').textContent = 'Lỗi khi lấy bài viết. Kiểm tra backend server.';
+                
+                // Provide more helpful error messages
+                let errorMsg = '❌ Lỗi khi lấy bài viết. ';
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMsg += 'Không thể kết nối đến server. ';
+                } else if (error.message.includes('404')) {
+                    errorMsg += 'API endpoint không tồn tại. ';
+                } else if (error.message.includes('500')) {
+                    errorMsg += 'Lỗi server. ';
+                }
+                errorMsg += '\n\n💡 Giải pháp:\n1. Chạy lệnh: node server.js\n2. Mở: http://localhost:3000\n3. Đảm bảo có kết nối internet';
+                
+                document.getElementById('warningText').textContent = errorMsg;
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
+            }
+        }
+        
+        // Check if backend server is running
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/health', { 
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server responded with error');
+                }
+                
+                const data = await response.json();
+                console.log('Server status:', data);
+                return true;
+            } catch (error) {
+                throw new Error('Backend server không chạy. Vui lòng chạy "node server.js" trước.');
             }
         }
 
@@ -1465,13 +1575,19 @@
             const response = await fetch(apiUrl);
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('Server response:', response.status, errorText);
+                throw new Error(`HTTP error! status: ${response.status}. ${errorText.substring(0, 100)}`);
             }
             
             const data = await response.json();
             
             if (!data.success) {
                 throw new Error(data.error || 'Failed to fetch articles');
+            }
+            
+            if (!data.articles || data.articles.length === 0) {
+                throw new Error('Không tìm thấy bài viết nào. Thử chọn nguồn khác hoặc kiểm tra kết nối internet.');
             }
             
             return data.articles;
@@ -1905,6 +2021,265 @@
                 createVideoBtn.addEventListener('click', createVideo);
             }
         });
+
+        // ==================== AUDIO STORAGE ====================
+        
+        // Open audio storage modal
+        function openAudioStorage(event) {
+            event.preventDefault();
+            
+            const savedAudio = localStorage.getItem('savedAudios');
+            const audios = savedAudio ? JSON.parse(savedAudio) : [];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.id = 'audioStorageModal';
+            
+            let contentHTML = '';
+            
+            if (audios.length === 0) {
+                contentHTML = `
+                    <div class="empty-audio-state">
+                        <div class="icon">🎵</div>
+                        <p>Chưa có audio nào trong kho</p>
+                        <p style="font-size: 12px; margin-top: 8px;">Tạo audio từ TTS và lưu vào kho để xem tại đây</p>
+                    </div>
+                `;
+            } else {
+                contentHTML = `
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2a2d3a;">
+                        <p style="color: #b0b3b8; font-size: 13px;">
+                            📊 Tổng: ${audios.length} audio<br>
+                            💾 Lưu trong: Trình duyệt (localStorage)
+                        </p>
+                    </div>
+                    <div style="max-height: 50vh; overflow-y: auto;">
+                        ${audios.map((audio, index) => `
+                            <div style="padding: 16px; background-color: #252836; border: 1px solid #2a2d3a; border-radius: 8px; margin-bottom: 12px;">
+                                <div style="font-weight: 500; color: #fff; margin-bottom: 8px;">
+                                    ${index + 1}. ${audio.title}
+                                </div>
+                                <div style="font-size: 12px; color: #8b8d98; margin-bottom: 8px;">
+                                    ${audio.date}
+                                </div>
+                                <div style="font-size: 13px; color: #b0b3b8; margin-bottom: 10px;">
+                                    ${audio.text.substring(0, 100)}${audio.text.length > 100 ? '...' : ''}
+                                </div>
+                                <audio controls style="width: 100%; height: 36px;" src="${audio.dataUrl}"></audio>
+                                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                    <button class="btn-small" onclick="downloadAudio('${audio.id}')">📥 Tải xuống</button>
+                                    <button class="btn-small btn-danger" onclick="deleteAudio('${audio.id}')">🗑️ Xóa</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">🎵 Kho Audio đã lưu</div>
+                        <button class="modal-close" onclick="closeAudioStorageModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        ${contentHTML}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeAudioStorageModal();
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAudioStorageModal();
+                }
+            });
+        }
+
+        // Close audio storage modal
+        function closeAudioStorageModal() {
+            const modal = document.getElementById('audioStorageModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Save audio to storage
+        function saveAudioToStorage(title, text, dataUrl, duration, lang) {
+            const savedAudio = localStorage.getItem('savedAudios');
+            const audios = savedAudio ? JSON.parse(savedAudio) : [];
+            
+            const newAudio = {
+                id: Date.now().toString(),
+                title: title || 'Audio ' + (audios.length + 1),
+                text: text,
+                dataUrl: dataUrl,
+                duration: duration,
+                lang: lang || 'vi-VN',
+                date: new Date().toLocaleString('vi-VN')
+            };
+            
+            audios.unshift(newAudio);
+            
+            // Limit to 50 audios
+            if (audios.length > 50) {
+                audios.pop();
+            }
+            
+            localStorage.setItem('savedAudios', JSON.stringify(audios));
+            updateAudioStorageCount();
+            
+            return newAudio;
+        }
+
+        // Delete audio from storage
+        function deleteAudio(audioId) {
+            if (!confirm('Bạn có chắc muốn xóa audio này?')) {
+                return;
+            }
+            
+            const savedAudio = localStorage.getItem('savedAudios');
+            if (!savedAudio) return;
+            
+            const audios = JSON.parse(savedAudio);
+            const filtered = audios.filter(a => a.id !== audioId);
+            
+            localStorage.setItem('savedAudios', JSON.stringify(filtered));
+            
+            closeAudioStorageModal();
+            openAudioStorage(new Event('click'));
+            updateAudioStorageCount();
+        }
+
+        // Download audio
+        function downloadAudio(audioId) {
+            const savedAudio = localStorage.getItem('savedAudios');
+            if (!savedAudio) return;
+            
+            const audios = JSON.parse(savedAudio);
+            const audio = audios.find(a => a.id === audioId);
+            
+            if (!audio) return;
+            
+            const link = document.createElement('a');
+            link.href = audio.dataUrl;
+            link.download = `audio_${Date.now()}.mp3`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Update audio storage count
+        function updateAudioStorageCount() {
+            const savedAudio = localStorage.getItem('savedAudios');
+            const audios = savedAudio ? JSON.parse(savedAudio) : [];
+            const count = audios.length;
+            
+            const badge = document.getElementById('audioStorageCount');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        // Generate TTS and save to storage
+        async function generateAndSaveTTS() {
+            const text = document.getElementById('ttsText').value.trim();
+            if (!text) {
+                alert('Vui lòng nhập text để tạo audio!');
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span><span>Đang tạo...</span>';
+            btn.disabled = true;
+
+            try {
+                // Check server status first
+                await checkServerStatus();
+
+                // Call TTS API
+                console.log('Calling TTS API with text:', text.substring(0, 50) + '...');
+                const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}&lang=vi-VN`);
+                
+                console.log('TTS Response status:', response.status);
+                console.log('TTS Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('TTS Error response:', errorText);
+                    throw new Error(`TTS API failed with status ${response.status}: ${errorText.substring(0, 100)}`);
+                }
+
+                // Get audio blob
+                const blob = await response.blob();
+                console.log('Audio blob size:', blob.size, 'bytes');
+                
+                if (blob.size === 0) {
+                    throw new Error('Audio file is empty');
+                }
+
+                const dataUrl = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+
+                // Estimate duration (roughly 150 words per minute)
+                const wordCount = text.split(' ').length;
+                const duration = Math.ceil((wordCount / 150) * 60);
+
+                // Save to storage
+                const audio = saveAudioToStorage(
+                    'TTS ' + new Date().toLocaleString('vi-VN'),
+                    text,
+                    dataUrl,
+                    duration,
+                    'vi-VN'
+                );
+
+                alert(`✅ Đã tạo và lưu audio thành công!\n\n📊 Thông tin:\n- Độ dài: ~${duration}s\n- Số từ: ${wordCount}\n- Kích thước: ${(blob.size / 1024).toFixed(1)} KB\n\n🎵 Bạn có thể nghe và tải xuống trong Kho Audio.`);
+
+                // Clear textarea
+                document.getElementById('ttsText').value = '';
+
+            } catch (error) {
+                console.error('TTS error:', error);
+                
+                // Provide detailed error message
+                let errorMsg = '❌ Lỗi khi tạo audio.\n\n';
+                
+                if (error.message.includes('Backend server không chạy')) {
+                    errorMsg += 'Nguyên nhân: Server không chạy\n';
+                    errorMsg += 'Giải pháp: Chạy lệnh "node server.js"';
+                } else if (error.message.includes('TTS API failed') || error.message.includes('TTS service returned invalid content')) {
+                    errorMsg += 'Nguyên nhân: Google TTS API không phản hồi\n';
+                    errorMsg += 'Google đã thay đổi chính sách TTS miễn phí.\n\n';
+                    errorMsg += 'Giải pháp thay thế:\n';
+                    errorMsg += '1. Sử dụng audio có sẵn trong kho\n';
+                    errorMsg += '2. Tạo audio từ công cụ khác (ElevenLabs, Azure TTS...)\n';
+                    errorMsg += '3. Thử lại sau (Google có thể mở lại API)';
+                } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    errorMsg += 'Nguyên nhân: Không kết nối được server\n';
+                    errorMsg += 'Giải pháp:\n1. Chạy "node server.js"\n2. Mở http://localhost:3000';
+                } else {
+                    errorMsg += `Chi tiết: ${error.message}`;
+                }
+                
+                alert(errorMsg);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>

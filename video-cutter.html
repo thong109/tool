@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MKT Software - Video Cutter</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0f1117;
+            color: #e4e6eb;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: #0f1117;
+            border-right: 1px solid #2a2d3a;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #2a2d3a;
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: #8b8d98;
+            margin-top: 4px;
+            margin-left: 42px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 8px;
+            font-size: 12px;
+            color: #8b8d98;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .nav-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #b0b3b8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background-color: #1a1d28;
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background-color: #1a1d28;
+            color: #fff;
+            border-left: 3px solid #667eea;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .user-profile {
+            padding: 16px 20px;
+            border-top: 1px solid #2a2d3a;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #8b8d98;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #0f1117;
+            border-bottom: 1px solid #2a2d3a;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: #8b8d98;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background-color: #1a1d28;
+            border: 1px solid #2a2d3a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #252836;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .card-description {
+            font-size: 13px;
+            color: #8b8d98;
+            margin-top: 2px;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #2a2d3a;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #252836;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: #b0b3b8;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: #8b8d98;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Video Preview */
+        .video-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .video-preview.active {
+            display: block;
+        }
+
+        .video-info {
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .video-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .video-info-label {
+            color: #8b8d98;
+        }
+
+        .video-info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 8px;
+            background-color: #000;
+        }
+
+        /* Cut Settings */
+        .cut-settings {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .cut-settings.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #b0b3b8;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            border-radius: 6px;
+            color: #e4e6eb;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-primary:disabled {
+            background-color: #2a2d3a;
+            color: #8b8d98;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #252836;
+            color: #fff;
+            border: 1px solid #2a2d3a;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2a2d3a;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Cut List */
+        .cut-list {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .cut-list.active {
+            display: block;
+        }
+
+        .cut-item {
+            background-color: #252836;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cut-info {
+            flex: 1;
+        }
+
+        .cut-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .cut-details {
+            font-size: 12px;
+            color: #8b8d98;
+        }
+
+        .cut-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Progress */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #252836;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #667eea;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 13px;
+            color: #8b8d98;
+            margin-top: 8px;
+        }
+
+        /* Warning */
+        .warning-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #f59e0b;
+        }
+
+        .warning-box strong {
+            color: #fbbf24;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2d3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3d4a;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="app-container" style="margin-top: 64px;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>
+                    <div class="logo-icon">MKT</div>
+                </h1>
+                <div class="logo-subtitle">Studio đa năng tầng</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Công cụ</div>
+                <a href="index.html" class="nav-item">
+                    <span class="nav-item-icon">🎨</span>
+                    <span>CSS Minify</span>
+                </a>
+                <a href="video-creation-platform.html" class="nav-item">
+                    <span class="nav-item-icon">🎬</span>
+                    <span>Tạo Video</span>
+                </a>
+                <a href="video-cutter.html" class="nav-item active">
+                    <span class="nav-item-icon">✂️</span>
+                    <span>Cắt Video</span>
+                </a>
+                <a href="novel-writing-tool/index.html" class="nav-item">
+                    <span class="nav-item-icon">📚</span>
+                    <span>Viết Truyện</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Quản lý</div>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">📦</span>
+                    <span>Kho bài viết</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-item-icon">🎵</span>
+                    <span>Kho Audio</span>
+                </a>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-avatar">HN</div>
+                <div class="user-info">
+                    <div class="user-name">Hiệp Nguyễn Hoàng</div>
+                    <div class="user-email">hiepnh@visocial.vn</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <div>
+                        <div class="page-title">✂️ Video Cutter</div>
+                        <div class="page-subtitle">Cắt video thành nhiều đoạn nhỏ</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Upload Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📤</div>
+                        <div>
+                            <div class="card-title">Bước 1: Upload Video</div>
+                            <div class="card-description">Chọn video từ máy tính của bạn</div>
+                        </div>
+                    </div>
+
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">🎬</div>
+                        <div class="upload-text">Kéo thả video vào đây hoặc click để chọn</div>
+                        <div class="upload-hint">Hỗ trợ: MP4, AVI, MOV, MKV (Max: 500MB)</div>
+                        <input type="file" id="fileInput" accept="video/*">
+                    </div>
+
+                    <div class="video-preview" id="videoPreview">
+                        <div class="video-info">
+                            <div class="video-info-item">
+                                <span class="video-info-label">Tên file:</span>
+                                <span class="video-info-value" id="fileName">-</span>
+                            </div>
+                            <div class="video-info-item">
+                                <span class="video-info-label">Kích thước:</span>
+                                <span class="video-info-value" id="fileSize">-</span>
+                            </div>
+                            <div class="video-info-item">
+                                <span class="video-info-label">Thời lượng:</span>
+                                <span class="video-info-value" id="fileDuration">-</span>
+                            </div>
+                        </div>
+                        <video id="previewVideo" controls></video>
+                    </div>
+                </div>
+
+                <!-- Cut Settings -->
+                <div class="card cut-settings" id="cutSettings">
+                    <div class="card-header">
+                        <div class="card-icon">✂️</div>
+                        <div>
+                            <div class="card-title">Bước 2: Cài đặt cắt video</div>
+                            <div class="card-description">Chọn mode cắt và số đoạn</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Mode cắt:</label>
+                        <select class="form-input" id="cutMode">
+                            <option value="equal">Cắt đều (chia thành N đoạn bằng nhau)</option>
+                            <option value="custom">Cắt tùy chỉnh (nhập thời gian từng đoạn)</option>
+                            <option value="interval">Cắt theo khoảng thời gian (ví dụ: mỗi 30s)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="equalCutSettings">
+                        <label class="form-label">Số đoạn cần cắt:</label>
+                        <input type="number" class="form-input" id="segmentCount" value="3" min="2" max="20">
+                    </div>
+
+                    <div class="form-group" id="customCutSettings" style="display: none;">
+                        <label class="form-label">Danh sách thời gian cắt (định dạng: start-end, ví dụ: 0:00-0:30, 0:30-1:00):</label>
+                        <textarea class="form-input" id="customSegments" rows="4" placeholder="0:00-0:30&#10;0:30-1:00&#10;1:00-1:30"></textarea>
+                    </div>
+
+                    <div class="form-group" id="intervalCutSettings" style="display: none;">
+                        <label class="form-label">Khoảng thời gian mỗi đoạn (giây):</label>
+                        <input type="number" class="form-input" id="intervalSeconds" value="30" min="5" max="300">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thư mục lưu:</label>
+                        <input type="text" class="form-input" id="outputFolder" value="cuts" placeholder="Tên thư mục lưu video đã cắt">
+                    </div>
+
+                    <div class="form-row">
+                        <button class="btn btn-primary" id="cutBtn" disabled>
+                            <span>✂️</span>
+                            <span>Cắt Video</span>
+                        </button>
+                        <button class="btn btn-secondary" id="resetBtn">
+                            <span>🔄</span>
+                            <span>Chọn video khác</span>
+                        </button>
+                    </div>
+
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText"></div>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Lưu ý:</strong>
+                        <ul style="margin-left: 20px; margin-top: 8px;">
+                            <li>Video cắt sẽ được lưu trong thư mục <code>cuts/</code> trên server</li>
+                            <li>Format output: MP4 (H.264)</li>
+                            <li>Chất lượng: Giống video gốc</li>
+                            <li>Server cần có FFmpeg installed</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Cut List -->
+                <div class="card cut-list" id="cutList">
+                    <div class="card-header">
+                        <div class="card-icon">📹</div>
+                        <div>
+                            <div class="card-title">Video đã cắt</div>
+                            <div class="card-description">Danh sách các đoạn video đã tạo</div>
+                        </div>
+                    </div>
+
+                    <div id="cutsContainer"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Header Menu -->
+    <script>
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // State
+        let currentFile = null;
+        let videoDuration = 0;
+
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const videoPreview = document.getElementById('videoPreview');
+        const previewVideo = document.getElementById('previewVideo');
+        const cutSettings = document.getElementById('cutSettings');
+        const cutBtn = document.getElementById('cutBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const cutMode = document.getElementById('cutMode');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        // Upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file upload
+        function handleFile(file) {
+            if (!file.type.startsWith('video/')) {
+                alert('Vui lòng chọn file video!');
+                return;
+            }
+
+            if (file.size > 500 * 1024 * 1024) {
+                alert('File quá lớn! Tối đa 500MB');
+                return;
+            }
+
+            currentFile = file;
+            
+            // Show file info
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+
+            // Create video URL
+            const videoURL = URL.createObjectURL(file);
+            previewVideo.src = videoURL;
+
+            // Get video duration
+            previewVideo.addEventListener('loadedmetadata', () => {
+                videoDuration = previewVideo.duration;
+                document.getElementById('fileDuration').textContent = formatDuration(videoDuration);
+                
+                // Show preview and settings
+                videoPreview.classList.add('active');
+                cutSettings.classList.add('active');
+                cutBtn.disabled = false;
+            });
+        }
+
+        // Cut mode change
+        cutMode.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            
+            // Hide all settings
+            document.getElementById('equalCutSettings').style.display = 'none';
+            document.getElementById('customCutSettings').style.display = 'none';
+            document.getElementById('intervalCutSettings').style.display = 'none';
+
+            // Show selected mode settings
+            switch(mode) {
+                case 'equal':
+                    document.getElementById('equalCutSettings').style.display = 'block';
+                    break;
+                case 'custom':
+                    document.getElementById('customCutSettings').style.display = 'block';
+                    break;
+                case 'interval':
+                    document.getElementById('intervalCutSettings').style.display = 'block';
+                    break;
+            }
+        });
+
+        // Check FFmpeg before cutting
+        async function checkFFmpeg() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                if (!data.ffmpeg || !data.ffmpeg.installed) {
+                    alert('❌ FFmpeg chưa được cài đặt!\n\n' +
+                          'Vui lòng cài FFmpeg trước khi cắt video.\n' +
+                          'Xem hướng dẫn trong HOW_TO_RUN.md\n\n' +
+                          'Hoặc truy cập: /api/diagnostic để kiểm tra');
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Health check failed:', error);
+                alert('❌ Không thể kết nối đến server. Vui lòng chạy "node server.js" trước.');
+                return false;
+            }
+        }
+
+        // Cut video
+        cutBtn.addEventListener('click', async () => {
+            if (!currentFile) {
+                alert('Vui lòng upload video trước!');
+                return;
+            }
+
+            // Check FFmpeg first
+            const ffmpegOk = await checkFFmpeg();
+            if (!ffmpegOk) return;
+
+            const mode = cutMode.value;
+            const outputFolder = document.getElementById('outputFolder').value || 'cuts';
+
+            cutBtn.disabled = true;
+            progressBar.classList.add('active');
+            progressText.textContent = 'Đang xử lý...';
+
+            try {
+                const formData = new FormData();
+                formData.append('video', currentFile);
+                formData.append('mode', mode);
+                formData.append('outputFolder', outputFolder);
+
+                if (mode === 'equal') {
+                    formData.append('segmentCount', document.getElementById('segmentCount').value);
+                } else if (mode === 'custom') {
+                    formData.append('customSegments', document.getElementById('customSegments').value);
+                } else if (mode === 'interval') {
+                    formData.append('intervalSeconds', document.getElementById('intervalSeconds').value);
+                }
+
+                const response = await fetch('/api/cut-video', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                let result;
+                const contentType = response.headers.get('content-type');
+                
+                console.log('Response status:', response.status);
+                console.log('Response content-type:', contentType);
+                
+                if (!response.ok) {
+                    let errorMessage = 'Failed to cut video';
+                    
+                    // Check if response is JSON
+                    if (contentType && contentType.includes('application/json')) {
+                        try {
+                            const error = await response.json();
+                            errorMessage = error.error || error.message || errorMessage;
+                        } catch (e) {
+                            console.error('Error parsing error response:', e);
+                            errorMessage = `Server error (${response.status}): Không thể đọc phản hồi từ server`;
+                        }
+                    } else {
+                        // Response is HTML (error page or 404)
+                        const text = await response.text();
+                        console.error('Server returned HTML instead of JSON:', text.substring(0, 200));
+                        errorMessage = `Server error (${response.status}): ${response.statusText}\n\nCó thể do:\n1. FFmpeg chưa được cài đặt\n2. Server cần restart\n3. File upload quá lớn`;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+
+                // Parse successful response
+                if (contentType && contentType.includes('application/json')) {
+                    try {
+                        result = await response.json();
+                    } catch (e) {
+                        console.error('Error parsing success response:', e);
+                        throw new Error('Server trả về dữ liệu không hợp lệ');
+                    }
+                } else {
+                    throw new Error('Server trả về định dạng không hợp lệ');
+                }
+                
+                progressFill.style.width = '100%';
+                progressText.textContent = `✅ Hoàn thành! Đã cắt ${result.cuts.length} đoạn video`;
+
+                // Show cut list
+                showCutList(result.cuts, outputFolder);
+
+            } catch (error) {
+                console.error('Error cutting video:', error);
+                
+                // Show detailed error message
+                let errorMsg = '❌ Lỗi khi cắt video:\n\n';
+                errorMsg += error.message;
+                
+                // Add troubleshooting tips
+                if (error.message.includes('FFmpeg') || error.message.includes('FFprobe')) {
+                    errorMsg += '\n\n💡 Giải pháp: Cài FFmpeg - xem HOW_TO_RUN.md';
+                } else if (error.message.includes('Server error')) {
+                    errorMsg += '\n\n💡 Kiểm tra:\n1. Server đang chạy?\n2. FFmpeg đã cài?\n3. Console log (F12) để xem chi tiết';
+                }
+                
+                alert(errorMsg);
+                progressText.textContent = '❌ Có lỗi xảy ra - kiểm tra console (F12)';
+            } finally {
+                cutBtn.disabled = false;
+            }
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            currentFile = null;
+            videoDuration = 0;
+            fileInput.value = '';
+            previewVideo.src = '';
+            videoPreview.classList.remove('active');
+            cutSettings.classList.remove('active');
+            document.getElementById('cutList').classList.remove('active');
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+            progressText.textContent = '';
+        });
+
+        // Show cut list
+        function showCutList(cuts, folder) {
+            const cutList = document.getElementById('cutList');
+            const cutsContainer = document.getElementById('cutsContainer');
+            
+            cutList.classList.add('active');
+
+            cutsContainer.innerHTML = cuts.map((cut, index) => `
+                <div class="cut-item">
+                    <div class="cut-info">
+                        <div class="cut-name">${index + 1}. ${cut.filename}</div>
+                        <div class="cut-details">
+                            Thời gian: ${formatDuration(cut.duration)} | 
+                            Kích thước: ${formatFileSize(cut.size)}
+                        </div>
+                    </div>
+                    <div class="cut-actions">
+                        <button class="btn-small btn-primary" onclick="downloadCut('${folder}', '${cut.filename}')">
+                            📥 Tải xuống
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Download cut
+        async function downloadCut(folder, filename) {
+            try {
+                const response = await fetch(`/api/download-cut?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(filename)}`);
+                if (!response.ok) throw new Error('Download failed');
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('❌ Lỗi khi tải file: ' + error.message);
+            }
+        }
+
+        // Utility functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>

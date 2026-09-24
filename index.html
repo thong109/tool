@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSS Minify Tool</title>
+    <link rel="stylesheet" href="header-menu.css">
     <style>
         * {
             margin: 0;
@@ -256,7 +257,10 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container" style="margin-top: 20px;">
         <h1>
             🎨 CSS Minify
             <span>Tool</span>
@@ -304,6 +308,21 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Load Header Menu -->
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                // Load header menu JS
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
 
     <script>
         const inputText = document.getElementById('inputText');
