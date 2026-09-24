@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Converter - Chuyển career_box thành swiper-slide</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1200px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: normal; }
+        input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="number"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"] { width: 140px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"].wide { width: 220px; }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: #666666; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+textarea { width: 100%; height: 420px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .stat-item .added { color: #8bc34a; font-weight: 700; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 240px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            🧑‍💼 Career Converter
+            <span>career_box → swiper-slide</span>
+        </h1>
+        <p class="subtitle">
+            Dán HTML dạng <code>&lt;div class="career_box"&gt;&lt;dl class="col1"&gt;...&lt;/dl&gt;&lt;/div&gt;</code> vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận <code>&lt;div class="swiper-wrapper"&gt;</code> gồm <code>&lt;div class="swiper-slide"&gt;</code>.
+            <br>Mỗi <code>&lt;dl&gt;</code> → slide: <code>&lt;dt&gt;</code> → <code>&lt;p class="tit"&gt;</code>, <code>&lt;dd&gt;</code> → <code>&lt;p class="txt"&gt;</code>, <code>background-image url()</code> → <code>&lt;img src&gt;</code>, thêm <code>&lt;p class="label"&gt;</code>. Tự động đổi đường path i <code>·</code> → <code>&amp;middot;</code> (khớp mẫu trang).
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🏷️ Label</div>
+                <label>Text label: <input type="text" id="optLabel" value="Meta tag" class="wide"></label>
+                <label><input type="checkbox" id="optWithLabel" checked> Thêm <code>&lt;p class="label"&gt;</code> vào mọi slide</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🛣️ Path Ảnh</div>
+                <label>Đổi: <input type="text" id="optFromPath" value="/ko/img/main/"></label>
+                <label>→ <input type="text" id="optToPath" value="/krsjcu/img/content/" class="wide"></label>
+                <label><input type="checkbox" id="optDotDash" checked> Đổi <code>.N</code> w nazwie pliku na <code>-N</code> (<code>work.01.png</code> → <code>work-01.png</code>)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optMiddot" checked> Đổi <code>·</code> → <code>&amp;middot;</code> w tit/txt (khớp mẫu)</label>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán input</label>
+            </div>
+        </div>
+<div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input HTML (career_box)
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;career_box&quot;&gt;&lt;dl class=&quot;col1&quot; style=&quot;background-image: url(...)&quot;&gt;&lt;dt&gt;...&lt;/dt&gt;&lt;dd&gt;...&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML (swiper-wrapper)
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quá chuyển đổi sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnConvert">⚡ Chuyển đổi</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🧑‍💼 Tổng kart: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">📥 Input: <strong id="statInBytes">0</strong> bytes</div>
+            <div class="stat-item">📤 Output: <strong id="statOutBytes">0</strong> bytes</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // ===== Core converter: career_box -> swiper-wrapper =====
+        const SAMPLE_HTML = `<div class="career_box">
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.01.png)">
+            <dt>AI 콘텐츠 크리에이터</dt>
+            <dd>AI 기반 스토리텔링, 영상 제작, 웹툰·애니메이션 제작과 광고홍보/마케팅을 위한 다양한 목적의 AI 콘텐츠를 직접 기획하고 제작하는 전문가로 활동합니다.</dd>
+        </dl>
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.02.png)">
+            <dt>영화·엔터테인먼트 산업 전문가</dt>
+            <dd>시나리오, 캐릭터 디자인, 음악 제작 등에서 AI를 접목하여 몰입감 높은 K-영화·K-엔터테인먼트 콘텐츠를 개발합니다.</dd>
+        </dl>
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.03.png)">
+            <dt>AI 광고·홍보/마케팅 크리에이티브 디자이너</dt>
+            <dd>광고홍보/마케팅 분야의 디자인을 위해 AI가 만들어낸 이미지, 영상, 음악을 창의적으로 편집·연출하여 콘텐츠의 완성도를 높이는 디렉터로 활동할 수 있습니다.</dd>
+        </dl>
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.04.png)">
+            <dt>AI 뮤직/영상프로덕션 기획·개발자</dt>
+            <dd>인공지능 기술을 활용해 음악과 영상 콘텐츠를 기획·제작·개발하는 전문가로 엔터테인먼트 기업(아이돌/가수 콘텐츠 기획), OTT/미디어 플랫폼 등에서 활동할 수 있습니다.</dd>
+        </dl>
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.05.png)">
+            <dt>AI 아트 디렉터 / 크리에이티브 디자이너</dt>
+            <dd>AI가 만들어낸 이미지, 영상, 음악을 예술적 감각으로 편집·연출하여 창작물의 완성도를 높이는 디렉터로 활동할 수 있습니다.</dd>
+        </dl>
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.06.png)">
+            <dt>K-컬쳐/K-콘텐츠 문화산업 창업가</dt>
+            <dd>K-컬쳐/K-콘텐츠를 선도하는 웹툰 플랫폼, AI 뮤직 프로덕션, 디지털 전시·공연 기획 등 자신의 콘텐츠를 사업화하여 스타트업 창업에 도전할 수 있습니다.</dd>
+        </dl>
+        <dl class="col1" style="background-image: url(/_res/sjcu/ko/img/main/ai-creation_work.07.png)">
+            <dt>학문 연구 및 교육 분야</dt>
+            <dd>AI 창작 윤리, 저작권, 디지털 아트 이론 등 관련 연구를 이어가거나, 차세대 AI 창작자를 양성하는 교육자로 진출할 수 있습니다.</dd>
+        </dl>
+        </div>`;
+const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statTotal = document.getElementById('statTotal');
+        const statInBytes = document.getElementById('statInBytes');
+        const statOutBytes = document.getElementById('statOutBytes');
+        const optLabel = document.getElementById('optLabel');
+        const optWithLabel = document.getElementById('optWithLabel');
+        const optFromPath = document.getElementById('optFromPath');
+        const optToPath = document.getElementById('optToPath');
+        const optDotDash = document.getElementById('optDotDash');
+        const optMiddot = document.getElementById('optMiddot');
+        const optAutoRun = document.getElementById('optAutoRun');
+        const btnConvert = document.getElementById('btnConvert');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnSample = document.getElementById('btnSample');
+        const btnDownload = document.getElementById('btnDownload');
+        const fileInput = document.getElementById('fileInput');
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function cleanText(text) {
+            return (text || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        // Text w miejscu treści (tit/txt): escape & < >, dôatkowo · -> &middot;
+        function escapeContent(text, useMiddot) {
+            const t = escapeAttr(text);
+            return useMiddot ? t.replace(/\u00b7/g, '&middot;') : t;
+        }
+
+        function escapeAttr(text) {
+            return (text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;');
+        }
+
+        // Lấy url z inline style background-image: url(...)
+        function extractBgImage(styleAttr) {
+            if (!styleAttr) return '';
+            const m = styleAttr.match(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/i);
+            return m ? m[2] : '';
+        }
+
+        // Đổi path i .N w nazwie pliku na -N
+        function normalizeImagePath(src, opts) {
+            let out = src || '';
+            const from = opts.fromPath || '';
+            const to = opts.toPath || '';
+            if (from && out.indexOf(from) !== -1) {
+                out = out.replace(from, to);
+            }
+            if (opts.dotDash) {
+                const slash = out.lastIndexOf('/');
+                const fname = out.slice(slash + 1);
+                const fixed = fname.replace(/\.(\d{1,4})(\.[a-zA-Z0-9]{2,5})$/i, '-$1$2');
+                out = out.slice(0, slash + 1) + fixed;
+            }
+            return out;
+        }
+function extractCareers(input, opts) {
+            opts = opts || {};
+            const doc = new DOMParser().parseFromString(input, 'text/html');
+            if (doc.querySelector('parsererror')) {
+                throw new Error('HTML không hợp lệ!');
+            }
+            let dls = Array.from(doc.querySelectorAll('dl.col1'));
+            if (!dls.length) dls = Array.from(doc.querySelectorAll('dl'));
+            if (!dls.length) {
+                throw new Error('Không tìm thấy <dl> w input!');
+            }
+            const cards = [];
+            for (const dl of dls) {
+                const dt = dl.querySelector('dt');
+                const dd = dl.querySelector('dd');
+                const tit = cleanText(dt ? dt.textContent : '');
+                if (!tit) continue;
+                cards.push({
+                    tit: tit,
+                    txt: cleanText(dd ? dd.textContent : ''),
+                    img: normalizeImagePath(extractBgImage(dl.getAttribute('style')), opts)
+                });
+            }
+            if (!cards.length) {
+                throw new Error('Không tìm thấy <dt> w <dl>!');
+            }
+            return cards;
+        }
+function buildSlideHtml(card, opts) {
+            const pad6 = '\t'.repeat(6);
+            const pad7 = '\t'.repeat(7);
+            const src = escapeAttr(card.img);
+            const alt = escapeAttr(card.tit);
+            const tit = escapeContent(card.tit, opts.middot);
+            const txt = escapeContent(card.txt, opts.middot);
+            const label = escapeContent(opts.labelText || '', false);
+
+            const parts = [];
+            parts.push(pad6 + '<div class="swiper-slide">');
+            if (opts.withLabel && label) {
+                parts.push(pad7 + '<p class="label">' + label + '</p>');
+            }
+            parts.push(pad7 + '<div class="img"><img src="' + src + '" alt="' + alt + '"></div>');
+            parts.push(pad7 + '<p class="tit">' + tit + '</p>');
+            parts.push(pad7 + '<p class="txt">' + txt + '</p>');
+            parts.push(pad6 + '</div>');
+            return parts.join('\n');
+        }
+
+        function convertCareers(input, opts) {
+            opts = opts || {};
+            const cards = extractCareers(input, opts);
+            const rows = cards.map(function (c) {
+                return buildSlideHtml(c, {
+                    middot: !!opts.middot,
+                    withLabel: !!opts.withLabel,
+                    labelText: (opts.labelText || '').trim()
+                });
+            });
+            return '<div class="swiper-wrapper">\n' +
+                rows.join('\n') + '\n' +
+                '\t'.repeat(5) + '</div>';
+        }
+
+        function updateStats(input, output, count) {
+            inputCount.textContent = '(' + input.length + ' ký tự)';
+            outputCount.textContent = '(' + output.length + ' ký tự)';
+            statTotal.textContent = count || 0;
+            statInBytes.textContent = new Blob([input]).size.toLocaleString();
+            statOutBytes.textContent = new Blob([output]).size.toLocaleString();
+        }
+
+        function handleConvert() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Dán HTML career_box vào trước!');
+                return;
+            }
+            try {
+                const html = convertCareers(input, {
+                    fromPath: optFromPath.value.trim(),
+                    toPath: optToPath.value.trim(),
+                    dotDash: optDotDash.checked,
+                    middot: optMiddot.checked,
+                    withLabel: optWithLabel.checked,
+                    labelText: optLabel.value
+                });
+                outputText.value = html;
+                const cards = extractCareers(input, {
+                    fromPath: optFromPath.value.trim(),
+                    toPath: optToPath.value.trim(),
+                    dotDash: optDotDash.checked
+                });
+                updateStats(input, html, cards.length);
+                showToast('✅ Đã chuyển ' + cards.length + ' kart!');
+            } catch (e) {
+                outputText.value = '';
+                updateStats(input, '', 0);
+                showToast('❌ ' + e.message);
+            }
+        }
+
+        btnConvert.addEventListener('click', handleConvert);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ li để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', '', 0);
+            showToast('🗑️ Đã xoá');
+        });
+
+        btnSample.addEventListener('click', () => {
+            inputText.value = SAMPLE_HTML;
+            handleConvert();
+        });
+
+        btnDownload.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Xử lý trước đã!');
+                return;
+            }
+            const blob = new Blob([outputText.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'swiper-wrapper.html';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            showToast('⬇️ Đã tải swiper-wrapper.html');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                fileInput.value = '';
+                handleConvert();
+            };
+            reader.readAsText(file);
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = '(' + inputText.value.length + ' ký tự)';
+            if (optAutoRun.checked && inputText.value.trim()) {
+                handleConvert();
+            }
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleConvert();
+            }
+        });
+    </script>
+</body>
+</html>

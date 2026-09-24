@@ -282,6 +282,30 @@ Tool chuyển đổi danh sách môn học thành HTML `<ul class="course">`:
 
 **Cách dùng:** mở `course-converter.html` trong trình duyệt, dán HTML/text môn học vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-course-converter.js` để kiểm thử logic.
 
+## 🖼️ Swiper Converter Tool
+
+Tool chuyển đổi HTML `<div class="swiper-wrapper">` vào định format mới:
+- Tự động quét toàn bộ `<div class="swiper-slide">` trong input
+- Bỏ inline `style` (transform/width/margin-right) và class `swiper-slide-active/next`
+- Đặt `img alt` = text `p.tit` (thay 썸네일) — có tuỳ chọn giữ alt nguyên
+- Thêm link `<p class="more"><span>View more</span></p>` vào mọi slide — có tuỳ chọn bỏ
+- Giữ `href` (bao gồm `&amp;`), `rel`, `target`, `title`, `img src`
+- Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, ví dụ mẫu, tự động xử lý
+
+**Cách dùng:** mở `swiper-converter.html` trong trình duyệt, dán HTML `swiper-wrapper` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-swiper-converter.js` để kiểm thử logic.
+
+## 🧑‍💼 Career Converter Tool
+
+Tool chuyển đổi HTML `<div class="career_box">` (danh sách `<dl class="col1">`) thành `<div class="swiper-wrapper">` gồm `<div class="swiper-slide">`:
+- Mỗi `<dl>` → slide: `<dt>` → `<p class="tit">`, `<dd>` → `<p class="txt">`, `background-image: url(...)` → `<img src>`
+- Thêm `<p class="label">Meta tag</p>` vào mọi slide (text có tuỳ chọn, có checkbox bỏ)
+- `img alt` = text tit
+- Tuỳ chọn chuy đường ảnh: from/to path (mặc định `/ko/img/main/` → `/krsjcu/img/content/`) và `.N` w nazwie pliku → `-N` (`work.01.png` → `work-01.png`)
+- Tuỳ chọn chuy `·` → `&amp;middot;` w tit/txt (konwencja strony — khớp mẫu)
+- Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, ví dụ mẫu, tự động xử lý
+
+**Cách dùng:** mở `career-converter.html` trong trình duyệt, dán HTML `career_box` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-career-converter.js` để kiểm thử logic.
+
 ## 📝 License
 
 MIT

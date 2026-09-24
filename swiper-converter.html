@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiper Converter - Chuyển swiper-wrapper thành định format mới</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1200px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: normal; }
+        input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="number"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"] { width: 110px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: #666666; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+textarea { width: 100%; height: 420px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .stat-item .added { color: #8bc34a; font-weight: 700; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 240px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            🖼️ Swiper Converter
+            <span>swiper-wrapper → định format</span>
+        </h1>
+        <p class="subtitle">
+            Dán HTML dạng <code>&lt;div class="swiper-wrapper"&gt;</code> vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận HTML mới:
+            bỏ inline <code>style</code> và class <code>swiper-slide-active/next</code>, đặt <code>img alt</code> = text <code>p.tit</code>,
+            thêm link <code>&lt;p class="more"&gt;View more&lt;/p&gt;</code>. Chỉ tracks <code>&lt;div class="swiper-slide"&gt;</code> được giữ.
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🖼️ Ảnh thumb</div>
+                <label><input type="checkbox" id="optAltFromTit" checked> Đặt <code>img alt</code> = text <code>p.tit</code> (thay 썸네일)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">➕ View more</div>
+                <label><input type="checkbox" id="optMore" checked> Thêm <code>&lt;p class="more"&gt;&lt;span&gt;View more&lt;/span&gt;&lt;/p&gt;</code></label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán input</label>
+            </div>
+        </div>
+<div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input HTML (swiper-wrapper)
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;swiper-wrapper&quot;&gt;&lt;div class=&quot;swiper-slide&quot;&gt;...&lt;/div&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML (định format)
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quá chuyển đổi sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnConvert">⚡ Chuyển đổi</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🖼️ Tổng slide: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">📥 Input: <strong id="statInBytes">0</strong> bytes</div>
+            <div class="stat-item">📤 Output: <strong id="statOutBytes">0</strong> bytes</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // ===== Core converter: swiper-wrapper -> định format =====
+        const SAMPLE_HTML = `<div class="swiper-wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;">
+        <div class="swiper-slide swiper-slide-active" style="width: 446.667px; margin-right: 30px;">
+            <a href="/fire02/news/activities.do?mode=view&amp;articleNo=138394" title="새 창으로 열기" target="_blank" rel="noopener">
+                <div class="thumb_img"><img alt="썸네일" src="/app/board/attach/image/47590_1790148822937.do"></div>
+                <p class="tit">2026학년도 한마음축제_2026.9.19.(토)</p>
+            </a>
+        </div>
+        <div class="swiper-slide swiper-slide-next" style="width: 446.667px; margin-right: 30px;">
+            <a href="/fire02/news/activities.do?mode=view&amp;articleNo=138345" title="새 창으로 열기" target="_blank" rel="noopener">
+                <div class="thumb_img"><img alt="썸네일" src="/app/board/attach/image/47540_1789624971523.do"></div>
+                <p class="tit">2026학년도 한마음축제 안내_2026.9.19.(토)</p>
+            </a>
+        </div>
+        <div class="swiper-slide" style="width: 446.667px; margin-right: 30px;">
+            <a href="/fire02/news/activities.do?mode=view&amp;articleNo=138255" title="새 창으로 열기" target="_blank" rel="noopener">
+                <div class="thumb_img"><img alt="썸네일" src="/app/board/attach/image/47440_1788743955510.do"></div>
+                <p class="tit">소방설비기사, 소방시설관리사 등 자격증 대비 특강_2026.9.5.(토)</p>
+            </a>
+        </div>
+        <div class="swiper-slide" style="width: 446.667px; margin-right: 30px;">
+            <a href="/fire02/news/activities.do?mode=view&amp;articleNo=138248" title="새 창으로 열기" target="_blank" rel="noopener">
+                <div class="thumb_img"><img alt="썸네일" src="/app/board/attach/image/47429_1788423100457.do"></div>
+                <p class="tit">[공모전] AI와 소방안전의 융합, 일상을 지키는 재난안전 숏폼 공모전</p>
+            </a>
+        </div>
+        <div class="swiper-slide" style="width: 446.667px; margin-right: 30px;">
+            <a href="/fire02/news/activities.do?mode=view&amp;articleNo=138155" title="새 창으로 열기" target="_blank" rel="noopener">
+                <div class="thumb_img"><img alt="썸네일" src="/app/board/attach/image/47355_1787834976047.do"></div>
+                <p class="tit">소방설비기사, 소방시설관리사 등 자격증 대비 특강 안내_2026.9.5.(토)</p>
+            </a>
+        </div>
+        </div>`;
+const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statTotal = document.getElementById('statTotal');
+        const statInBytes = document.getElementById('statInBytes');
+        const statOutBytes = document.getElementById('statOutBytes');
+        const optAltFromTit = document.getElementById('optAltFromTit');
+        const optMore = document.getElementById('optMore');
+        const optAutoRun = document.getElementById('optAutoRun');
+        const btnConvert = document.getElementById('btnConvert');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnSample = document.getElementById('btnSample');
+        const btnDownload = document.getElementById('btnDownload');
+        const fileInput = document.getElementById('fileInput');
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function cleanText(text) {
+            return (text || '')
+                .replace(/\u00a0/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function escapeAttr(text) {
+            return (text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;');
+        }
+
+        // Trích dữ li từ mỗi swiper-slide
+        function extractSlides(input) {
+            const doc = new DOMParser().parseFromString(input, 'text/html');
+            if (doc.querySelector('parsererror')) {
+                throw new Error('HTML không hợp lệ!');
+            }
+            let slidesEl = Array.from(doc.querySelectorAll('div.swiper-slide'));
+            if (!slidesEl.length) {
+                slidesEl = Array.from(doc.querySelectorAll('.swiper-slide'));
+            }
+            const slides = [];
+            for (const slide of slidesEl) {
+                const a = slide.querySelector('a');
+                if (!a) continue;
+                const img = a.querySelector('img');
+                const titEl = a.querySelector('p.tit');
+                const tit = cleanText(titEl ? titEl.textContent : '');
+                slides.push({
+                    href: a.getAttribute('href') || '#',
+                    rel: a.getAttribute('rel') || 'noopener',
+                    target: a.getAttribute('target') || '_blank',
+                    title: a.getAttribute('title') || '새 창으로 열기',
+                    src: img ? img.getAttribute('src') || '' : '',
+                    tit: tit
+                });
+            }
+            if (!slides.length) {
+                throw new Error('Không tìm thấy .swiper-slide trong input!');
+            }
+            return slides;
+        }
+function buildSlideHtml(slide, opts) {
+            const pad6 = '\t'.repeat(6);
+            const pad7 = '\t'.repeat(7);
+            const href = escapeAttr(slide.href);
+            const rel = escapeAttr(slide.rel);
+            const target = escapeAttr(slide.target);
+            const title = escapeAttr(slide.title);
+            const src = escapeAttr(slide.src);
+            const alt = opts.altFromTit ? escapeAttr(slide.tit) : '썸네일';
+            const tit = escapeAttr(slide.tit);
+
+            const parts = [];
+            parts.push(pad6 + '<div class="swiper-slide"><a href="' + href + '" rel="' + rel + '" target="' + target + '" title="' + title + '">');
+            parts.push(pad7 + '<div class="thumb_img"><img alt="' + alt + '" src="' + src + '"></div>');
+            parts.push(pad7 + '<p class="tit">' + tit + '</p>');
+            if (opts.more) {
+                parts.push(pad7 + '<p class="more"><span>View more</span></p></a></div>');
+            } else {
+                parts[parts.length - 1] = parts[parts.length - 1] + '</a></div>';
+            }
+            return parts.join('\n');
+        }
+
+        function convertSwiper(input, opts) {
+            opts = opts || {};
+            const slides = extractSlides(input);
+            const rows = slides.map(function (s) {
+                return buildSlideHtml(s, {
+                    altFromTit: !!opts.altFromTit,
+                    more: !!opts.more
+                });
+            });
+            return '<div class="swiper-wrapper">\n' +
+                rows.join('\n') + '\n' +
+                '\t'.repeat(5) + '</div>';
+        }
+
+        function updateStats(input, output, count) {
+            inputCount.textContent = '(' + input.length + ' ký tự)';
+            outputCount.textContent = '(' + output.length + ' ký tự)';
+            statTotal.textContent = count || 0;
+            statInBytes.textContent = new Blob([input]).size.toLocaleString();
+            statOutBytes.textContent = new Blob([output]).size.toLocaleString();
+        }
+
+        function handleConvert() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Dán HTML swiper-wrapper vào trước!');
+                return;
+            }
+            try {
+                const html = convertSwiper(input, {
+                    altFromTit: optAltFromTit.checked,
+                    more: optMore.checked
+                });
+                outputText.value = html;
+                const slides = extractSlides(input);
+                updateStats(input, html, slides.length);
+                showToast('✅ Đã chuyển ' + slides.length + ' slides!');
+            } catch (e) {
+                outputText.value = '';
+                updateStats(input, '', 0);
+                showToast('❌ ' + e.message);
+            }
+        }
+
+        btnConvert.addEventListener('click', handleConvert);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ li để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', '', 0);
+            showToast('🗑️ Đã xoá');
+        });
+
+        btnSample.addEventListener('click', () => {
+            inputText.value = SAMPLE_HTML;
+            handleConvert();
+        });
+
+        btnDownload.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Xử lý trước đã!');
+                return;
+            }
+            const blob = new Blob([outputText.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'swiper-wrapper.html';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            showToast('⬇️ Đã tải swiper-wrapper.html');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                fileInput.value = '';
+                handleConvert();
+            };
+            reader.readAsText(file);
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = '(' + inputText.value.length + ' ký tự)';
+            if (optAutoRun.checked && inputText.value.trim()) {
+                handleConvert();
+            }
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleConvert();
+            }
+        });
+    </script>
+</body>
+</html>
