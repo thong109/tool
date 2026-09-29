@@ -64,7 +64,7 @@
         </h1>
         <p class="subtitle">
             Dán HTML chứa <code>&lt;dd&gt;&lt;span class="label"&gt;...&lt;/span&gt;&lt;/dd&gt;</code> vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận danh sách <code>&lt;ul class="course"&gt;</code> gồm các <code>&lt;li&gt;&lt;a class="popup-click"&gt;</code>.
-            <br>Hỗ trợ 2 dạng input: HTML chứa <code>&lt;span class="label"&gt;</code> hoặc text thuần (mỗi dòng một môn học). Tự động bỏ <code>&amp;nbsp;</code>, trim khoảng trắng và lọc dòng trống.
+            <br>Hỗ trợ các dạng input: HTML chứa <code>&lt;span class="label"&gt;</code> (dù nằm trong <code>&lt;dd&gt;</code> hay bọc trong thẻ <code>&lt;a href="..."&gt;</code>), hoặc text thuần (mỗi dòng một môn học). Tự động bỏ <code>&amp;nbsp;</code>, trim khoảng trắng và lọc dòng trống.
         </p>
 
         <div class="options">
@@ -91,10 +91,10 @@
         <div class="editor-area">
             <div class="editor-panel">
                 <label>
-                    📥 Input (span.label / text)
+                    📥 Input (span.label / a > span.label / text)
                     <span class="count" id="inputCount">(0 ký tự)</span>
                 </label>
-                <textarea id="inputText" placeholder="Paste HTML dạng &lt;dd&gt;&lt;span class=&quot;label&quot;&gt;...&lt;/span&gt;&lt;/dd&gt;, text mỗi dòng một môn học, hoặc chọn file .html..."></textarea>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;dd&gt;&lt;span class=&quot;label&quot;&gt;...&lt;/span&gt;&lt;/dd&gt; hoặc &lt;dd&gt;&lt;a href=&quot;...&quot;&gt;&lt;span class=&quot;label&quot;&gt;...&lt;/span&gt;&lt;/a&gt;&lt;/dd&gt;, text mỗi dòng một môn học, hoặc chọn file .html..."></textarea>
             </div>
             <div class="editor-panel">
                 <label>
@@ -142,7 +142,7 @@
     </script>
 
     <script>
-        // ===== Core converter: span.label / plain text -> ul.course =====
+        // ===== Core converter: span.label (kể cả bọc trong <a>) / plain text -> ul.course =====
         const SAMPLE_HTML = `<dd><span class="label">소방학개론</span><span class="label">소방법규해설</span><span class="label">재난관계법규&nbsp;</span><span class="label">재난관리론</span><span class="label">소방한국사</span><span class="label">도시방재론</span><span class="label">건축소방학</span><span class="label">위험물질론</span><span class="label">소방원론</span><span class="label">방재학개론</span><span class="label">재난대응사례론&nbsp;</span><span class="label">화재진압론</span><span class="label">응급처치론</span><span class="label">행정법</span><span class="label">화재폭발조사실무</span></dd>`;
         const inputText = document.getElementById('inputText');
         const outputText = document.getElementById('outputText');

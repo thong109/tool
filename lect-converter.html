@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lect Converter - Chuyển lect_cont thành swiper-slide (data-video)</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1200px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: normal; }
+        input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="number"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"] { width: 140px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: #666666; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+textarea { width: 100%; height: 420px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .stat-item .added { color: #8bc34a; font-weight: 700; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 240px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            🎞️ Lect Converter
+            <span>lect_cont → swiper-slide (data-video)</span>
+        </h1>
+        <p class="subtitle">
+            Dán HTML dạng <code>&lt;div class="pre_lect"&gt;&lt;div class="lect_cont"&gt;...&lt;/div&gt;&lt;/div&gt;</code> vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận <code>&lt;div class="swiper-wrapper"&gt;</code> gồm slides.
+            <br>Mỗi <code>.lect_cont</code> → slide: video YouTube (iframe <code>embed</code> / link <code>shorts</code>, <code>watch</code>, <code>youtu.be</code>) → <code>&lt;div class="img video-container" data-video="ID"&gt;&lt;/div&gt;</code>, ảnh link → <code>.img</code> + <code>&lt;a&gt;&lt;img&gt;</code>, <code>p.tit</code> → <code>p.txt01</code>. Indent bằng tab. Iframe không phải YouTube → giữ iframe (bỏ <code>sandbox</code>, thêm <code>data-gtm-yt-inspected-10</code>).
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🎬 Video YouTube → data-video</div>
+                <label><input type="checkbox" id="optDataVideo" checked> Xuất <code>&lt;div class="img video-container" data-video="ID"&gt;</code> (bỏ iframe)</label>
+                <label><input type="checkbox" id="optKeepThumb"> Giữ <code>&lt;a&gt;&lt;img&gt;</code> thumbnail trong <code>.video-container</code></label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎞️ Video iframe (khi tắt data-video / không phải YouTube)</div>
+                <label><input type="checkbox" id="optDataGtm" checked> Thêm <code>data-gtm-yt-inspected-10="true"</code></label>
+                <label><input type="checkbox" id="optIframeTitle" checked> <code>title</code> iframe = text <code>p.tit</code></label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🖼️ Ảnh link</div>
+                <label><input type="checkbox" id="optKeepImgStyle" checked> Giữ <code>style</code> với <code>&lt;img&gt;</code></label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán input</label>
+            </div>
+        </div>
+<div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input HTML (pre_lect / lect_cont)
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;pre_lect&quot;&gt;&lt;div class=&quot;lect_cont&quot;&gt;...&lt;/div&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML (swiper-wrapper)
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quá chuyển đổi sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnConvert">⚡ Chuyển đổi</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🎞️ Tổng slide: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">📥 Input: <strong id="statInBytes">0</strong> bytes</div>
+            <div class="stat-item">📤 Output: <strong id="statOutBytes">0</strong> bytes</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+
+    <script>
+        // Load header menu HTML
+        fetch('header-menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // ===== Core converter: lect_cont -> swiper-slide =====
+        const SAMPLE_HTML = `<div class="pre_lect no_line">
+        <div class="lect_cont"><span class="fr-video fr-fvc fr-dvi fr-draggable">
+            <iframe sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox" src="https://www.youtube.com/embed/FK_Gvz0q_yI?si=ehUPFbLq3QwWDRDu" frameborder="0" class="fr-draggable" title="외부 콘텐츠 프레임">
+            </iframe></span>
+            <div class="text_wrap">
+                <p class="tit">AI로 만든 뮤직비디오(사용 AI: SUNO + ChatGPT + Vrew)</p>
+            </div>
+        </div>
+        <div class="lect_cont"><a href="https://youtube.com/shorts/CN7-U-O3T-Q" target="_blank" rel="noopener"><img src="/_res/sjcu/ko/img/ai%EC%8B%A4%EB%AC%B4%ED%99%9C%EC%9A%A9%ED%95%99%EA%B3%BC_%EC%88%8F%EC%B8%A0.jpg" style="width: 100%; border-radius: 10px"></a>
+            <div class="text_wrap">
+                <p class="tit">AI로 만든 쇼츠(사용 AI: 클로드+브루)</p>
+            </div>
+        </div>
+        <div class="lect_cont"><a href="https://www.youtube.com/shorts/kaFrvk8harA" target="_blank" rel="noopener"><img src="/_res/sjcu/ko/img/%EC%99%B8%EA%B5%AD%EC%96%B4%EC%88%8F%EC%B8%A0.png" style="width: 100%; border-radius: 10px; height: 255px"></a>
+            <div class="text_wrap">
+                <p class="tit">AI로 만든 외국어로 말하기 영상(사용 AI: D-ID)</p>
+            </div>
+        </div>
+        </div>`;
+        function cleanText(str) {
+            if (!str) return '';
+            return str
+                .replace(/\u00a0/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function escapeAttr(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function extractYoutubeId(url) {
+            if (!url) return '';
+            const u = String(url).trim();
+            const patterns = [
+                /(?:youtube\.com|youtube-nocookie\.com)\/(?:embed|v|shorts|live)\/([A-Za-z0-9_-]{6,})/,
+                /youtube\.com\/watch\?(?:[^#]*&)?v=([A-Za-z0-9_-]{6,})/,
+                /youtu\.be\/([A-Za-z0-9_-]{6,})/
+            ];
+            for (let i = 0; i < patterns.length; i++) {
+                const m = u.match(patterns[i]);
+                if (m) return m[1];
+            }
+            return '';
+        }
+
+        function extractLectures(htmlString) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+            if (doc.querySelector('parsererror')) {
+                throw new Error('Mã HTML không hợp lệ!');
+            }
+
+            let conts = Array.from(doc.querySelectorAll('div.lect_cont'));
+            if (!conts.length) conts = Array.from(doc.querySelectorAll('.lect_cont'));
+            if (!conts.length) {
+                throw new Error('Không tìm thấy phần tử .lect_cont nào trong HTML!');
+            }
+
+            const items = [];
+            for (const cont of conts) {
+                const titEl = cont.querySelector('.text_wrap p.tit') || cont.querySelector('p.tit');
+                const tit = cleanText(titEl ? titEl.textContent : '');
+
+                const iframe = cont.querySelector('iframe');
+                const anchor = cont.querySelector('a');
+                const img = cont.querySelector('img');
+                const videoEl = cont.querySelector('[data-video]');
+
+                // Ưu tiên data-video có sẵn → iframe embed YouTube → link YouTube (shorts / watch / youtu.be)
+                const videoId = cleanText(videoEl ? videoEl.getAttribute('data-video') : '')
+                    || extractYoutubeId(iframe ? iframe.getAttribute('src') : '')
+                    || extractYoutubeId(anchor ? anchor.getAttribute('href') : '');
+
+                items.push({
+                    tit,
+                    videoId,
+                    iframe: iframe ? {
+                        src: iframe.getAttribute('src') || '',
+                        frameborder: iframe.getAttribute('frameborder') || '0',
+                        klass: iframe.getAttribute('class') || 'fr-draggable'
+                    } : null,
+                    link: anchor ? {
+                        href: anchor.getAttribute('href') || '',
+                        target: anchor.getAttribute('target') || '_blank',
+                        rel: anchor.getAttribute('rel') || 'noopener'
+                    } : null,
+                    img: img ? {
+                        src: img.getAttribute('src') || '',
+                        style: img.getAttribute('style') || ''
+                    } : null
+                });
+            }
+
+            return items;
+        }
+
+        function buildSlide(item, opts) {
+            const t1 = '\t';
+            const t2 = t1 + t1;
+            const t3 = t2 + t1;
+            const t4 = t3 + t1;
+            const t5 = t4 + t1;
+            const t6 = t5 + t1;
+
+            const titEscAttr = escapeAttr(item.tit);
+            const titEscHtml = escapeHtml(item.tit);
+            const useDataVideo = opts.dataVideo !== false;
+            const imgStyleAttr = (opts.keepImgStyle && item.img && item.img.style) ? (' style="' + escapeAttr(item.img.style) + '"') : '';
+            const thumbLink = (item.link && item.img)
+                ? (t4 + '<a href="' + escapeAttr(item.link.href) + '" target="' + escapeAttr(item.link.target) + '" rel="' + escapeAttr(item.link.rel) + '"><img src="' + escapeAttr(item.img.src) + '"' + imgStyleAttr + '></a>')
+                : '';
+
+            const lines = [];
+            lines.push(t1 + '<div class="swiper-slide">');
+            lines.push(t2 + '<div class="item">');
+
+            if (item.videoId && useDataVideo) {
+                // YouTube -> <div class="img video-container" data-video="ID"></div>
+                lines.push(t3 + '<div class="img video-container" data-video="' + escapeAttr(item.videoId) + '">');
+                if (opts.keepThumb && thumbLink) lines.push(thumbLink);
+                lines.push(t3 + '</div>');
+            } else if (item.iframe && item.iframe.src) {
+                const extraGtm = opts.dataGtm ? ' data-gtm-yt-inspected-10="true"' : '';
+                const titleAttr = opts.iframeTitle ? (' title="' + titEscAttr + '"') : '';
+                const frameborder = item.iframe.frameborder || '0';
+                const klass = item.iframe.klass || 'fr-draggable';
+
+                lines.push(t3 + '<div class="img video-container"><span class="fr-video fr-fvc fr-dvi fr-draggable">');
+                lines.push(t5 + '<iframe src="' + escapeAttr(item.iframe.src) + '" frameborder="' + escapeAttr(frameborder) + '"');
+                lines.push(t6 + 'class="' + escapeAttr(klass) + '"' + titleAttr + extraGtm + '>');
+                lines.push(t5 + '</iframe></span></div>');
+            } else if (item.link && item.img) {
+                lines.push(t3 + '<div class="img"><a href="' + escapeAttr(item.link.href) + '" target="' + escapeAttr(item.link.target) + '" rel="' + escapeAttr(item.link.rel) + '"><img src="' + escapeAttr(item.img.src) + '"' + imgStyleAttr + '></a></div>');
+            } else if (item.img) {
+                lines.push(t3 + '<div class="img"><img src="' + escapeAttr(item.img.src) + '"' + imgStyleAttr + '></div>');
+            } else {
+                lines.push(t3 + '<div class="img"></div>');
+            }
+
+            lines.push(t3 + '<div class="txt">');
+            lines.push(t4 + '<p class="txt01">' + titEscHtml + '</p>');
+            lines.push(t3 + '</div>');
+            lines.push(t2 + '</div>');
+            lines.push(t1 + '</div>');
+
+            return lines.join('\n');
+        }
+        function convertLectures(htmlString, opts) {
+            opts = opts || {};
+            const items = extractLectures(htmlString);
+            const slides = items.map(it => buildSlide(it, opts));
+            return '<div class="swiper-wrapper">\n' + slides.join('\n') + '\n</div>';
+        }
+
+        // ===== UI wiring =====
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statTotal = document.getElementById('statTotal');
+        const statInBytes = document.getElementById('statInBytes');
+        const statOutBytes = document.getElementById('statOutBytes');
+        const toast = document.getElementById('toast');
+
+        const optDataVideo = document.getElementById('optDataVideo');
+        const optKeepThumb = document.getElementById('optKeepThumb');
+        const optDataGtm = document.getElementById('optDataGtm');
+        const optIframeTitle = document.getElementById('optIframeTitle');
+        const optKeepImgStyle = document.getElementById('optKeepImgStyle');
+        const optAutoRun = document.getElementById('optAutoRun');
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        function getOptions() {
+            return {
+                dataVideo: optDataVideo ? optDataVideo.checked : true,
+                keepThumb: optKeepThumb ? optKeepThumb.checked : false,
+                dataGtm: optDataGtm ? optDataGtm.checked : true,
+                iframeTitle: optIframeTitle ? optIframeTitle.checked : true,
+                keepImgStyle: optKeepImgStyle ? optKeepImgStyle.checked : true
+            };
+        }
+
+        function updateStats(itemsCount) {
+            const inBytes = new TextEncoder().encode(inputText.value || '').length;
+            const outBytes = new TextEncoder().encode(outputText.value || '').length;
+            inputCount.textContent = `(${inputText.value.length} ký tự)`;
+            outputCount.textContent = `(${outputText.value.length} ký tự)`;
+            statTotal.textContent = itemsCount;
+            statInBytes.textContent = inBytes.toLocaleString();
+            statOutBytes.textContent = outBytes.toLocaleString();
+        }
+
+        function doConvert() {
+            const raw = inputText.value.trim();
+            if (!raw) {
+                showToast('⚠️ Vui lòng dán HTML vào ô input!');
+                return;
+            }
+            try {
+                const opts = getOptions();
+                const items = extractLectures(raw);
+                const out = convertLectures(raw, opts);
+                outputText.value = out;
+                updateStats(items.length);
+                showToast(`✅ Đã chuyển thành công ${items.length} slide!`);
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+                console.error(err);
+            }
+        }
+
+        document.getElementById('btnConvert').addEventListener('click', doConvert);
+
+        document.getElementById('btnCopy').addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có nội dung để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy HTML vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy!');
+            });
+        });
+
+        document.getElementById('btnSample').addEventListener('click', () => {
+            inputText.value = SAMPLE_HTML;
+            updateStats(0);
+            doConvert();
+        });
+
+        document.getElementById('btnClear').addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats(0);
+            showToast('🗑️ Đã xoá toàn bộ nội dung');
+        });
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                inputText.value = ev.target.result;
+                updateStats(0);
+                if (optAutoRun.checked) doConvert();
+                showToast(`📂 Đã nạp file "${file.name}"`);
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            const content = outputText.value;
+            if (!content.trim()) {
+                showToast('⚠️ Không có nội dung để tải về!');
+                return;
+            }
+            const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lect-swiper.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('⬇️ Đã tải xuống file lect-swiper.html');
+        });
+
+        inputText.addEventListener('input', () => {
+            updateStats(0);
+            if (optAutoRun && optAutoRun.checked) {
+                try {
+                    const opts = getOptions();
+                    const items = extractLectures(inputText.value);
+                    outputText.value = convertLectures(inputText.value, opts);
+                    updateStats(items.length);
+                } catch (e) {
+                    // chờ người dùng nhập xong
+                }
+            }
+        });
+    </script>
+</body>
+</html>

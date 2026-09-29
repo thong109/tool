@@ -64,14 +64,14 @@ textarea { width: 100%; height: 420px; padding: 16px; background: #111111; color
         </h1>
         <p class="subtitle">
             Dán HTML dạng <code>&lt;div class="swiper-wrapper"&gt;</code> vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận HTML mới:
-            bỏ inline <code>style</code> và class <code>swiper-slide-active/next</code>, đặt <code>img alt</code> = text <code>p.tit</code>,
+            bỏ inline <code>style</code> và class <code>swiper-slide-active/next</code>, đặt <code>img alt</code> và <code>title</code> của thẻ <code>&lt;a&gt;</code> = text <code>p.tit</code>,
             thêm link <code>&lt;p class="more"&gt;View more&lt;/p&gt;</code>. Chỉ tracks <code>&lt;div class="swiper-slide"&gt;</code> được giữ.
         </p>
 
         <div class="options">
             <div class="option-group">
-                <div class="group-title">🖼️ Ảnh thumb</div>
-                <label><input type="checkbox" id="optAltFromTit" checked> Đặt <code>img alt</code> = text <code>p.tit</code> (thay 썸네일)</label>
+                <div class="group-title">🖼️ Ảnh thumb &amp; title thẻ a</div>
+                <label><input type="checkbox" id="optAltFromTit" checked> Đặt <code>img alt</code> + <code>title</code> thẻ <code>&lt;a&gt;</code> = text <code>p.tit</code> (thay 썸네일 / 새 창으로 열기)</label>
             </div>
             <div class="option-group">
                 <div class="group-title">➕ View more</div>
@@ -245,7 +245,8 @@ function buildSlideHtml(slide, opts) {
             const href = escapeAttr(slide.href);
             const rel = escapeAttr(slide.rel);
             const target = escapeAttr(slide.target);
-            const title = escapeAttr(slide.title);
+            // title của thẻ <a> = text p.tit (giống img alt), fallback về title gốc nếu không có tit
+            const title = escapeAttr(opts.altFromTit && slide.tit ? slide.tit : slide.title);
             const src = escapeAttr(slide.src);
             const alt = opts.altFromTit ? escapeAttr(slide.tit) : '썸네일';
             const tit = escapeAttr(slide.tit);

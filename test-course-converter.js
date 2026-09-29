@@ -128,6 +128,24 @@ assert.strictEqual(cheerio.load(htmlPlain)('ul.course > li').length, 3, 'Text th
 const htmlBlank = convertReal('소방학개론\n\n행정법\n', { detailBase: 888, incrementId: false, href: '#a' });
 assert.strictEqual(cheerio.load(htmlBlank)('ul.course > li').length, 2, 'Bỏ dòng trống');
 
+// ============ 4b. Input dạng <dd><a href="..."><span class="label">...</span></a></dd> ============
+const CERT_HTML = `<dd><a href="https://cms.sjcu.ac.kr/ko/dept/software-engineering-certificate.do?major_tab=0&amp;sub_tab=0"><span class="label">정보처리기사</span></a><a href="https://cms.sjcu.ac.kr/ko/dept/software-engineering-certificate.do?major_tab=1&amp;sub_tab=0"><span class="label">전자계산조직응용기사</span></a><a href="https://cms.sjcu.ac.kr/ko/dept/software-engineering-certificate.do?major_tab=3&amp;sub_tab=0"><span class="label">임베디드기사</span></a><a href="https://cms.sjcu.ac.kr/ko/dept/software-engineering-certificate.do?major_tab=5&amp;sub_tab=0"><span class="label">SW테스트전문가(CSTS)</span></a><a href="https://cms.sjcu.ac.kr/ko/dept/software-engineering-certificate.do?major_tab=6&amp;sub_tab=0"><span class="label">컴퓨터활용능력평가1급</span></a><a href="https://cms.sjcu.ac.kr/ko/dept/software-engineering-certificate.do?major_tab=7&amp;sub_tab=0"><span class="label">리눅스마스터1급</span></a></dd>`;
+const certOut = convertReal(CERT_HTML, { detailBase: 888, incrementId: false, href: '#a' });
+const $cert = cheerio.load(certOut, { decodeEntities: false });
+assert.strictEqual($cert('ul.course > li').length, 6, 'Input <a><span class="label"> phải ra 6 mục');
+assert.strictEqual($cert('ul.course > li a').first().attr('title'), '정보처리기사', 'title = text label');
+assert.strictEqual($cert('ul.course > li a').eq(3).text(), 'SW테스트전문가(CSTS)', 'nội dung = text label');
+assert.strictEqual($cert('ul.course > li a').eq(3).attr('title'), 'SW테스트전문가(CSTS)', 'title giữ nguyên dấu ngoặc');
+assert.strictEqual($cert('ul.course > li a').eq(5).attr('id'), 'detail-888', 'id mặc định 888');
+assert.ok(certOut.indexOf('cms.sjcu.ac.kr') === -1, 'href gốc của <a> không đưa vào output (mặc định #a)');
+
+// Biến thể copy từ trang: có xuống dòng + indent, &amp; trong href
+const CERT_MULTILINE = `<dd>
+            <a href="https://cms.sjcu.ac.kr/ko/dept/x.do?major_tab=0&amp;sub_tab=0"><span class="label">정보처리기사</span></a>
+            <a href="https://cms.sjcu.ac.kr/ko/dept/x.do?major_tab=1&amp;sub_tab=0"><span class="label">전자계산조직응용기사</span></a>
+        </dd>`;
+assert.strictEqual(cheerio.load(convertReal(CERT_MULTILINE, { detailBase: 888, incrementId: false, href: '#a' }))('ul.course > li').length, 2, 'Biến thể xuống dòng vẫn đúng');
+
 // ============ 5. Lỗi ============
 assert.throws(function () {
     convertReal('', {});

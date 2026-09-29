@@ -273,7 +273,7 @@ Tool chuyển đổi HTML khối `diff_cont` (danh sách `<dl><dt><dd>`) thành 
 ## 🎓 Course Converter Tool
 
 Tool chuyển đổi danh sách môn học thành HTML `<ul class="course">`:
-- Nhận 2 dạng input: HTML chứa `<span class="label">` (tự động quét toàn bộ input) hoặc text thuần (mỗi dòng một môn học)
+- Nhận nhiều dạng input: HTML chứa `<span class="label">` (tự động quét toàn bộ input, kể cả khi bọc trong `<a href="...">` như `<dd><a href="..."><span class="label">정보처리기사</span></a>...</dd>`) hoặc text thuần (mỗi dòng một môn học)
 - Mỗi `<span class="label">...` → `<li><a class="popup-click" href="#a" id="detail-888" title="...">...</a></li>`
 - Tự động bỏ `&nbsp;`, trim khoảng trắng và lọc dòng trống
 - Tuỳ chọn ID: giữ cố định số bắt đầu (mặc định `888`) hoặc tăng dần theo từng môn
@@ -287,9 +287,9 @@ Tool chuyển đổi danh sách môn học thành HTML `<ul class="course">`:
 Tool chuyển đổi HTML `<div class="swiper-wrapper">` vào định format mới:
 - Tự động quét toàn bộ `<div class="swiper-slide">` trong input
 - Bỏ inline `style` (transform/width/margin-right) và class `swiper-slide-active/next`
-- Đặt `img alt` = text `p.tit` (thay 썸네일) — có tuỳ chọn giữ alt nguyên
+- Đặt `img alt` và `title` của thẻ `<a>` = text `p.tit` (thay `썸네일` / `새 창으로 열기`) — có tuỳ chọn giữ nguyên giá trị gốc
 - Thêm link `<p class="more"><span>View more</span></p>` vào mọi slide — có tuỳ chọn bỏ
-- Giữ `href` (bao gồm `&amp;`), `rel`, `target`, `title`, `img src`
+- Giữ `href` (bao gồm `&amp;`), `rel`, `target`, `img src`
 - Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, ví dụ mẫu, tự động xử lý
 
 **Cách dùng:** mở `swiper-converter.html` trong trình duyệt, dán HTML `swiper-wrapper` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-swiper-converter.js` để kiểm thử logic.
@@ -305,6 +305,39 @@ Tool chuyển đổi HTML `<div class="career_box">` (danh sách `<dl class="col
 - Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, ví dụ mẫu, tự động xử lý
 
 **Cách dùng:** mở `career-converter.html` trong trình duyệt, dán HTML `career_box` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-career-converter.js` để kiểm thử logic.
+
+## 🎞️ Lect Converter Tool
+
+Tool chuyển đổi HTML bài giảng dạng `<div class="pre_lect">` (gồm các block `<div class="lect_cont">`) thành `<div class="swiper-wrapper">`:
+- Mỗi `.lect_cont` chuyển thành 1 slide: `<div class="swiper-slide"><div class="item">...</div></div>` (indent bằng tab)
+- **Video YouTube** (iframe `youtube.com/embed/...` hoặc link `shorts`, `watch?v=`, `youtu.be`):
+  - Tách video ID và xuất `<div class="img video-container" data-video="ID"></div>` — bỏ iframe, bỏ thumbnail ảnh (tuỳ chọn `optKeepThumb` để giữ `<a><img>` bên trong container)
+  - Nếu input đã có `data-video` sẵn thì giữ nguyên ID (convert lại vẫn đúng)
+- **Video iframe không phải YouTube** (Vimeo, ...): giữ `<div class="img video-container"><span class="fr-video fr-fvc fr-dvi fr-draggable"><iframe ...></iframe></span></div>`
+  - Loại bỏ thuộc tính `sandbox`
+  - Tự động gán `title` của iframe bằng nội dung tiêu đề `p.tit`
+  - Bổ sung `data-gtm-yt-inspected-10="true"` (chuẩn tracking theo mẫu)
+- **Ảnh / Liên kết khác:**
+  - Chuyển vào `<div class="img"><a href="..." target="_blank" rel="noopener"><img src="..."></a></div>`
+  - Giữ nguyên thuộc tính `style` kích thước (width, border-radius, height)
+- **Tiêu đề:** Chuyển `<div class="text_wrap"><p class="tit">` thành `<div class="txt"><p class="txt01">`
+- Đầy đủ tính năng: Dán mẫu, Copy, Tải file HTML, Đọc file, Tự động chuyển đổi khi nhập liệu.
+
+**Cách dùng:** mở `lect-converter.html` trong trình duyệt hoặc chạy `node test-lect-converter.js` để kiểm thử logic.
+
+## 📦 Course02 Box Converter Tool
+
+Tool chuyển đổi khối `<div class="subj_cont">` (trang giới thiệu khoa: `p.tit` + 2 `<dl><dt>/<dd>`) thành `<div class="box">` theo template mới:
+- `p.tit` → `p.txt01` (bỏ `<br>` và nút bọc trong `<a>` như "과정 상세보기"), `p.cat` = `Course NN` (tuỳ chọn số, mặc định `03`, tự tăng khi input có nhiều block)
+- `<dl>` thứ nhất (`dt` + `dd > span.label`) → `<div class="bot01">` với `<p class="tit">` + `<ul class="course">`
+- `<dl>` thứ hai (`dt` + `dd > a > span.label`) → `<div class="bot02">` với `<p class="tit">` + `<ul class="area">`
+- Mỗi môn trong `ul.course` → `<li><a class="popup-click" href="#a" id="detail-888" title="...">...</a></li>` (tuỳ chọn tăng dần id)
+- `<div class="btn">` chèn sẵn: `.pc > a.more popup-click` + `.mo > a.view` + `.mo > a.detail popup-click`, `tab` tự lấy `major_tab` từ link trong `p.tit` (mặc định `1`), `id` popup mặc định `5627`
+- Bỏ inline `style` (background-image) và href gốc của CMS; hỗ trợ nhiều khối `.subj_cont` cùng lúc, fallback khi input không có wrapper
+- Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, ví dụ mẫu, tự động xử lý
+
+**Cách dùng:** mở `course02.html` trong trình duyệt, dán HTML `subj_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-course02.js` để kiểm thử logic.
+
 
 ## 📝 License
 

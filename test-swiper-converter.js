@@ -101,7 +101,7 @@ assert.ok(!a1.attr('style'), 'a không có style');
 assert.ok(html.includes('href="/fire02/news/activities.do?mode=view&amp;articleNo=138394"'), 'href giữ với &amp; trong source');
 assert.strictEqual(a1.attr('rel'), 'noopener');
 assert.strictEqual(a1.attr('target'), '_blank');
-assert.strictEqual(a1.attr('title'), '새 창으로 열기');
+assert.strictEqual(a1.attr('title'), '2026학년도 한마음축제_2026.9.19.(토)', 'a title = text tit');
 const img1 = a1.find('img');
 assert.strictEqual(img1.attr('alt'), '2026학년도 한마음축제_2026.9.19.(토)', 'img alt = text tit');
 assert.strictEqual(img1.attr('src'), '/app/board/attach/image/47590_1790148822937.do', 'img src giữ');
@@ -122,6 +122,18 @@ assert.ok(!htmlNoMore.includes('class="more"'), 'more=false -> không có p.more
 
 const htmlNoAlt = convertReal(SAMPLE, { altFromTit: false, more: true });
 assert.ok(htmlNoAlt.includes('alt="썸네일"'), 'altFromTit=false -> giữ alt 썸네일');
+assert.ok(htmlNoAlt.includes('title="새 창으로 열기"'), 'altFromTit=false -> giữ title gốc');
+
+// <a title> = text p.tit (giống img alt), không còn 새 창으로 열기
+assert.ok(!html.includes('title="새 창으로 열기"'), 'title gốc phải bị thay bằng text tit');
+assert.ok(html.includes('title="2026학년도 한마음축제_2026.9.19.(토)"'), 'slide 1: a title = text tit');
+assert.ok(html.includes('title="소방설비기사, 소방시설관리사 등 자격증 대비 특강_2026.9.5.(토)"'), 'slide 3: a title = text tit');
+const titles = $out('div.swiper-wrapper > div.swiper-slide > a').map(function () { return $out(this).attr('title'); }).get();
+assert.strictEqual(titles.length, 5, 'Mỗi slide có 1 thẻ a');
+titles.forEach(function (t, i) {
+    assert.strictEqual(t, $out('div.swiper-wrapper > div.swiper-slide').eq(i).find('img').attr('alt'),
+        `slide ${i + 1}: a title khớp img alt (đều = text tit)`);
+});
 
 // ============ 5. Lỗi ============
 assert.throws(function () {

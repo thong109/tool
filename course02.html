@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course02 Box Converter - subj_cont thành div.box</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1200px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: nowrap; }
+        input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="number"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: #666666; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+        textarea { width: 100%; height: 460px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; tab-size: 4; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 260px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            📦 Course02 Box Converter
+            <span>subj_cont → div.box</span>
+        </h1>
+        <p class="subtitle">
+            Dán khối <code>&lt;div class="subj_cont"&gt;</code> (gồm <code>&lt;p class="tit"&gt;</code> + 2 <code>&lt;dl&gt;</code> chứa <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;&lt;span class="label"&gt;</code>) vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận về <code>&lt;div class="box"&gt;</code> với <code>.top</code> (<code>p.cat</code> + <code>p.txt01</code>), <code>.bot</code> (<code>.bot01</code> = <code>ul.course</code>, <code>.bot02</code> = <code>ul.area</code>) và <code>.btn</code> (View more / 자세히보기).
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🎓 Course</div>
+                <label>
+                    Course số:
+                    <input type="text" id="optCourseNo" value="03">
+                </label>
+                <label><input type="checkbox" id="optAutoCourseNo" checked> Tự tăng Course số khi input có nhiều block</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🔢 ID môn học</div>
+                <label>
+                    Số bắt đầu (detail-):
+                    <input type="number" id="optDetailBase" value="888" min="0" max="99999">
+                </label>
+                <label><input type="checkbox" id="optIncrementId"> Tăng dần id theo từng môn (detail-888, detail-889, ...)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🧭 Popup (.btn)</div>
+                <label>
+                    id popup:
+                    <input type="text" id="optPopupId" value="5627">
+                </label>
+                <label>
+                    tab:
+                    <input type="text" id="optTab" value="auto" title="auto = tự lấy major_tab từ link trong p.tit">
+                </label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🔗 Link</div>
+                <label>
+                    href:
+                    <input type="text" id="optHref" value="#a">
+                </label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán input</label>
+            </div>
+        </div>
+
+        <div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input (div.subj_cont)
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;subj_cont&quot;&gt;&lt;p class=&quot;tit&quot;&gt;...&lt;/p&gt;&lt;dl&gt;&lt;dt&gt;...&lt;/dt&gt;&lt;dd&gt;&lt;span class=&quot;label&quot;&gt;...&lt;/span&gt;&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML (div.box)
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quả chuyển đổi sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnConvert">⚡ Chuyển đổi</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">📚 Tổng môn học: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">📦 Số box: <strong id="statBox">0</strong></div>
+            <div class="stat-item">📥 Input: <strong id="statInBytes">0</strong> bytes</div>
+            <div class="stat-item">📤 Output: <strong id="statOutBytes">0</strong> bytes</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Nạp global header menu
+        fetch('header-menu.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    if (link.getAttribute('data-page') === 'course02') link.classList.add('active');
+                });
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // ===== Core converter: div.subj_cont -> div.box =====
+        const SAMPLE_HTML = `<div class="subj_cont on" style="
+											 background-image: url(/_res/sjcu/ko/img/dept/real_estate_asset_intro_subj_bg_1.jpg);
+											 ">
+				<p class="tit"><br>경ㆍ공매투자 전문가 과정 <a class="btn01 detail_ic first" href="/ko/dept/real-estate-asset-expert.do?major_tab=1"><span>과정 상세보기</span></a></p>
+				<dl>
+					<dt>전문가가 되기 위한 교과목 안내</dt>
+					<dd><span class="label">현대부동산학의이해</span><span class="label">생활속의부동산과투자</span><span class="label">경매와부실채권(NPL)투자실무</span><span class="label">부동산경매</span><span class="label">부동산자산관리론</span><span class="label">부동산금융론</span><span class="label">부동산투자와금융상품론</span><span class="label">부동산권리분석과경공매투자실무</span><span class="label">부동산시장분석과투자개발사례</span><span class="label">부동산개발프로젝트</span><span class="label">토지및수익용부동산투자실무</span><span class="label">부동산기업창업경영</span><span class="label">부동산경매사례와권리분석</span><span class="label">AI를활용한놀라운부동산투자분석</span></dd>
+				</dl>
+				<dl>
+					<dt>취득 수료증</dt>
+					<dd><a href="/ko/dept/real-estate-asset-expert.do?major_tab=1" class="last"><span class="label">경ㆍ공매투자 전문가</span></a></dd>
+				</dl>
+			</div>`;
+
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statTotal = document.getElementById('statTotal');
+        const statBox = document.getElementById('statBox');
+        const statInBytes = document.getElementById('statInBytes');
+        const statOutBytes = document.getElementById('statOutBytes');
+        const optCourseNo = document.getElementById('optCourseNo');
+        const optAutoCourseNo = document.getElementById('optAutoCourseNo');
+        const optDetailBase = document.getElementById('optDetailBase');
+        const optIncrementId = document.getElementById('optIncrementId');
+        const optPopupId = document.getElementById('optPopupId');
+        const optTab = document.getElementById('optTab');
+        const optHref = document.getElementById('optHref');
+        const optAutoRun = document.getElementById('optAutoRun');
+        const btnConvert = document.getElementById('btnConvert');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnSample = document.getElementById('btnSample');
+        const btnDownload = document.getElementById('btnDownload');
+        const fileInput = document.getElementById('fileInput');
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Trim + bỏ nbsp + chuẩn hoá khoảng trắng
+        function cleanText(text) {
+            return (text || '')
+                .replace(/\u00a0/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function escapeHtml(text) {
+            return String(text == null ? '' : text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Text của p.tit, bỏ nút <a> (vd "과정 상세보기") và <br>
+        function titleText(el, skipTags) {
+            if (!el) return '';
+            const skip = skipTags || ['a', 'button'];
+            const nodes = el.childNodes;
+            if (nodes && nodes.length) {
+                let out = '';
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    const type = node.nodeType;
+                    if (type === 3) {
+                        out += node.nodeValue || '';
+                        continue;
+                    }
+                    if (type !== 1) continue;
+                    const tag = String(node.tagName || node.nodeName || '').toLowerCase();
+                    if (skip.indexOf(tag) !== -1) continue;
+                    if (tag === 'br') {
+                        out += ' ';
+                        continue;
+                    }
+                    out += titleText(node, skip);
+                }
+                return cleanText(out);
+            }
+            // Fallback (không có childNodes): bỏ text của các thẻ <a> khỏi chuỗi
+            let out = cleanText(el.textContent);
+            Array.from(el.querySelectorAll('a')).forEach(a => {
+                const linkText = cleanText(a.textContent);
+                if (linkText) out = out.replace(linkText, ' ');
+            });
+            return cleanText(out);
+        }
+
+        // Danh sách label trong <dd>: ưu tiên <a> hoặc <span class="label">
+        function labelsFromDd(dd, preferAnchors) {
+            if (!dd) return [];
+            const anchors = Array.from(dd.querySelectorAll('a'));
+            const spans = Array.from(dd.querySelectorAll('span.label'));
+            const picked = (preferAnchors && anchors.length) ? anchors : (spans.length ? spans : anchors);
+            const labels = picked
+                .map(node => cleanText(node.textContent))
+                .filter(Boolean);
+            if (!labels.length) {
+                const direct = cleanText(dd.textContent);
+                if (direct) labels.push(direct);
+            }
+            return labels;
+        }
+
+        // major_tab trong link của p.tit (vd ?major_tab=1)
+        function extractMajorTab(block) {
+            if (!block) return '';
+            const link = block.querySelector('p.tit a') || block.querySelector('a[href*="major_tab"]');
+            if (!link || typeof link.getAttribute !== 'function') return '';
+            const href = link.getAttribute('href') || '';
+            const match = href.match(/major_tab=(\d+)/i);
+            return match ? match[1] : '';
+        }
+
+        function pad2(num) {
+            const str = String(num);
+            return str.length < 2 ? '0' + str : str;
+        }
+
+        // Tìm tất cả block .subj_cont trong input
+        function extractBlocks(input) {
+            if (!input || !input.trim()) throw new Error('Chưa có input!');
+            const doc = new DOMParser().parseFromString(input, 'text/html');
+            if (doc.querySelector('parsererror')) throw new Error('HTML input không hợp lệ!');
+
+            let blocks = Array.from(doc.querySelectorAll('div.subj_cont'));
+            if (!blocks.length) blocks = Array.from(doc.querySelectorAll('.subj_cont'));
+            if (blocks.length) return blocks;
+
+            // Fallback: input không có div.subj_cont -> coi cả input là 1 block
+            const body = doc.body;
+            if (body && (body.querySelector('p.tit') || body.querySelector('dl'))) return [body];
+            throw new Error('Không tìm thấy khối .subj_cont (cần <p class="tit"> và <dl><dd>...) nào trong input!');
+        }
+
+        // 1 block .subj_cont -> 1 div.box
+        function buildBox(block, opts) {
+            const href = opts.href;
+            const detailBase = opts.detailBase;
+            const increment = !!opts.incrementId;
+            const tabs = n => '\t'.repeat(n);
+            const i8 = tabs(8);
+            const i9 = tabs(9);
+            const i10 = tabs(10);
+            const i11 = tabs(11);
+
+            const titEl = block.querySelector('p.tit') || block.querySelector('.tit');
+            const title = titleText(titEl);
+            const dls = Array.from(block.querySelectorAll('dl'));
+            const courseDl = dls[0] || null;
+            const areaDl = dls[1] || null;
+            const courseDt = courseDl ? courseDl.querySelector('dt') : null;
+            const areaDt = areaDl ? areaDl.querySelector('dt') : null;
+            const courseDd = courseDl ? courseDl.querySelector('dd') : null;
+            const areaDd = areaDl ? areaDl.querySelector('dd') : null;
+            const courseLabels = labelsFromDd(courseDd, false);
+            const areaLabels = areaDd ? labelsFromDd(areaDd, true) : [];
+
+            const parts = [];
+            parts.push('<div class="box">');
+            parts.push(i8 + '<div class="top">');
+            parts.push(i9 + '<p class="cat">Course ' + escapeHtml(opts.courseNo) + '</p>');
+            parts.push(i9 + '<p class="txt01">' + escapeHtml(title) + '</p>');
+            parts.push(i8 + '</div>');
+            parts.push(i8 + '<div class="bot">');
+            parts.push(i9 + '<div class="bot01">');
+            parts.push(i10 + '<p class="tit">' + escapeHtml(cleanText(courseDt ? courseDt.textContent : '')) + '</p>');
+            parts.push(i10 + '<ul class="course">');
+            courseLabels.forEach((label, i) => {
+                const id = increment ? detailBase + i : detailBase;
+                parts.push(i11 + '<li><a class="popup-click" href="' + escapeHtml(href) + '" id="detail-' + id + '" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</a></li>');
+            });
+            parts.push(i10 + '</ul>');
+            parts.push(i9 + '</div>');
+            if (areaDl) {
+                parts.push(i9 + '<div class="bot02">');
+                parts.push(i10 + '<p class="tit">' + escapeHtml(cleanText(areaDt ? areaDt.textContent : '')) + '</p>');
+                parts.push(i10 + '<ul class="area">');
+                areaLabels.forEach(label => {
+                    parts.push(i11 + '<li><a href="' + escapeHtml(href) + '" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</a></li>');
+                });
+                parts.push(i10 + '</ul>');
+                parts.push(i9 + '</div>');
+            }
+            parts.push(i8 + '</div>');
+            parts.push(i8 + '<div class="btn">');
+            parts.push(i9 + '<div class="pc"><a class="more popup-click" href="' + escapeHtml(href) + '" id="' + escapeHtml(opts.popupId) + '" tab="' + escapeHtml(opts.tab) + '" title="View More"><span>View more</span></a></div>');
+            parts.push(i9 + '<div class="mo"><a class="view" href="' + escapeHtml(href) + '" title="펼쳐보기/접기"><span>펼쳐보기</span><span>접기</span></a><a class="detail popup-click" href="' + escapeHtml(href) + '" id="' + escapeHtml(opts.popupId) + '" tab="' + escapeHtml(opts.tab) + '" title="자세히보기">자세히보기</a></div>');
+            parts.push(i8 + '</div>');
+            parts.push('</div>');
+
+            return { html: parts.join('\n'), title: title, courseLabels: courseLabels, areaLabels: areaLabels };
+        }
+
+        // Toàn bộ input -> các div.box nối nhau
+        function convertBoxes(input, opts) {
+            opts = opts || {};
+            const base = parseInt(opts.detailBase, 10);
+            const detailBase = isNaN(base) ? 888 : base;
+            const courseBase = parseInt(opts.courseNo, 10);
+            const courseNo = isNaN(courseBase) ? 3 : courseBase;
+            const tabOpt = cleanText(opts.tab == null ? 'auto' : String(opts.tab));
+            const href = opts.href || '#a';
+            const popupId = cleanText(opts.popupId) || '5627';
+            const autoCourseNo = opts.autoCourseNo !== false;
+
+            const blocks = extractBlocks(input);
+            const boxes = [];
+            const info = { titles: [], courseCount: 0, areaCount: 0 };
+
+            blocks.forEach((block, i) => {
+                const detected = extractMajorTab(block);
+                const tab = /^\d+$/.test(tabOpt) ? tabOpt : (detected || '1');
+                const box = buildBox(block, {
+                    href: href,
+                    popupId: popupId,
+                    tab: tab,
+                    courseNo: pad2(autoCourseNo ? courseNo + i : courseNo),
+                    detailBase: detailBase,
+                    incrementId: !!opts.incrementId
+                });
+                boxes.push(box.html);
+                info.titles.push(box.title);
+                info.courseCount += box.courseLabels.length;
+                info.areaCount += box.areaLabels.length;
+            });
+
+            info.html = boxes.join('\n');
+            info.boxCount = boxes.length;
+            return info;
+        }
+
+        function updateStats(input, output, count, boxCount) {
+            inputCount.textContent = '(' + input.length + ' ký tự)';
+            outputCount.textContent = '(' + output.length + ' ký tự)';
+            statTotal.textContent = count || 0;
+            statBox.textContent = boxCount || 0;
+            statInBytes.textContent = new Blob([input]).size.toLocaleString();
+            statOutBytes.textContent = new Blob([output]).size.toLocaleString();
+        }
+
+        function readOptions() {
+            return {
+                courseNo: optCourseNo.value,
+                autoCourseNo: optAutoCourseNo.checked,
+                detailBase: optDetailBase.value,
+                incrementId: optIncrementId.checked,
+                popupId: optPopupId.value,
+                tab: optTab.value,
+                href: optHref.value.trim() || '#a'
+            };
+        }
+
+        function handleConvert() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Dán HTML khối .subj_cont vào trước!');
+                return;
+            }
+            try {
+                const result = convertBoxes(input, readOptions());
+                outputText.value = result.html;
+                updateStats(input, result.html, result.courseCount, result.boxCount);
+                showToast('✅ Đã chuyển ' + result.boxCount + ' box / ' + result.courseCount + ' môn học!');
+            } catch (e) {
+                outputText.value = '';
+                updateStats(input, '', 0, 0);
+                showToast('❌ ' + e.message);
+            }
+        }
+
+        btnConvert.addEventListener('click', handleConvert);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ liệu để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+
+        btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', '', 0, 0);
+            showToast('🗑️ Đã xoá');
+        });
+
+        btnSample.addEventListener('click', () => {
+            inputText.value = SAMPLE_HTML;
+            handleConvert();
+        });
+
+        btnDownload.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Xử lý trước đã!');
+                return;
+            }
+            const blob = new Blob([outputText.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'div-box.html';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            showToast('⬇️ Đã tải div-box.html');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                fileInput.value = '';
+                handleConvert();
+            };
+            reader.readAsText(file);
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = '(' + inputText.value.length + ' ký tự)';
+            if (optAutoRun.checked && inputText.value.trim()) {
+                handleConvert();
+            }
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleConvert();
+            }
+        });
+    </script>
+</body>
+</html>
