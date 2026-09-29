@@ -361,6 +361,23 @@ Tool chuyển đổi khối `<div class="diff_cont">` (trang giới thiệu khoa
 **Cách dùng:** mở `features2.html` trong trình duyệt, dán HTML `diff_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-features2.js` để kiểm thử logic.
 
 
+## 🎓 Certificate Converter Tool
+
+Tool chuyển đổi khối `<div class="js_tab_cont">` (trang 자격증: nhiều `<div class="tab_cont">`, mỗi tab có `div.dept_section.master_intro_col` + `lic_process` (STEP 01–04) + `dept_lect` (체험강의) + `circle_numbox dl2` (취득 후 활동분야)) thành `<div class="swiper-wrapper">` gồm các `<div class="swiper-slide">`:
+- Mỗi `div.tab_cont` → 1 slide: `<p class="cat">…</p>` + `<div class="img"><img src alt></div>` + `<div class="txt">` (`p.txt01` + `p.txt02` + `a.view.popup-click`)
+- `p.cat` lấy từ ô nhập **Category** (mặc định `국가자격증`) — đổi thành `민간자격증` cho tab 민간자격 (vd 골프코스관리사)
+- `div.thumb_wrap > img` → `<div class="img"><img src alt></div>`; `alt` mặc định = tiêu đề slide (tắt checkbox thì giữ `alt` gốc); ảnh trong `dept_lect`/`pre_lect` không bị lẫn vào slide
+- `div.text_wrap > p.tit` → `<p class="txt01">` (tự bỏ hậu tố `소개` — vd `조경기사/조경산업기사 자격증 소개` → `조경기사/조경산업기사 자격증`; `<br>` → khoảng trắng, trim + gộp khoảng trắng/`&nbsp;`)
+- `div.text_box > p.desc` → `<p class="txt02">`; tab không có mô tả vẫn giữ `<p class="txt02"></p>` (tuỳ chọn **bỏ `p.txt02` khi rỗng**)
+- `<a class="view popup-click" href id tab title>취득과정 전체보기</a>` thêm vào cuối `div.txt`, dính liền sau `</p>` của `p.txt02` như mẫu trang: tuỳ chỉnh `href` (mặc định `#a`), `id` popup (mặc định `detail-1000`, giống nhau ở mọi slide như trang thật), `tab` bắt đầu (mặc định `1`, tự tăng theo slide hoặc giữ nguyên) và text/title (mặc định `취득과정 전체보기`)
+- Tab rỗng (không có ảnh + tiêu đề + mô tả): mặc định bỏ khỏi output nhưng vẫn đếm trong thống kê; tắt checkbox thì vẫn xuất slide đủ cấu trúc
+- Thụt lề theo mẫu trang bằng tab: wrapper 0 tab, `<div class="swiper-slide">` 6 tab, `p.cat`/`div.img`/`div.txt` 7 tab, `p.txt01`/`p.txt02` (+`a.view`) 8 tab, `</div>` cuối wrapper 5 tab
+- Bỏ toàn bộ phần chi tiết trong tab (STEP 01–04, bảng biểu, 체험강의/iframe, 취득 후 활동분야), comment HTML và href gốc của CMS; fallback khi input chỉ có `.tab_cont` trần, chỉ có `div.js_tab_cont` hoặc là cả trang HTML
+- Đầy đủ tiện ích: copy, tải file `.html` (`swiper-certificate.html`), load file có sẵn, ví dụ mẫu thật (2 tab 자격증), thống kê (số `tab_cont` / tổng slide / tab rỗng bị bỏ / bytes), tự động xử lý khi dán input
+
+**Cách dùng:** mở `certificate.html` trong trình duyệt, dán HTML `js_tab_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-certificate.js` để kiểm thử logic.
+
+
 ## 📝 License
 
 MIT
