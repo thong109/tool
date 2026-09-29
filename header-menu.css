@@ -12,11 +12,10 @@
 .header-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 10px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 64px;
 }
 
 .header-left {
@@ -60,6 +59,7 @@
 .header-nav {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
