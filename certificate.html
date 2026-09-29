@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Converter - Chuyển js_tab_cont thành div.swiper-wrapper</title>
+    <title>Certificate Converter - Chuyển div.licn_box thành div.swiper-wrapper</title>
     <link rel="stylesheet" href="header-menu.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,6 +21,7 @@
         input[type="number"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
         input[type="text"] { width: 120px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
         input[type="text"].wide { width: 240px; }
+        input[type="text"].pattern { width: 460px; }
         input[type="number"]:focus, input[type="text"]:focus { border-color: #666666; }
         .option-group label code { font-size: 11px; }
         .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
@@ -62,11 +63,11 @@
     <div class="container">
         <h1>
             🎓 Certificate Converter
-            <span>js_tab_cont → div.swiper-wrapper</span>
+            <span>div.licn_box → div.swiper-wrapper</span>
         </h1>
         <p class="subtitle">
-            Dán khối <code>&lt;div class="js_tab_cont"&gt;</code> (trang 자격증: nhiều <code>&lt;div class="tab_cont"&gt;</code>, mỗi tab có <code>div.dept_section.master_intro_col</code> + <code>lic_process</code> (STEP 01–04) + <code>dept_lect</code> + <code>circle_numbox</code>) vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận về <code>&lt;div class="swiper-wrapper"&gt;</code> gồm nhiều <code>&lt;div class="swiper-slide"&gt;</code>.
-            <br>Mỗi <code>div.tab_cont</code> → 1 slide: <code>div.thumb_wrap &gt; img</code> → <code>&lt;div class="img"&gt;&lt;img src alt&gt;&lt;/div&gt;</code>, <code>div.text_wrap &gt; p.tit</code> → <code>&lt;p class="txt01"&gt;</code> (tự bỏ hậu tố <code>소개</code>), <code>div.text_box &gt; p.desc</code> → <code>&lt;p class="txt02"&gt;</code>, thêm <code>&lt;p class="cat"&gt;</code> + <code>&lt;a class="view popup-click" …&gt;</code> (취득과정 전체보기).
+            Dán khối <code>&lt;div class="dept_section dept_licn"&gt;</code> (trang 자격증: nhiều <code>&lt;div class="licn_wrap"&gt;</code>, mỗi <code>&lt;div class="licn_box"&gt;</code> gồm <code>div.thumb_img &gt; img</code> + <code>div.text_wrap</code> với <code>p.tit</code> / <code>p.desc</code> / <code>a.text_btn</code>) vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận về <code>&lt;div class="swiper-wrapper"&gt;</code> gồm nhiều <code>&lt;div class="swiper-slide"&gt;</code>.
+            <br>Mỗi <code>div.licn_box</code> → 1 slide: <code>div.thumb_img &gt; img</code> → <code>&lt;div class="img"&gt;&lt;img src alt&gt;&lt;/div&gt;</code>, <code>p.tit</code> → <code>&lt;p class="txt01"&gt;</code> (chuẩn hoá <code>조경기사자격증</code> → <code>조경기사/조경산업기사 자격증</code>), <code>p.desc</code> → <code>&lt;p class="txt02"&gt;</code>, thêm <code>&lt;p class="cat"&gt;</code> + <code>&lt;a class="view popup-click" …&gt;</code> (취득과정 전체보기).
         </p>
 
         <div class="options">
@@ -76,15 +77,18 @@
                     Nội dung:
                     <input type="text" id="optCat" class="wide" value="국가자격증">
                 </label>
+                <label><input type="checkbox" id="optGroupCat" checked> p.cat = <code>p.tit</code> nhóm đứng trước (nếu input có)</label>
             </div>
             <div class="option-group">
                 <div class="group-title">📝 Tiêu đề (<code>p.txt01</code>)</div>
-                <label><input type="checkbox" id="optStripIntro" checked> Bỏ hậu tố <code>소개</code> ở cuối tiêu đề</label>
+                <label><input type="checkbox" id="optTitleFix" checked> Chuẩn hoá: <code>조경기사자격증</code> → <code>조경기사/조경산업기사 자격증</code>, bỏ <code>소개</code></label>
                 <label><input type="checkbox" id="optDropEmptyDesc"> Bỏ <code>p.txt02</code> khi mô tả rỗng</label>
             </div>
             <div class="option-group">
                 <div class="group-title">🖼️ Ảnh (<code>div.img</code>)</div>
                 <label><input type="checkbox" id="optAltFromTit" checked> <code>alt</code> = tiêu đề (tắt thì giữ alt gốc)</label>
+                <label for="optImgPattern">Đường dẫn ảnh mới (<code>{n}</code> = số slide, trống = giữ src gốc):</label>
+                <input type="text" id="optImgPattern" class="pattern" value="/_res/sjcu/krsjcu/img/content/environmen_landscaping_certificate_intro_bg_{n}.jpg">
             </div>
             <div class="option-group">
                 <div class="group-title">🔗 Link <code>a.view.popup-click</code></div>
@@ -107,8 +111,8 @@
                 </label>
             </div>
             <div class="option-group">
-                <div class="group-title">📑 <code>div.tab_cont</code></div>
-                <label><input type="checkbox" id="optSkipEmpty" checked> Bỏ tab rỗng (không có ảnh + tiêu đề + mô tả)</label>
+                <div class="group-title">📑 Box (<code>licn_box</code>)</div>
+                <label><input type="checkbox" id="optSkipEmpty" checked> Bỏ box rỗng (không có ảnh + tiêu đề + mô tả)</label>
             </div>
             <div class="option-group">
                 <div class="group-title">🎛️ Tuỳ chọn</div>
@@ -119,10 +123,10 @@
         <div class="editor-area">
             <div class="editor-panel">
                 <label>
-                    📥 Input (div.js_tab_cont)
+                    📥 Input (div.licn_box)
                     <span class="count" id="inputCount">(0 ký tự)</span>
                 </label>
-                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;js_tab_cont&quot;&gt;&lt;div class=&quot;tab_cont&quot;&gt;&lt;div class=&quot;dept_section master_intro_col&quot;&gt;&lt;div class=&quot;thumb_wrap&quot;&gt;&lt;img src=&quot;...&quot;&gt;&lt;/div&gt;...&lt;/div&gt;&lt;div class=&quot;tab_cont&quot;&gt;...&lt;/div&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;dept_section dept_licn&quot;&gt;&lt;div class=&quot;licn_wrap&quot;&gt;&lt;div class=&quot;licn_box&quot;&gt;&lt;div class=&quot;thumb_img&quot;&gt;&lt;img src=&quot;...&quot;&gt;&lt;/div&gt;&lt;div class=&quot;text_wrap&quot;&gt;&lt;p class=&quot;tit&quot;&gt;...&lt;/p&gt;&lt;p class=&quot;desc&quot;&gt;...&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt; hoặc chọn file .html..."></textarea>
             </div>
             <div class="editor-panel">
                 <label>
@@ -146,9 +150,9 @@
         </div>
 
         <div class="stats">
-            <div class="stat-item">📑 Số <code>tab_cont</code>: <strong id="statTabs">0</strong></div>
+            <div class="stat-item">📑 Số box (<code>licn_box</code>): <strong id="statTabs">0</strong></div>
             <div class="stat-item">🧩 Tổng slide: <strong id="statSlides">0</strong></div>
-            <div class="stat-item">📭 Tab rỗng bị bỏ: <strong id="statEmpty">0</strong></div>
+            <div class="stat-item">📭 Box rỗng bị bỏ: <strong id="statEmpty">0</strong></div>
             <div class="stat-item">📥 Input: <strong id="statInBytes">0</strong> bytes</div>
             <div class="stat-item">📤 Output: <strong id="statOutBytes">0</strong> bytes</div>
         </div>
@@ -174,168 +178,39 @@
     </script>
 
     <script>
-        // ===== Core converter: div.js_tab_cont (nhiều div.tab_cont) -> div.swiper-wrapper =====
-        // Ví dụ thật: trang 자격증 (mỗi tab: master_intro_col + lic_process + dept_lect + 취득 후 활동분야)
-        const SAMPLE_HTML = `<div class="js_tab_cont">
-		<!-- tab_cont--><div class="tab_cont on">
-		<!-- dept_section :: master_intro_col--><div class="dept_section master_intro_col">
-		<div class="thumb_wrap"><img src="/_res/sjcu/ko/img/dept/A_horizontal_image_of_a_modern_park_with_tall_ligh.jpg" alt=""></div>
-		<div class="text_wrap">
-			<p class="tit">조경기사/조경산업기사 자격증 소개</p>
-			<div class="text_box">
-				<p class="desc">조경을 다루는 기술은 도시,국토건설분야의 한 분야으로서 각종의 정원, 공원, 골프장, 식물원 등의 공간 뿐아니라 건축물 및 토목시설과 조화를 이루는 환경친화적며 지속가능한 공간창출 측면에도 중요합니다. 이에 조경의 식물, 재료, 계획, 설계, 시공, 관리 등을 다루는 전문 자격제도를 실시하여 조경에 대한 국가적 기술인력을 확보하고자 자격제도를 제정하여 운영하고 있습니다.</p>
-			</div>
-		</div>
-		</div>
-		<!-- //dept_section :: master_intro_col--><!-- dept_section :: lic_process--><div class="dept_section lic_process">
-		<p class="sec_tit">조경기사/조경산업기사<br>자격증 취득 절차</p>
-		<div class="process_step">
-			<!-- step_box :: col_wrap --><dl class="step_box">
-			<dt><span class="step_num">STEP 01</span>
-				<p>응시자격 확인</p>
-			</dt>
-			<dd>
-				<div class="col_wrap">
-					<div class="col_box">
-						<p class="col_tit">조경기사</p>
-						<ul class="dot_list">
-							<li>관련 학과 4년제 대학 졸업자 및 졸업예정자</li>
-							<li>고등학교를 졸업하고 관련 분야 실무경력이 4년 이상인 자</li>
-						</ul>
-					</div>
-					<div class="col_box">
-						<p class="col_tit">조경산업기사</p>
-						<ul class="dot_list">
-							<li>관련 학과 2년제 대학 졸업자 및 졸업예정자</li>
-							<li>기능사 취득후 실무경력 1년 이상인자</li>
-						</ul>
-					</div>
-				</div>
-			</dd>
-			</dl>
-			<!-- //step_box--><!-- step_box :: 학기 --><dl class="step_box">
-			<dt><span class="step_num">STEP 02</span>
-				<p>시험 과목 이수</p>
-			</dt>
-			<dd>
-				<p class="tit">조경기사/조경산업기사 자격증 로드맵</p>
-				<div class="subj_smry">
-					<p class="warn">※ 조경기사(9과목), 조경산업기사(7과목)</p>
-				</div>
-				<div class="subj_sem">
-					<dl>
-					<dt>1학기</dt>
-					<dd><span class="label"><em>선택과목</em>조경수목학1&nbsp;</span><span class="label"><em>선택과목</em>조경식재학</span></dd>
-					</dl>
-					<dl>
-						<dt>2학기</dt>
-						<dd><span class="label"><em>선택과목</em>조경수목학2</span><span class="label"><em>선택과목</em>조경계획학</span></dd>
-					</dl>
-				</div>
-			</dd>
-			</dl>
-			<!-- //step_box :: 학기 --><!-- step_box :: 텍스트 정의 --><dl class="step_box">
-			<dt><span class="step_num">STEP 03</span>
-				<p>자격증 취득 방법 확인</p>
-			</dt>
-			<dd>
-				<dl class="text_dl">
-					<dt>[산업기사]</dt>
-					<dd>- 필기 : 객관식 4지 택일형, 과목당 20문항(과목당 30분)</dd>
-					<dd>- 실기 : 작업형(4시간 정도)</dd>
-				</dl>
-				<dl class="text_dl">
-					<dt>필기시험</dt>
-					<dd>매 과목 100점 만점으로 하여 매 과목 40점 이상, 전 과목 평균 60점 이상 득점한 자</dd>
-				</dl>
-			</dd>
-			</dl>
-			<!-- //step_box :: 텍스트 정의 --><!-- step_box :: 기본텍스트 --><dl class="step_box">
-			<dt><span class="step_num">STEP 04</span>
-				<p>자격증 취득</p>
-			</dt>
-			<dd>
-				<p>본교 재학생의 자격증 취득을 돕기 위하여 강사진의 맞춤형 상담, 가상실습실을 통한 실기지원, 자격증 소그룹 모임을 운영합니다. 또한 주기적으로 자격증 전문강사를 통해 자격증 대비 특강을 실시합니다.</p>
-			</dd>
-			</dl>
-			<!-- //step_box--></div>
-		</div>
-		<!-- //dept_section :: lic_process --><!-- dept_section :: dept_lect--><div class="dept_section gray dept_lect">
-		<div class="tit_wrap">
-			<p class="sec_subtit">체험강의</p>
-		</div>
-		<div class="pre_lect">
-			<div class="lect_cont"><span class="fr-video fr-fvc fr-dvi fr-draggable">
-				<iframe sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox" src="https://www.youtube.com/embed/AE4GPdjcgY4" frameborder="0" class="fr-draggable" title="외부 콘텐츠 프레임">
-				</iframe></span>
-				<div class="text_wrap">
-					<p class="tit">조경설계1</p>
-					<p class="desc"><br></p>
-				</div>
-			</div>
-		</div>
-		</div>
-		<!-- //dept_section :: dept_lect--><!-- dept_section --><div class="dept_section">
-		<div class="tit_wrap">
-			<p class="sec_subtit">취득 후 활동분야</p>
-		</div>
-		<div class="circle_numbox dl2">
-			<dl>
-				<dt>조경기술자</dt>
-				<dd>국가기술자격법에 따라 조경분야에서 국가기술자격을 취득한 자 또는 조경분야에 종사하는자는 건설기술진흥법에 따라 신고함.</dd>
-			</dl>
-			<dl>
-				<dt>조경공사 기술인력</dt>
-				<dd>건설산업기본법, 엔지니어링산업진흥법에 의해 조경공사업 등록을 위한 기술인력</dd>
-			</dl>
-		</div>
-		</div>
-		<!-- //dept_section :: dept_lect--></div>
-		<!-- //tab_cont --><!-- tab_cont--><div class="tab_cont">
-		<!-- dept_section :: master_intro_col--><div class="dept_section master_intro_col">
-		<div class="thumb_wrap"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_certificate_intro_bg_4.jpg" alt=""></div>
-		<div class="text_wrap">
-			<p class="tit">골프코스관리사 자격증</p>
-			<div class="text_box">
-				<p class="desc">골프장을 비롯한 공원, 소포츠 필드 등의 녹지를 친환경적, 과학적으로 관리할 인력의 관리 기술 인증을 위하여 운영하는 민간자격으로써, 잔디 관리의 실무능력을 갖춘 자를 대상으로 일정 수준의 이론 시험을 거쳐 전문가로 인증하고 있습니다.</p>
-			</div>
-		</div>
-		</div>
-		<!-- //dept_section :: master_intro_col--><!-- dept_section :: lic_process--><div class="dept_section lic_process">
-		<p class="sec_tit">골프코스관리사<br>자격증 취득 절차</p>
-		<div class="process_step">
-			<!-- step_box :: col_wrap --><dl class="step_box">
-			<dt><span class="step_num">STEP 01</span>
-				<p>응시자격 확인</p>
-			</dt>
-			<dd>
-				<ul class="dot_list">
-					<li>4년제 대학 졸업자로서 코스관리 관련기관에서의 실무 및 연구경력 1년 이상인 자</li>
-					<li>코스관리 실무경력 5년 이상인자</li>
-					<p class="warn">※ 여기서 코스관리 관련 실무경력이라 함은&nbsp;골프장 코스관리&nbsp;외에&nbsp;조경회사/공원/운동장/식물원/수목원/레저시설 등의 식생관리 실무경력을 포함한다.)</p>
-				</ul>
-			</dd>
-			</dl>
-			<!-- //step_box--><!-- step_box :: 텍스트 정의 --><dl class="step_box">
-			<dt><span class="step_num">STEP 03</span>
-				<p>자격증 취득 방법 확인</p>
-			</dt>
-			<dd><strong>시험일정</strong>
-				<p>1차 시험은 매년 1월중 실시 (12월 중 접수)</p>
-			</dd>
-			</dl>
-			<!-- //step_box :: 텍스트 정의 --><!-- step_box :: 기본텍스트 --><dl class="step_box">
-			<dt><span class="step_num">STEP 04</span>
-				<p>자격증 취득</p>
-			</dt>
-			<dd>
-				<p>본교 재학생의 자격증 취득을 돕기 위하여 강사진의 맞춤형 상담, 가상실습실을 통한 실기지원, 자격증 소그룹 모임을 운영합니다.</p>
-			</dd>
-			</dl>
-			<!-- //step_box--></div>
-		</div>
-		<!-- //dept_section :: lic_process --></div>
-		<!-- //tab_cont --></div>`;
+        // ===== Core converter: div.licn_box (dept_section dept_licn > licn_wrap) -> div.swiper-wrapper =====
+        // Trang 자격증: mỗi licn_box gồm div.thumb_img > img + div.text_wrap > p.tit / p.desc / a.text_btn
+        const SAMPLE_HTML = `<div class="dept_section dept_licn">
+\t<p class="sec_subtit aos-init aos-animate" data-aos="fade-up">전문 교수진이 지원하는 자격증</p>
+\t<!-- 385 * 200--><div class="licn_wrap aos-init aos-animate" data-aos="fade-up">
+\t<div class="licn_box aos-init aos-animate" data-aos="fade-up">
+\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/A_horizontal_image_of_a_modern_park_with_tall_ligh.jpg" alt=""></div>
+\t\t<div class="text_wrap">
+\t\t\t<p class="tit">조경기사자격증</p>
+\t\t\t<p class="desc">작은 정원으로부터 도시나 국토공간에 이르는 대단위 공간을 대상으로 식물이나 각종재료를 이용하여 미적, 기능적으로 계획, 설계, 시공, 관리하는 인력양성하고자 자격제도를 제정하였음</p><a class="text_btn" href="/ko/dept/environmen-landscaping-certificate.do?major_tab=0">자격증 상세보기</a></div>
+\t</div>
+\t<div class="licn_box aos-init aos-animate" data-aos="fade-up">
+\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_licn_img_2.jpg" alt=""></div>
+\t\t<div class="text_wrap">
+\t\t\t<p class="tit">자연생태복원기사자격증</p>
+\t\t\t<p class="desc">자연생태계의 체계적관리, 훼손된 생태계의 환경친화적복원, 생태계위해성평가 등을 할 수 있는 전문인력을 양성하기 위하여 자격제도를 제정하였음</p><a class="text_btn" href="/ko/dept/environmen-landscaping-certificate.do?major_tab=1">자격증 상세보기</a></div>
+\t</div>
+\t</div>
+\t<div class="licn_wrap aos-init aos-animate" data-aos="fade-up">
+\t\t<div class="licn_box aos-init aos-animate" data-aos="fade-up">
+\t\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_licn_img_3.jpg" alt=""></div>
+\t\t\t<div class="text_wrap">
+\t\t\t\t<p class="tit">식물보호기사자격증</p>
+\t\t\t\t<p class="desc">기후변화와 재배 기술의 발달로 식물 병·해충의 발생 양상이 복잡해지고, 농약사용에 따른 환경오염 문제, 식품에 농약의 잔류독성 문제가 야기됨에 따라 효과적인 식물보호를 위한 전문적인 지식과 기능을 갖춘 고급 인력 양성을 위한 자격제도</p><a class="text_btn" href="/ko/dept/environmen-landscaping-certificate.do?major_tab=2">자격증 상세보기</a></div>
+\t\t</div>
+\t\t<div class="licn_box aos-init aos-animate" data-aos="fade-up">
+\t\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_licn_img_4.jpg" alt=""></div>
+\t\t\t<div class="text_wrap">
+\t\t\t\t<p class="tit">골프코스관리사자격증</p>
+\t\t\t\t<p class="desc">잔디 관리의 실무능력을 갖춘 자를 대상으로 일정 수준의 이론 시험을 거쳐 골프장, 잔디 구장 등의 녹지를 과학적이고 친황경적으로 관리할 수 있는 전문가 양성을 위한 자격제도(민간자격)</p><a class="text_btn" href="/ko/dept/environmen-landscaping-certificate.do?major_tab=3">자격증 상세보기</a></div>
+\t\t</div>
+\t\t</div>
+\t\t</div>`;
 
         const inputText = document.getElementById('inputText');
         const outputText = document.getElementById('outputText');
@@ -347,9 +222,11 @@
         const statInBytes = document.getElementById('statInBytes');
         const statOutBytes = document.getElementById('statOutBytes');
         const optCat = document.getElementById('optCat');
-        const optStripIntro = document.getElementById('optStripIntro');
+        const optGroupCat = document.getElementById('optGroupCat');
+        const optTitleFix = document.getElementById('optTitleFix');
         const optDropEmptyDesc = document.getElementById('optDropEmptyDesc');
         const optAltFromTit = document.getElementById('optAltFromTit');
+        const optImgPattern = document.getElementById('optImgPattern');
         const optViewHref = document.getElementById('optViewHref');
         const optPopupId = document.getElementById('optPopupId');
         const optTabStart = document.getElementById('optTabStart');
@@ -411,9 +288,24 @@
             return cleanText(el.textContent);
         }
 
-        // "…자격증 소개" -> "…자격증"
-        function stripIntroSuffix(text) {
-            return cleanText(String(text == null ? '' : text).replace(/\s*소개\s*$/, ''));
+        // "…자격증 소개" -> "…자격증"; "조경기사자격증" -> "조경기사/조경산업기사 자격증"
+        function normalizeTitle(text, fix) {
+            let out = cleanText(text);
+            if (!fix) return out;
+            out = out.replace(/\s*소개\s*$/, '').trim();
+            if (!out) return out;
+            if (out.indexOf('/') === -1) {
+                const m = out.match(/^(.+?[^\s])기사자격증$/);
+                if (m && m[1].indexOf('산업') === -1) return m[1] + '기사/' + m[1] + '산업기사 자격증';
+            }
+            return out.replace(/([^\s])자격증$/, '$1 자격증');
+        }
+
+        // Đường dẫn ảnh mới: thay {n} bằng số thứ tự slide (1-based); pattern trống -> giữ src gốc
+        function applyImgPattern(src, pattern, n) {
+            const p = String(pattern == null ? '' : pattern).trim();
+            if (!p) return src;
+            return p.replace(/\{n\}/g, String(n));
         }
 
         // <a class="view popup-click" href id tab title>취득과정 전체보기</a>
@@ -424,46 +316,92 @@
                 '" title="' + escapeHtml(text) + '">' + escapeHtml(text) + '</a>';
         }
 
-        // Tìm tất cả tab trong input
-        function extractTabs(input) {
+        // Kiểm tra 1 class (không cần classList): "licn_wrap" có licn_wrap -> true
+        function hasClass(el, name) {
+            const cls = ' ' + String((el.getAttribute && el.getAttribute('class')) || '').trim() + ' ';
+            return cls.indexOf(' ' + name + ' ') !== -1;
+        }
+
+        // "<국방안보 및 리더십, 영상판독 자격>" -> "국방안보 및 리더십, 영상판독 자격"
+        function cleanHeading(text) {
+            return cleanText(text)
+                .replace(/^[<〈\[({「『]+\s*/, '')
+                .replace(/\s*[>〉\])}」』]+$/, '')
+                .trim();
+        }
+
+        // Tìm các "unit" theo đúng thứ tự tài liệu trong một khối:
+        //   { box: el }  = mỗi div.licn_box (không xét bên trong box)
+        //   { cat: '…' } = p.tit đứng ngoài box (tiêu đề nhóm, vd <병영생활전문상담관>) -> thành p.cat cho các box kế nó
+        function collectUnits(root) {
+            const units = [];
+            (function walk(node) {
+                const children = node.childNodes || [];
+                for (let i = 0; i < children.length; i++) {
+                    const child = children[i];
+                    if (!child || child.nodeType !== 1) continue;
+                    if (hasClass(child, 'licn_box')) { units.push({ box: child }); continue; }   // mọi licn_box của mọi licn_wrap -> 1 swiper-wrapper
+                    if (hasClass(child, 'tit')) {
+                        const heading = cleanHeading(elementText(child));
+                        if (heading) units.push({ cat: heading });
+                        continue;
+                    }
+                    walk(child);
+                }
+            })(root);
+            return units;
+        }
+
+        // Input -> danh sách unit (box và tiêu đề nhóm) theo thứ tự tài liệu
+        function extractUnits(input) {
             if (!input || !input.trim()) throw new Error('Chưa có input!');
             const doc = new DOMParser().parseFromString(input, 'text/html');
             if (doc.querySelector('parsererror')) throw new Error('HTML input không hợp lệ!');
 
-            let tabs = Array.from(doc.querySelectorAll('div.tab_cont'));
-            if (!tabs.length) tabs = Array.from(doc.querySelectorAll('.tab_cont'));
-            if (tabs.length) return tabs;
+            // Chỉ lấy tiêu đề nhóm bên trong dept_licn (bỏ p.tit của khối khác trên trang)
+            const sections = Array.from(doc.querySelectorAll('div.dept_licn'));
+            if (!sections.length) {
+                const singleClass = doc.querySelector('.dept_licn');
+                if (singleClass) sections.push(singleClass);
+            }
 
-            // Fallback: chỉ có div.js_tab_cont (không có .tab_cont) -> coi cả block là 1 tab
-            const single = doc.querySelector('div.js_tab_cont') || doc.querySelector('.js_tab_cont');
-            if (single) return [single];
+            let units = [];
+            sections.forEach(section => { units = units.concat(collectUnits(section)); });
+            if (!units.some(unit => unit.box)) units = collectUnits(doc.body || doc);   // input chỉ có licn_box trần
 
-            throw new Error('Không tìm thấy khối .tab_cont (cần <div class="tab_cont">…</div>) nào trong input!');
+            if (units.some(unit => unit.box)) return units;
+
+            // Fallback: khối dept_licn không có box con -> coi cả block là 1 box
+            const single = doc.querySelector('div.dept_licn') || doc.querySelector('.dept_licn');
+            if (single) return [{ box: single }];
+
+            throw new Error('Không tìm thấy box nào trong input! Cần <div class="licn_box">…</div> bên trong <div class="dept_section dept_licn">');
         }
 
-        // 1 div.tab_cont -> 1 <div class="swiper-slide">
-        function buildSlide(tab, index, opts) {
+        // 1 box (div.licn_box) -> 1 <div class="swiper-slide">; boxCat = tiêu đề nhóm đứng trước box
+        function buildSlide(box, index, opts, boxCat) {
             const i6 = TAB.repeat(6);
             const i7 = TAB.repeat(7);
             const i8 = TAB.repeat(8);
 
-            const intro = tab.querySelector('.master_intro_col') || tab.querySelector('div.dept_section') || tab;
-            const img = intro.querySelector('.thumb_wrap img') || intro.querySelector('img');
-            const src = img ? String(img.getAttribute('src') || '') : '';
+            // Chỉ tìm trong phạm vi 1 box: ảnh ở div.thumb_img, chữ ở div.text_wrap
+            const img = box.querySelector('.thumb_img img') || box.querySelector('img');
+            const rawSrc = img ? String(img.getAttribute('src') || '') : '';
+            const src = rawSrc ? applyImgPattern(rawSrc, opts.imgPattern, index + 1) : '';
 
-            const titEl = intro.querySelector('.text_wrap p.tit') || intro.querySelector('p.tit');
-            const rawTit = elementText(titEl);
-            const txt01 = opts.stripIntro ? stripIntroSuffix(rawTit) : rawTit;
+            const titEl = box.querySelector('.text_wrap p.tit') || box.querySelector('p.tit');
+            const txt01 = normalizeTitle(elementText(titEl), opts.titleFix);
 
-            const descEl = intro.querySelector('.text_box p.desc') || intro.querySelector('p.desc');
+            const descEl = box.querySelector('.text_wrap p.desc') || box.querySelector('p.desc');
             const txt02 = elementText(descEl);
 
             const alt = (opts.altFromTit && txt01) ? txt01 : (img ? cleanText(img.getAttribute('alt') || '') : '');
             const tabNo = opts.tabInc ? opts.tabStart + index : opts.tabStart;
+            const catText = (opts.groupCat !== false && boxCat) ? boxCat : opts.cat;
 
             const lines = [];
             lines.push(i6 + '<div class="swiper-slide">');
-            lines.push(i7 + '<p class="cat">' + escapeHtml(opts.cat) + '</p>');
+            lines.push(i7 + '<p class="cat">' + escapeHtml(catText) + '</p>');
             lines.push(i7 + '<div class="img"><img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '"></div>');
             lines.push(i7 + '<div class="txt">');
             lines.push(i8 + '<p class="txt01">' + escapeHtml(txt01) + '</p>');
@@ -478,6 +416,7 @@
             return {
                 lines: lines,
                 txt01: txt01,
+                cat: catText,
                 src: src,
                 txt02: txt02,
                 tabNo: tabNo,
@@ -485,15 +424,16 @@
             };
         }
 
-        // Danh sách tab -> 1 <div class="swiper-wrapper">
-        function buildWrapper(tabs, opts) {
+        // Danh sách box -> 1 <div class="swiper-wrapper"> (mọi nhóm licn_wrap gộp chung 1 wrapper)
+        function buildWrapper(boxes, opts, cats) {
             const lines = ['<div class="swiper-wrapper">'];
             const slides = [];
             const titles = [];
+            const groups = cats || [];
             let skipped = 0;
 
-            tabs.forEach(tab => {
-                const slide = buildSlide(tab, slides.length, opts);
+            boxes.forEach((box, boxIndex) => {
+                const slide = buildSlide(box, slides.length, opts, groups[boxIndex] || '');
                 if (slide.empty && opts.skipEmpty) { skipped++; return; }
                 slide.lines.forEach(line => lines.push(line));
                 slides.push(slide);
@@ -501,7 +441,7 @@
             });
 
             lines.push(TAB.repeat(5) + '</div>');
-            return { lines: lines, slides: slides, titles: titles, skipped: skipped, tabCount: tabs.length };
+            return { lines: lines, slides: slides, titles: titles, skipped: skipped, boxCount: boxes.length };
         }
 
         // Toàn bộ input -> div.swiper-wrapper
@@ -510,9 +450,11 @@
             const tabStart = parseInt(opts.tabStart, 10);
             const options = {
                 cat: String(opts.cat == null ? '' : opts.cat).trim() || '국가자격증',
-                stripIntro: opts.stripIntro !== false,
+                groupCat: opts.groupCat !== false,
+                titleFix: opts.titleFix !== false,
                 dropEmptyDesc: !!opts.dropEmptyDesc,
                 altFromTit: opts.altFromTit !== false,
+                imgPattern: String(opts.imgPattern == null ? '' : opts.imgPattern).trim(),
                 href: String(opts.href == null ? '' : opts.href).trim() || '#a',
                 popupId: String(opts.popupId == null ? '' : opts.popupId).trim() || 'detail-1000',
                 viewText: String(opts.viewText == null ? '' : opts.viewText).trim() || '취득과정 전체보기',
@@ -521,24 +463,33 @@
                 skipEmpty: opts.skipEmpty !== false
             };
 
-            const tabs = extractTabs(input);
-            const built = buildWrapper(tabs, options);
+            const units = extractUnits(input);
+            const boxes = [];
+            const cats = [];
+            let groupCat = '';
+            units.forEach(function (unit) {
+                if (unit.cat !== undefined) { groupCat = unit.cat; return; }   // tiêu đề nhóm -> áp cho các box kế tiếp
+                boxes.push(unit.box);
+                cats.push(groupCat);
+            });
+
+            const built = buildWrapper(boxes, options, cats);
 
             return {
                 html: built.lines.join('\n'),
                 slides: built.slides.length,
                 skipped: built.skipped,
-                tabCount: built.tabCount,
+                boxCount: built.boxCount,
                 titles: built.titles,
-                cats: built.slides.map(() => options.cat),
+                cats: built.slides.map(slide => slide.cat),
                 tabs: built.slides.map(slide => slide.tabNo)
             };
         }
 
-        function updateStats(input, output, tabCount, slides, skipped) {
+        function updateStats(input, output, boxCount, slides, skipped) {
             inputCount.textContent = '(' + input.length + ' ký tự)';
             outputCount.textContent = '(' + output.length + ' ký tự)';
-            statTabs.textContent = tabCount || 0;
+            statTabs.textContent = boxCount || 0;
             statSlides.textContent = slides || 0;
             statEmpty.textContent = skipped || 0;
             statInBytes.textContent = new Blob([input]).size.toLocaleString();
@@ -548,9 +499,11 @@
         function readOptions() {
             return {
                 cat: optCat.value,
-                stripIntro: optStripIntro.checked,
+                groupCat: optGroupCat.checked,
+                titleFix: optTitleFix.checked,
                 dropEmptyDesc: optDropEmptyDesc.checked,
                 altFromTit: optAltFromTit.checked,
+                imgPattern: optImgPattern.value,
                 href: optViewHref.value,
                 popupId: optPopupId.value,
                 tabStart: optTabStart.value,
@@ -563,14 +516,14 @@
         function handleConvert() {
             const input = inputText.value;
             if (!input.trim()) {
-                showToast('⚠️ Dán HTML khối .js_tab_cont vào trước!');
+                showToast('⚠️ Dán HTML khối .dept_licn / .licn_box vào trước!');
                 return;
             }
             try {
                 const result = convertCertificate(input, readOptions());
                 outputText.value = result.html;
-                updateStats(input, result.html, result.tabCount, result.slides, result.skipped);
-                showToast('✅ Đã chuyển ' + result.slides + ' slide từ ' + result.tabCount + ' tab!');
+                updateStats(input, result.html, result.boxCount, result.slides, result.skipped);
+                showToast('✅ Đã chuyển ' + result.slides + ' slide từ ' + result.boxCount + ' box!');
             } catch (e) {
                 outputText.value = '';
                 updateStats(input, '', 0, 0, 0);

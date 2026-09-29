@@ -363,19 +363,19 @@ Tool chuyển đổi khối `<div class="diff_cont">` (trang giới thiệu khoa
 
 ## 🎓 Certificate Converter Tool
 
-Tool chuyển đổi khối `<div class="js_tab_cont">` (trang 자격증: nhiều `<div class="tab_cont">`, mỗi tab có `div.dept_section.master_intro_col` + `lic_process` (STEP 01–04) + `dept_lect` (체험강의) + `circle_numbox dl2` (취득 후 활동분야)) thành `<div class="swiper-wrapper">` gồm các `<div class="swiper-slide">`:
-- Mỗi `div.tab_cont` → 1 slide: `<p class="cat">…</p>` + `<div class="img"><img src alt></div>` + `<div class="txt">` (`p.txt01` + `p.txt02` + `a.view.popup-click`)
-- `p.cat` lấy từ ô nhập **Category** (mặc định `국가자격증`) — đổi thành `민간자격증` cho tab 민간자격 (vd 골프코스관리사)
-- `div.thumb_wrap > img` → `<div class="img"><img src alt></div>`; `alt` mặc định = tiêu đề slide (tắt checkbox thì giữ `alt` gốc); ảnh trong `dept_lect`/`pre_lect` không bị lẫn vào slide
-- `div.text_wrap > p.tit` → `<p class="txt01">` (tự bỏ hậu tố `소개` — vd `조경기사/조경산업기사 자격증 소개` → `조경기사/조경산업기사 자격증`; `<br>` → khoảng trắng, trim + gộp khoảng trắng/`&nbsp;`)
-- `div.text_box > p.desc` → `<p class="txt02">`; tab không có mô tả vẫn giữ `<p class="txt02"></p>` (tuỳ chọn **bỏ `p.txt02` khi rỗng**)
-- `<a class="view popup-click" href id tab title>취득과정 전체보기</a>` thêm vào cuối `div.txt`, dính liền sau `</p>` của `p.txt02` như mẫu trang: tuỳ chỉnh `href` (mặc định `#a`), `id` popup (mặc định `detail-1000`, giống nhau ở mọi slide như trang thật), `tab` bắt đầu (mặc định `1`, tự tăng theo slide hoặc giữ nguyên) và text/title (mặc định `취득과정 전체보기`)
-- Tab rỗng (không có ảnh + tiêu đề + mô tả): mặc định bỏ khỏi output nhưng vẫn đếm trong thống kê; tắt checkbox thì vẫn xuất slide đủ cấu trúc
+Tool chuyển đổi khối `<div class="dept_section dept_licn">` (trang 자격증: `<p class="sec_subtit">` + nhiều `<div class="licn_wrap">`, trong mỗi wrap có các `<div class="licn_box">` gồm `div.thumb_img > img` + `div.text_wrap` chứa `p.tit` / `p.desc` / `a.text_btn`) thành `<div class="swiper-wrapper">` gồm các `<div class="swiper-slide">`:
+- Mỗi `div.licn_box` → 1 slide: `<p class="cat">…</p>` + `<div class="img"><img src alt></div>` + `<div class="txt">` (`p.txt01` + `p.txt02` + `a.view.popup-click`). **Toàn bộ** `licn_box` của mọi `licn_wrap` (kể cả nhiều khối `dept_licn` dán cùng lúc) được gộp vào **một** `<div class="swiper-wrapper">` duy nhất theo đúng thứ tự tài liệu, `tab` đánh liên tục 1…n
+- `p.cat` lấy từ ô nhập **Category** (mặc định `국가자격증`) — đổi thành `민간자격증` cho slide 민간자격 (vd 골프코스관리사). Nếu input có `<p class="tit">` đứng **ngoài** `licn_box` ngay trước `licn_wrap` (tiêu đề nhóm, vd `<국방안보 및 리더십, 영상판독 자격>`, `<병영생활전문상담관>`, `<드론 전문가>`) thì `p.cat` của các slide ngay sau đó = tiêu đề nhóm (tự bỏ dấu `<` `>` bao ngoài và `&lt;`/`&gt;`, bỏ `p.tit` rỗng chỉ có `<br>`, `p.sec_subtit` không bị tính); box đứng trước tiêu đề nhóm đầu tiên vẫn dùng ô Category; input **không có** tiêu đề nhóm nào → mọi slide dùng `국가자격증` (hoặc đúng giá trị nhập vào ô Category); tắt checkbox **p.cat = `p.tit` nhóm** để mọi slide dùng chung ô Category
+- `div.thumb_img > img` → `<div class="img"><img src alt></div>`; `alt` mặc định = tiêu đề slide (tắt checkbox thì giữ `alt` gốc); ô **Đường dẫn ảnh mới** thay `src` theo thứ tự slide (`{n}` = số thứ tự slide 1-based, mặc định `/_res/sjcu/krsjcu/img/content/environmen_landscaping_certificate_intro_bg_{n}.jpg`) — xoá trống ô này để giữ `src` gốc của `thumb_img`
+- `p.tit` → `<p class="txt01">` với **chuẩn hoá tiêu đề** (checkbox mặc định bật): `조경기사자격증` → `조경기사/조경산업기사 자격증`, `자연생태복원기사자격증` → `자연생태복원기사/자연생태복원산업기사 자격증`, `골프코스관리사자격증` → `골프코스관리사 자격증`, `…자격증 소개` → `…자격증`; tiêu đề đã có `/` (vd `조경기사/조경산업기사 자격증 소개`) thì chỉ bỏ `소개`; `<br>` → khoảng trắng, trim + gộp khoảng trắng/`&nbsp;`
+- `p.desc` (trong `div.text_wrap`) → `<p class="txt02">` — lấy **nguyên văn** từ input, nên slide nào cần mô tả dài hơn (vd lấy từ trang 취득과정) thì sửa lại trong output/CMS; box không có mô tả vẫn giữ `<p class="txt02"></p>` (tuỳ chọn **bỏ `p.txt02` khi rỗng**)
+- `<a class="view popup-click" href id tab title>취득과정 전체보기</a>` thêm vào cuối `div.txt`, dính liền sau `</p>` của `p.txt02` như mẫu trang: tuỳ chỉnh `href` (mặc định `#a`), `id` popup (mặc định `detail-1000`, giống nhau ở mọi slide như trang thật), `tab` bắt đầu (mặc định `1`, tự tăng theo slide hoặc giữ nguyên — khớp `major_tab=0…3` của `a.text_btn`) và text/title (mặc định `취득과정 전체보기`)
+- Box rỗng (không có ảnh + tiêu đề + mô tả): mặc định bỏ khỏi output nhưng vẫn đếm trong thống kê; tắt checkbox thì vẫn xuất slide đủ cấu trúc
 - Thụt lề theo mẫu trang bằng tab: wrapper 0 tab, `<div class="swiper-slide">` 6 tab, `p.cat`/`div.img`/`div.txt` 7 tab, `p.txt01`/`p.txt02` (+`a.view`) 8 tab, `</div>` cuối wrapper 5 tab
-- Bỏ toàn bộ phần chi tiết trong tab (STEP 01–04, bảng biểu, 체험강의/iframe, 취득 후 활동분야), comment HTML và href gốc của CMS; fallback khi input chỉ có `.tab_cont` trần, chỉ có `div.js_tab_cont` hoặc là cả trang HTML
-- Đầy đủ tiện ích: copy, tải file `.html` (`swiper-certificate.html`), load file có sẵn, ví dụ mẫu thật (2 tab 자격증), thống kê (số `tab_cont` / tổng slide / tab rỗng bị bỏ / bytes), tự động xử lý khi dán input
+- Bỏ `p.sec_subtit`, `a.text_btn`, `data-aos`/`aos-init`, comment HTML và href gốc của CMS; fallback khi input chỉ có các `.licn_box` trần (không cần `div.dept_licn` bao ngoài), `div.dept_licn` không có `licn_box` con, hoặc là cả trang HTML
+- Đầy đủ tiện ích: copy, tải file `.html` (`swiper-certificate.html`), load file có sẵn, ví dụ mẫu thật (4 `licn_box` của `dept_licn`: 조경기사 / 자연생태복원기사 / 식물보호기사 / 골프코스관리사), thống kê (số box / tổng slide / box rỗng bị bỏ / bytes), tự động xử lý khi dán input
 
-**Cách dùng:** mở `certificate.html` trong trình duyệt, dán HTML `js_tab_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-certificate.js` để kiểm thử logic.
+**Cách dùng:** mở `certificate.html` trong trình duyệt, dán HTML `dept_section dept_licn` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-certificate.js` để kiểm thử logic.
 
 
 ## 📝 License
