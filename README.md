@@ -329,12 +329,16 @@ Tool chuyển đổi HTML bài giảng dạng `<div class="pre_lect">` (gồm c�
 
 Tool chuyển đổi khối `<div class="subj_cont">` (trang giới thiệu khoa: `p.tit` + 2 `<dl><dt>/<dd>`) thành `<div class="box">` theo template mới:
 - `p.tit` → `p.txt01` (bỏ `<br>` và nút bọc trong `<a>` như "과정 상세보기"), `p.cat` = `Course NN` (tuỳ chọn số, mặc định `03`, tự tăng khi input có nhiều block)
+- `p.desc` (nếu có) → `p.txt02` ngay sau `p.txt01` (bật/tắt bằng checkbox "🧾 Mô tả (p.desc)")
 - `<dl>` thứ nhất (`dt` + `dd > span.label`) → `<div class="bot01">` với `<p class="tit">` + `<ul class="course">`
-- `<dl>` thứ hai (`dt` + `dd > a > span.label`) → `<div class="bot02">` với `<p class="tit">` + `<ul class="area">`
+- Các `<dl>` sau (`dt` + `dd > a > span.label`) → `<div class="bot02">` với `<p class="tit">` + `<ul class="area">`; chọn cách gom khi input có nhiều `<dl>` (`취득 자격증` / `취득 수료증`):
+  - `each` (mặc định): mỗi `<dl>` thành 1 `.bot02` riêng (giữ `dt` của từng nhóm)
+  - `merge`: gộp tất cả vào 1 `ul.area`, `tit` = `dt` của `<dl>` đầu nhóm
+  - `last`: chỉ giữ `<dl>` cuối (`취득 수료증`)
 - Mỗi môn trong `ul.course` → `<li><a class="popup-click" href="#a" id="detail-888" title="...">...</a></li>` (tuỳ chọn tăng dần id)
 - `<div class="btn">` chèn sẵn: `.pc > a.more popup-click` + `.mo > a.view` + `.mo > a.detail popup-click`, `tab` tự lấy `major_tab` từ link trong `p.tit` (mặc định `1`), `id` popup mặc định `5627`
 - Bỏ inline `style` (background-image) và href gốc của CMS; hỗ trợ nhiều khối `.subj_cont` cùng lúc, fallback khi input không có wrapper
-- Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, ví dụ mẫu, tự động xử lý
+- Tuple chuyển đổi: copy, tải file `.html`, load file có sẵn, 2 ví dụ mẫu (경ㆍ공매투자, 인공지능 AI có `p.desc` + 3 `<dl>`), tự động xử lý
 
 **Cách dùng:** mở `course02.html` trong trình duyệt, dán HTML `subj_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-course02.js` để kiểm thử logic.
 

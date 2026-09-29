@@ -3,6 +3,7 @@
  * - Syntax-check tất cả inline <script> trong file tool
  * - Trích core converter (div.subj_cont -> div.box) và chạy thật với DOM shim dựa trên cheerio
  * - Assert output khớp cấu trúc div.box mong muốn (top / bot01 ul.course / bot02 ul.area / btn)
+ * - Kiểm tra thêm: p.desc -> p.txt02 và 3 chế độ nhiều <dl> sau 교과목 (merge / each / last)
  */
 const fs = require('fs');
 const path = require('path');
@@ -39,6 +40,12 @@ assert.ok(coreBlock.indexOf('SAMPLE_HTML') !== -1, 'Core phải chứa SAMPLE_HT
 const sampleMatch = coreBlock.match(/const SAMPLE_HTML = `([\s\S]*?)`;/);
 assert.ok(sampleMatch && sampleMatch[1].indexOf('subj_cont') !== -1, 'SAMPLE phải là khối .subj_cont');
 const SAMPLE = sampleMatch[1];
+
+// Trích SAMPLE_AI_HTML (ví dụ 2: có p.desc + 3 <dl>)
+const sampleAiMatch = coreBlock.match(/const SAMPLE_AI_HTML = `([\s\S]*?)`;/);
+assert.ok(sampleAiMatch && sampleAiMatch[1].indexOf('p class="desc"') !== -1, 'SAMPLE_AI phải có p.desc');
+assert.ok(sampleAiMatch[1].indexOf('computer-and-ai-engineering') !== -1, 'SAMPLE_AI phải là khối course AI thật');
+const SAMPLE_AI = sampleAiMatch[1];
 
 // ============ 2. DOM shim (chạy core converter thật trong Node) ============
 // Chỉ trích các hàm thuần (bỏ DOM refs / event listeners)
@@ -160,6 +167,38 @@ assert.strictEqual(small.areaCount, 1, 'Đếm đúng 1 mục trong ul.area');
 assert.deepStrictEqual(small.titles, ['스마트팜 전문가 과정'], 'txt01 = tiêu đề p.tit (bỏ nút 상세보기)');
 console.log('OK: chuyển đổi chính xác template div.box (top/bot01/bot02/btn)');
 
+// ============ 3b. p.desc -> p.txt02 ============
+const DESC_TEXT = '스마트팜 분야의 전문가로 성장하기 위한 실무 중심 교육과정입니다.';
+const SMALL_DESC_INPUT = SMALL_INPUT.replace('\t<dl>', '\t<p class="desc">' + DESC_TEXT + '</p>\n\t<dl>');
+assert.notStrictEqual(SMALL_DESC_INPUT, SMALL_INPUT, 'Đã chèn p.desc vào input mẫu');
+
+const expectedSmallDesc = expectedSmall.replace(
+    T(9) + '<p class="txt01">스마트팜 전문가 과정</p>',
+    T(9) + '<p class="txt01">스마트팜 전문가 과정</p>\n' + T(9) + '<p class="txt02">' + DESC_TEXT + '</p>'
+);
+assert.notStrictEqual(expectedSmallDesc, expectedSmall, 'Template mong muốn đã có thêm p.txt02');
+
+const smallDesc = convert(SMALL_DESC_INPUT, DEFAULT_OPTS);
+assert.strictEqual(smallDesc.html, expectedSmallDesc, 'Có p.desc -> sinh p.txt02 ngay sau p.txt01 (khớp chính xác)');
+assert.strictEqual(cheerio.load(smallDesc.html)('p.txt02').text(), DESC_TEXT, 'txt02 = nội dung p.desc');
+assert.strictEqual(smallDesc.courseCount, 2, 'txt02 không làm lệch số môn học');
+console.log('OK: p.desc -> p.txt02 (khớp chính xác từng dòng)');
+
+// Tắt option showDesc -> bỏ txt02, output y hệt input không có desc
+const smallNoDesc = convert(SMALL_DESC_INPUT, { ...DEFAULT_OPTS, showDesc: false });
+assert.strictEqual(smallNoDesc.html, expectedSmall, 'showDesc:false -> không sinh p.txt02');
+
+// Không có p.desc -> không sinh txt02
+assert.strictEqual(small.html.indexOf('txt02'), -1, 'Input không có p.desc -> không có p.txt02');
+
+// desc nhiều dòng / &nbsp; / khoảng trắng thừa -> gộp về 1 dòng đã trim
+const messyDesc = convert(
+    SMALL_INPUT.replace('\t<dl>', '\t<p class="desc">\n\t\t  &nbsp;Dòng 1   dòng 2&nbsp;\n\t</p>\n\t<dl>'),
+    DEFAULT_OPTS
+);
+assert.ok(messyDesc.html.indexOf('<p class="txt02">Dòng 1 dòng 2</p>') !== -1, 'desc được trim + gộp khoảng trắng/&nbsp;');
+console.log('OK: tuỳ chọn showDesc + chuẩn hoá nội dung p.desc');
+
 // ============ 4. Input thật (경ㆍ공매투자 전문가 과정) ============
 const real = convert(SAMPLE, DEFAULT_OPTS);
 const $real = cheerio.load(real.html, { decodeEntities: false });
@@ -206,7 +245,66 @@ assert.strictEqual($btn.find('div.mo a.view span').first().text(), '펼쳐보기
 assert.ok(real.html.indexOf('real-estate-asset-expert.do') === -1, 'Không mang href gốc của CMS vào output');
 assert.ok(real.html.indexOf('background-image') === -1, 'Bỏ inline style background-image');
 assert.ok(real.html.indexOf('과정 상세보기') === -1, 'Bỏ nút 과정 상세보기 khỏi txt01');
+assert.strictEqual($real('p.txt02').length, 0, 'SAMPLE không có p.desc -> không sinh txt02');
 console.log('OK: input thật (14 môn + 수료증) chuyển đúng sang div.box');
+
+// ============ 4b. Input thật #2: p.desc + 3 <dl> (교과목 / 취득 자격증 / 취득 수료증) ============
+const AI_DESC = '인공지능(AI) 분야에서 필요한 기술과 지식을 체계적으로 배우고, 다양한 실습을 통해 실제 구현 경험을 쌓은 후, AI업계에서 최고의 전문가로 성장할 수 있습니다.';
+
+// (a) Mặc định areaMode 'each' -> mỗi <dl> còn lại thành 1 .bot02 riêng (giữ nguyên dt)
+const aiEach = convert(SAMPLE_AI, DEFAULT_OPTS);
+const $aiEach = cheerio.load(aiEach.html, { decodeEntities: false });
+assert.strictEqual(aiEach.boxCount, 1, 'SAMPLE_AI -> 1 box');
+assert.strictEqual(aiEach.courseCount, 24, 'SAMPLE_AI có 24 môn học');
+assert.strictEqual(aiEach.areaCount, 4, 'each: 3 자격증 + 1 수료증 = 4 mục ul.area');
+assert.strictEqual($aiEach('div.bot02').length, 2, "mặc định 'each' -> 2 div.bot02");
+assert.deepStrictEqual(
+    $aiEach('div.bot02 > p.tit').toArray().map(el => $aiEach(el).text()),
+    ['취득 자격증', '취득 수료증'],
+    'each: tit lần lượt theo từng <dl>'
+);
+assert.strictEqual($aiEach('div.bot02').eq(0).find('ul.area > li').length, 3, 'nhóm 자격증 có 3 <li>');
+assert.strictEqual($aiEach('div.bot02').eq(1).find('ul.area > li').length, 1, 'nhóm 수료증 có 1 <li>');
+assert.deepStrictEqual(
+    $aiEach('div.bot02').eq(0).find('ul.area > li > a').toArray().map(el => $aiEach(el).text()),
+    ['인공지능(AI) 전문가(2020-002858)', 'AWS 공인 AI 종사자(AWS Certified AI Practitioner)', 'IBM 데이터사이언스 디지털배지'],
+    'giữ đúng thứ tự 자격증'
+);
+assert.strictEqual($aiEach('p.txt01').text(), '인공지능(AI) 전문가 과정', 'txt01 bỏ <br> + nút 과정 상세보기');
+assert.strictEqual($aiEach('p.txt02').text(), AI_DESC, 'p.desc -> p.txt02 nguyên nội dung');
+assert.strictEqual($aiEach('div.box > div.top > p').length, 3, '.top có cat + txt01 + txt02');
+assert.strictEqual($aiEach('p.cat').next('p').attr('class'), 'txt01', 'txt01 đứng ngay sau p.cat');
+assert.strictEqual($aiEach('p.txt01').next('p').attr('class'), 'txt02', 'txt02 đứng ngay sau p.txt01');
+assert.strictEqual($aiEach('a.more').attr('tab'), '1', 'tab tự lấy major_tab=1 trong p.tit');
+assert.strictEqual($aiEach('ul.course > li > a').first().attr('title'), '데이터과학의세계');
+assert.strictEqual($aiEach('ul.course > li').length, 24, 'ul.course có 24 <li>');
+assert.ok(aiEach.html.indexOf('background-image') === -1, 'Bỏ inline style background-image');
+assert.ok(aiEach.html.indexOf('computer-and-ai-engineering') === -1, 'Không giữ href gốc của CMS');
+console.log("OK: input thật #2 (24 môn + desc + 3 <dl>) — mặc định 'each' tạo 2 .bot02 (3 + 1 mục)");
+
+// (b) areaMode 'merge' -> 1 .bot02 gộp 취득 자격증 + 취득 수료증
+const aiMerge = convert(SAMPLE_AI, { ...DEFAULT_OPTS, areaMode: 'merge' });
+const $aiMerge = cheerio.load(aiMerge.html);
+assert.strictEqual($aiMerge('div.bot02').length, 1, 'merge -> đúng 1 div.bot02');
+assert.strictEqual($aiMerge('div.bot02 > p.tit').text(), '취득 자격증', 'tit của nhóm = dt <dl> đầu tiên trong nhóm');
+assert.strictEqual(aiMerge.areaCount, 4, 'merge vẫn giữ đủ 4 mục');
+assert.deepStrictEqual(
+    $aiMerge('ul.area > li > a').toArray().map(el => $aiMerge(el).text()),
+    ['인공지능(AI) 전문가(2020-002858)', 'AWS 공인 AI 종사자(AWS Certified AI Practitioner)', 'IBM 데이터사이언스 디지털배지', '인공지능(AI) 전문가'],
+    'merge: ul.area giữ đúng thứ tự 자격증 rồi 수료증'
+);
+
+// (c) areaMode 'last' -> chỉ giữ <dl> cuối (취득 수료증)
+const aiLast = convert(SAMPLE_AI, { ...DEFAULT_OPTS, areaMode: 'last' });
+const $aiLast = cheerio.load(aiLast.html);
+assert.strictEqual($aiLast('div.bot02').length, 1, "last -> 1 div.bot02");
+assert.strictEqual($aiLast('div.bot02 > p.tit').text(), '취득 수료증', 'last: tit = dt <dl> cuối');
+assert.strictEqual(aiLast.areaCount, 1, 'last: chỉ còn 1 mục');
+assert.strictEqual($aiLast('ul.area > li > a').text(), '인공지능(AI) 전문가');
+
+// (d) showDesc:false -> bỏ hẳn txt02
+assert.strictEqual(convert(SAMPLE_AI, { ...DEFAULT_OPTS, showDesc: false }).html.indexOf('txt02'), -1, 'showDesc:false -> không có txt02');
+console.log('OK: 3 chế độ nhiều <dl> (merge / each / last) + tắt txt02');
 
 // ============ 5. Tuỳ chọn ============
 // id tăng dần
