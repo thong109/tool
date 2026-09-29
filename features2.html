@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features2 Converter - Chuyển diff_cont thành ul.swiper-wrapper</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1200px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: nowrap; }
+        input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="number"] { width: 90px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"] { width: 120px; padding: 7px 10px; background: #111111; border: 2px solid #2a2a2a; border-radius: 8px; color: #cccccc; font-size: 13px; outline: none; }
+        input[type="text"].wide { width: 240px; }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: #666666; }
+        .option-group label code { font-size: 11px; }
+        .editor-area { display: flex; gap: 20px; flex-wrap: wrap; }
+        .editor-panel { flex: 1; min-width: 280px; }
+        .editor-panel label { display: block; font-weight: 600; color: #aaaaaa; margin-bottom: 8px; font-size: 14px; }
+        .editor-panel label .count { font-weight: 400; color: #666666; font-size: 12px; }
+        textarea { width: 100%; height: 460px; padding: 16px; background: #111111; color: #cccccc; border: 2px solid #2a2a2a; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: vertical; outline: none; tab-size: 4; }
+        textarea:focus { border-color: #666666; }
+        textarea::placeholder { color: #444444; }
+        textarea.output { background: #0d0d0d; border-color: #2a2a2a; }
+        .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary, .btn-success { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; }
+        .btn-primary:hover, .btn-success:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #aaaaaa; border: 1px solid #444444; }
+        .btn-outline:hover { background: #1a1a1a; }
+        .btn-secondary { background: #2a2a2a; color: #888888; border: 1px solid #333333; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .file-upload-wrapper { position: relative; overflow: hidden; }
+        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .stats { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-item { background: #111111; padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #888888; border: 1px solid #2a2a2a; }
+        .stat-item strong { color: #cccccc; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; color: #cccccc; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.4s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid #2a2a2a; z-index: 2000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            textarea { height: 260px; }
+            h1 { font-size: 22px; }
+            .option-group label { white-space: normal; }
+            input[type="text"].wide { width: 160px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>
+            🧩 Features2 Converter
+            <span>diff_cont → ul.swiper-wrapper</span>
+        </h1>
+        <p class="subtitle">
+            Dán khối <code>&lt;div class="diff_cont"&gt;</code> (nhiều <code>&lt;dl&gt;</code>: <code>&lt;dt&gt;Features. 01&lt;p&gt;tiêu đề&lt;/p&gt;&lt;/dt&gt;</code> + <code>&lt;dd&gt;&lt;ul class="dot_list"&gt;&lt;li&gt;...&lt;/li&gt;&lt;/ul&gt;&lt;a class="btn01 more_ic"&gt;더보기&lt;/a&gt;&lt;div class="thumb_img"&gt;&lt;img&gt;&lt;/div&gt;&lt;/dd&gt;</code>) vào ô bên trái → bấm <strong>⚡ Chuyển đổi</strong> → nhận về <code>&lt;ul class="swiper-wrapper"&gt;</code> gồm nhiều <code>&lt;li class="swiper-slide"&gt;</code>.
+            <br>Mỗi <code>&lt;dl&gt;</code> → 1 slide: <code>Features. NN</code> → <code>&lt;p class="label"&gt;Features NN&lt;/p&gt;</code>, <code>&lt;dt&gt;&lt;p&gt;</code> → <code>&lt;p class="txt01 line1"&gt;</code>, <code>ul.dot_list &gt; li</code> → <code>&lt;div class="txt02"&gt;&lt;ul class="ul-dot cir"&gt;…</code>, <code>div.thumb_img &gt; img</code> → <code>&lt;div class="img"&gt;&lt;img src alt&gt;&lt;/div&gt;</code>, thêm <code>a.view</code> (펼쳐보기/접기). Bỏ <code>data-aos</code>, <code>a.btn01…더보기</code> và href gốc.
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">📝 Label (<code>p.label</code>)</div>
+                <label>
+                    Tiền tố:
+                    <input type="text" id="optPrefix" value="Features">
+                </label>
+                <label>
+                    Số bắt đầu:
+                    <input type="number" id="optStartNo" value="1" min="0" max="999">
+                </label>
+                <label><input type="checkbox" id="optAutoNum" checked> Tự đánh số NN theo thứ tự slide</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🖼️ Ảnh</div>
+                <label>
+                    Mẫu src ảnh:
+                    <input type="text" id="optImgPattern" class="wide" value="" placeholder="{NN} = 01, 02, ...">
+                </label>
+                <label><input type="checkbox" id="optLine1" checked> Thêm class <code>line1</code> cho <code>p.txt01</code></label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🔗 Link <code>a.view</code></div>
+                <label>
+                    href:
+                    <input type="text" id="optViewHref" value="#a">
+                </label>
+                <label><input type="checkbox" id="optView" checked> Xuất <code>a.view</code> (펼쳐보기/접기)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">📑 &lt;dl&gt; không có <code>ul.dot_list</code></div>
+                <label><input type="checkbox" id="optSkipEmpty"> Bỏ <code>div.txt02</code> + <code>a.view</code> (chỉ giữ ảnh + <code>p.txt01</code>)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🧱 Nhiều <code>div.diff_cont</code></div>
+                <label><input type="checkbox" id="optMultiWrap"> Mỗi khối 1 <code>ul.swiper-wrapper</code> riêng (mặc định: gộp tất cả vào 1)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">🎛️ Tuỳ chọn</div>
+                <label><input type="checkbox" id="optAutoRun"> Tự động xử lý ngay khi dán input</label>
+            </div>
+        </div>
+
+        <div class="editor-area">
+            <div class="editor-panel">
+                <label>
+                    📥 Input (div.diff_cont)
+                    <span class="count" id="inputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="inputText" placeholder="Paste HTML dạng &lt;div class=&quot;diff_cont&quot;&gt;&lt;dl&gt;&lt;dt&gt;Features. 01&lt;p&gt;...&lt;/p&gt;&lt;/dt&gt;&lt;dd&gt;&lt;ul class=&quot;dot_list&quot;&gt;&lt;li&gt;...&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;thumb_img&quot;&gt;&lt;img src=&quot;...&quot;&gt;&lt;/div&gt;&lt;/dd&gt;&lt;/dl&gt;...&lt;/div&gt; hoặc chọn file .html..."></textarea>
+            </div>
+            <div class="editor-panel">
+                <label>
+                    📤 Output HTML (ul.swiper-wrapper)
+                    <span class="count" id="outputCount">(0 ký tự)</span>
+                </label>
+                <textarea id="outputText" class="output" placeholder="Kết quả chuyển đổi sẽ hiển thị ở đây..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btnConvert">⚡ Chuyển đổi</button>
+            <button class="btn btn-success" id="btnCopy">📋 Copy</button>
+            <button class="btn btn-outline file-upload-wrapper">
+                📂 Chọn file .html
+                <input type="file" id="fileInput" accept=".html,.htm">
+            </button>
+            <button class="btn btn-outline" id="btnDownload">⬇️ Tải file</button>
+            <button class="btn btn-secondary" id="btnSample">🧪 Dán ví dụ</button>
+            <button class="btn btn-secondary" id="btnClear">🗑️ Xoá</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🧩 Tổng slide: <strong id="statSlides">0</strong></div>
+            <div class="stat-item">📭 Slide không có <code>ul.dot_list</code>: <strong id="statEmpty">0</strong></div>
+            <div class="stat-item">🧱 Số wrapper: <strong id="statWrap">0</strong></div>
+            <div class="stat-item">📥 Input: <strong id="statInBytes">0</strong> bytes</div>
+            <div class="stat-item">📤 Output: <strong id="statOutBytes">0</strong> bytes</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Nạp global header menu
+        fetch('header-menu.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    if (link.getAttribute('data-page') === 'features2') link.classList.add('active');
+                });
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+
+    <script>
+        // ===== Core converter: div.diff_cont -> ul.swiper-wrapper =====
+        // Ví dụ thật: trang giới thiệu khoa (4 <dl>, trong đó 1 <dl class="no_dd"> chỉ có ảnh)
+        const SAMPLE_HTML = `<div class="diff_cont">
+\t\t<dl data-aos="fade-up" class="aos-init aos-animate">
+\t\t\t<dt>Features. 01<p>전공자/비전공자를 위한 다양한 교육과정, 자격증 취득 준비까지, 실무와 이론의 조합, 최고의 교수진 확보</p>
+\t\t\t</dt>
+\t\t\t<dd>
+\t\t\t\t<ul class="dot_list">
+\t\t\t\t\t<li>누구나 수강할 수 있는 다양한 조경, 생태복원, 잔디 및 식물관리 교육과정과 풍부한 연구와 실무경험을 보유하고 자격증 노하우가 풍부한 교수진의 이론과 실무의 최고의 교육 제공</li>
+\t\t\t\t</ul><a class="btn01 col03 more_ic" href="#" title="접힘">더보기</a>
+\t\t\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_diff_img_1.jpg" alt=""></div>
+\t\t\t</dd>
+\t\t</dl>
+\t\t<dl data-aos="fade-up" class="aos-init aos-animate">
+\t\t\t<dt>Features. 02<p>조경, 생태복원, 잔디 및 식물관리의 체계적이고 전문적인 교육과정과 강의/시험/특강 등 100% 원격교육 제공</p>
+\t\t\t</dt>
+\t\t\t<dd>
+\t\t\t\t<ul class="dot_list">
+\t\t\t\t\t<li>조경, 생태복원, 잔디 및 식물관리 교과과정 로드맵을 통한 체계적인 교육과정과 전문 강사진을 통한 전문적인 교육을 제공하고 100% 원격교육을 통한 언제 어디서나 교육을 받을 수 있도록 교육 컨텐츠 접근성 향상</li>
+\t\t\t\t</ul><a class="btn01 col03 more_ic" href="#" title="접힘">더보기</a>
+\t\t\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_diff_img_2.jpg" alt=""></div>
+\t\t\t</dd>
+\t\t</dl>
+\t\t<dl class="no_dd">
+\t\t\t<dt>Features. 03<p>컴퓨터 응용 기법이나 CAD 프로그램 실습을 통해 실무능력 향상 기회를 제공하고 전문 강사의 특강 등 프로그램 실습강좌 개설</p>
+\t\t\t</dt>
+\t\t\t<dd>
+\t\t\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_diff_img_3.jpg" alt=""></div>
+\t\t\t</dd>
+\t\t</dl>
+\t\t<dl data-aos="fade-up" class="aos-init">
+\t\t\t<dt>Features. 04<p>자격증 실전 교과목을 포함한 조경, 생태복원, 식물보호 자격증로드맵을 운영하고 자격증 아카데미 및 학과 자격증 특강을 통한 국가기술자격증 취득 지원</p>
+\t\t\t</dt>
+\t\t\t<dd>
+\t\t\t\t<ul class="dot_list">
+\t\t\t\t\t<li>조경, 생태복원, 식물보호 자격증 실전 교과목을 포함한 조경, 생태복원, 식물보호 등 주요 기술자격증 취득을 위한 자격증로드맵을 운영하고 있으며, 자격증 심화 교과목을 수강 가능하고 학과 주관 자격증 특강을 통해 자격증 취득 노하우를 전수</li>
+\t\t\t\t</ul><a class="btn01 col03 more_ic" href="#" title="접힘">더보기</a>
+\t\t\t\t<div class="thumb_img"><img src="/_res/sjcu/ko/img/dept/environmen_landscaping_intro_diff_img_4.jpg" alt=""></div>
+\t\t\t</dd>
+\t\t</dl>
+\t</div>`;
+
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const inputCount = document.getElementById('inputCount');
+        const outputCount = document.getElementById('outputCount');
+        const statSlides = document.getElementById('statSlides');
+        const statEmpty = document.getElementById('statEmpty');
+        const statWrap = document.getElementById('statWrap');
+        const statInBytes = document.getElementById('statInBytes');
+        const statOutBytes = document.getElementById('statOutBytes');
+        const optPrefix = document.getElementById('optPrefix');
+        const optStartNo = document.getElementById('optStartNo');
+        const optAutoNum = document.getElementById('optAutoNum');
+        const optImgPattern = document.getElementById('optImgPattern');
+        const optLine1 = document.getElementById('optLine1');
+        const optViewHref = document.getElementById('optViewHref');
+        const optView = document.getElementById('optView');
+        const optSkipEmpty = document.getElementById('optSkipEmpty');
+        const optMultiWrap = document.getElementById('optMultiWrap');
+        const optAutoRun = document.getElementById('optAutoRun');
+        const btnConvert = document.getElementById('btnConvert');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+        const btnSample = document.getElementById('btnSample');
+        const btnDownload = document.getElementById('btnDownload');
+        const fileInput = document.getElementById('fileInput');
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Trim + bỏ nbsp + chuẩn hoá khoảng trắng
+        function cleanText(text) {
+            return (text || '')
+                .replace(/\u00a0/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function escapeHtml(text) {
+            return String(text == null ? '' : text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function pad2(num) {
+            const str = String(num);
+            return str.length < 2 ? '0' + str : str;
+        }
+
+        // Thụt lề chuẩn theo template: <li class="swiper-slide"> = 6 tab, mỗi cấp con +1 tab
+        const TAB = '\t';
+
+        // "Features. 01" -> "Features 01"
+        function normalizeLabel(text) {
+            return cleanText(String(text == null ? '' : text).replace(/\./g, ' '));
+        }
+
+        // Phần chữ trong label (bỏ số): "Features 01" -> "Features"
+        function wordFrom(label) {
+            return normalizeLabel(label).replace(/\d+/g, '').trim();
+        }
+
+        // Text hiển thị của 1 element: <br> -> khoảng trắng, gộp khoảng trắng (ưu tiên childNodes)
+        function elementText(el) {
+            if (!el) return '';
+            const nodes = el.childNodes;
+            if (nodes && nodes.length) {
+                let out = '';
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    const type = node.nodeType;
+                    if (type === 3) { out += node.nodeValue || ''; continue; }
+                    if (type !== 1) continue;
+                    const tag = String(node.tagName || node.nodeName || '').toLowerCase();
+                    if (tag === 'br') { out += ' '; continue; }
+                    out += elementText(node);
+                }
+                return cleanText(out);
+            }
+            return cleanText(el.textContent);
+        }
+
+        // Text label trong <dt> = toàn bộ text của <dt> trừ phần <p> tiêu đề
+        function labelFromDt(dt, title) {
+            if (!dt) return '';
+            let out = cleanText(dt.textContent);
+            if (title) {
+                const at = out.indexOf(title);
+                if (at !== -1) out = cleanText(out.slice(0, at) + ' ' + out.slice(at + title.length));
+            }
+            return out;
+        }
+
+        // p.label: tự đánh số NN, hoặc giữ số có sẵn trong input nếu tắt tự đánh số
+        function makeLabel(rawLabel, index, opts) {
+            const fallbackPrefix = opts.prefix || wordFrom(rawLabel) || 'Features';
+            if (opts.autoNum) return fallbackPrefix + ' ' + pad2(opts.startNo + index);
+            const normalized = normalizeLabel(rawLabel);
+            return normalized || (fallbackPrefix + ' ' + pad2(opts.startNo + index));
+        }
+
+        function viewLink(href) {
+            return '<a class="view" href="' + escapeHtml(href) + '" title="펼쳐보기/접기"><span>펼쳐보기</span><span>접기</span></a>';
+        }
+
+        // Nội dung <li> (chỉ text + <br>) -> gộp 1 dòng giống mẫu, chuẩn hoá <br>
+        function inlineHtml(html) {
+            return String(html == null ? '' : html)
+                .replace(/\r\n?/g, '\n')
+                .replace(/[ \t]*\n[ \t]*/g, ' ')
+                .replace(/[ \t]{2,}/g, ' ')
+                .replace(/\s*<br\s*\/?>\s*/gi, '<br>')
+                .trim();
+        }
+
+        // Đẩy 1 <li> của ul.dot_list vào output
+        function pushLi(parts, li, i10, i11) {
+            const raw = String(li.innerHTML == null ? '' : li.innerHTML);
+            if (!/<(ul|ol|div|p|dl|table|figure|section|article)\b/i.test(raw)) {
+                parts.push(i10 + '<li>' + inlineHtml(raw) + '</li>');
+                return;
+            }
+            // <li> có block con -> xuống dòng, thụt lề thêm 1 cấp
+            parts.push(i10 + '<li>');
+            raw.replace(/\r\n?/g, '\n').split('\n').forEach(line => {
+                const text = line.replace(/^[ \t]+|[ \t]+$/g, '');
+                if (text) parts.push(i11 + text);
+            });
+            parts.push(i10 + '</li>');
+        }
+
+        // src ảnh: giữ ảnh gốc, hoặc thay theo mẫu {NN} / {N}
+        function imgSrc(img, index, opts) {
+            const original = img ? String(img.getAttribute('src') || '') : '';
+            if (!opts.imgPattern) return original;
+            const num = opts.startNo + index;
+            return opts.imgPattern
+                .replace(/\{NN\}/g, pad2(num))
+                .replace(/\{N\}/g, String(num));
+        }
+
+        // Tìm tất cả khối .diff_cont trong input
+        function extractBlocks(input) {
+            if (!input || !input.trim()) throw new Error('Chưa có input!');
+            const doc = new DOMParser().parseFromString(input, 'text/html');
+            if (doc.querySelector('parsererror')) throw new Error('HTML input không hợp lệ!');
+
+            let blocks = Array.from(doc.querySelectorAll('div.diff_cont'));
+            if (!blocks.length) blocks = Array.from(doc.querySelectorAll('.diff_cont'));
+            if (blocks.length) return blocks;
+
+            // Fallback: input không có .diff_cont -> coi cả input là 1 block (<dl> trần)
+            const body = doc.body;
+            if (body && body.querySelectorAll('dl').length) return [body];
+            throw new Error('Không tìm thấy khối .diff_cont (cần <dl><dt>Features…</dt><dd>…) nào trong input!');
+        }
+
+        // 1 <dl> -> 1 <li class="swiper-slide">
+        function buildSlide(dl, index, opts) {
+            const i6 = TAB.repeat(6);
+            const i7 = TAB.repeat(7);
+            const i8 = TAB.repeat(8);
+            const i9 = TAB.repeat(9);
+            const i10 = TAB.repeat(10);
+            const i11 = TAB.repeat(11);
+
+            const dt = dl.querySelector(':scope > dt') || dl.querySelector('dt');
+            const dd = dl.querySelector(':scope > dd') || dl.querySelector('dd');
+            const titleEl = dt ? (dt.querySelector(':scope > p') || dt.querySelector('p')) : null;
+            const title = elementText(titleEl);
+            const label = makeLabel(labelFromDt(dt, title), index, opts);
+
+            const img = dl.querySelector('.thumb_img img') || dl.querySelector('img');
+            const src = imgSrc(img, index, opts);
+            const alt = img ? cleanText(img.getAttribute('alt') || '') : '';
+
+            const list = dd ? (dd.querySelector('ul.dot_list') || dd.querySelector(':scope > ul') || dd.querySelector('ul')) : null;
+            const items = list ? Array.from(list.querySelectorAll(':scope > li')) : [];
+
+            const lines = [];
+            lines.push(i6 + '<li class="swiper-slide">');
+            lines.push(i7 + '<p class="label">' + escapeHtml(label) + '</p>');
+            lines.push(i7 + '<div class="img"><img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '"></div>');
+            lines.push(i7 + '<div class="txt">');
+            lines.push(i8 + '<p class="' + (opts.line1 ? 'txt01 line1' : 'txt01') + '">' + escapeHtml(title) + '</p>');
+
+            // <dl> không có <ul class="dot_list"> -> giữ div.txt02 rỗng, hoặc bỏ luôn txt02 + a.view
+            const skipEmpty = !!opts.skipEmpty && !items.length;
+            let closeInner = '';
+            if (!skipEmpty) {
+                if (items.length) {
+                    lines.push(i8 + '<div class="txt02">');
+                    lines.push(i9 + '<ul class="ul-dot cir">');
+                    items.forEach(li => pushLi(lines, li, i10, i11));
+                    lines.push(i9 + '</ul>');
+                    closeInner = '</div>';
+                } else {
+                    lines.push(i8 + '<div class="txt02"></div>');
+                }
+            }
+            const withView = !!opts.withView && !skipEmpty;
+            lines.push(i8 + closeInner + (withView ? viewLink(opts.href) : '') + '</div>');
+            lines.push(i6 + '</li>');
+
+            return {
+                lines: lines,
+                label: label,
+                title: title,
+                src: src,
+                hasList: items.length > 0,
+                itemCount: items.length
+            };
+        }
+
+        // Danh sách <dl> -> 1 <ul class="swiper-wrapper">
+        function buildWrapper(dls, startIndex, opts) {
+            const lines = ['<ul class="swiper-wrapper">'];
+            const labels = [];
+            const titles = [];
+            let slides = 0;
+            let empty = 0;
+
+            dls.forEach((dl, i) => {
+                const slide = buildSlide(dl, startIndex + i, opts);
+                slide.lines.forEach(line => lines.push(line));
+                slides++;
+                if (!slide.hasList) empty++;
+                labels.push(slide.label);
+                titles.push(slide.title);
+            });
+
+            lines.push('</ul>');
+            return { lines: lines, slides: slides, empty: empty, labels: labels, titles: titles };
+        }
+
+        // Toàn bộ input -> 1 (mặc định) hoặc nhiều ul.swiper-wrapper
+        function convertFeatures2(input, opts) {
+            opts = opts || {};
+            const startNo = parseInt(opts.startNo, 10);
+            const options = {
+                prefix: opts.prefix == null ? 'Features' : String(opts.prefix).trim(),
+                startNo: isNaN(startNo) ? 1 : startNo,
+                autoNum: opts.autoNum !== false,
+                imgPattern: String(opts.imgPattern == null ? '' : opts.imgPattern).trim(),
+                withView: opts.withView !== false,
+                href: String(opts.href == null ? '' : opts.href).trim() || '#a',
+                line1: opts.line1 !== false,
+                skipEmpty: !!opts.skipEmpty,
+                multiWrap: !!opts.multiWrap
+            };
+
+            const blocks = extractBlocks(input);
+            const groups = blocks
+                .map(block => Array.from(block.querySelectorAll('dl')))
+                .filter(list => list.length);
+            if (!groups.length) throw new Error('Không tìm thấy <dl> nào trong khối .diff_cont!');
+
+            const flat = groups.reduce((all, list) => all.concat(list), []);
+            const packs = options.multiWrap ? groups : [flat];
+            const wrappers = [];
+            const info = { slides: 0, empty: 0, labels: [], titles: [] };
+
+            let index = 0;
+            packs.forEach(list => {
+                const built = buildWrapper(list, index, options);
+                wrappers.push(built.lines.join('\n'));
+                index += built.slides;
+                info.slides += built.slides;
+                info.empty += built.empty;
+                built.labels.forEach(label => info.labels.push(label));
+                built.titles.forEach(title => info.titles.push(title));
+            });
+
+            info.html = wrappers.join('\n');
+            info.wrapperCount = wrappers.length;
+            return info;
+        }
+
+        function updateStats(input, output, slides, empty, wrapCount) {
+            inputCount.textContent = '(' + input.length + ' ký tự)';
+            outputCount.textContent = '(' + output.length + ' ký tự)';
+            statSlides.textContent = slides || 0;
+            statEmpty.textContent = empty || 0;
+            statWrap.textContent = wrapCount || 0;
+            statInBytes.textContent = new Blob([input]).size.toLocaleString();
+            statOutBytes.textContent = new Blob([output]).size.toLocaleString();
+        }
+
+        function readOptions() {
+            return {
+                prefix: optPrefix.value,
+                startNo: optStartNo.value,
+                autoNum: optAutoNum.checked,
+                imgPattern: optImgPattern.value,
+                withView: optView.checked,
+                href: optViewHref.value,
+                line1: optLine1.checked,
+                skipEmpty: optSkipEmpty.checked,
+                multiWrap: optMultiWrap.checked
+            };
+        }
+
+        function handleConvert() {
+            const input = inputText.value;
+            if (!input.trim()) {
+                showToast('⚠️ Dán HTML khối .diff_cont vào trước!');
+                return;
+            }
+            try {
+                const result = convertFeatures2(input, readOptions());
+                outputText.value = result.html;
+                updateStats(input, result.html, result.slides, result.empty, result.wrapperCount);
+                showToast('✅ Đã chuyển ' + result.slides + ' slide (' + result.wrapperCount + ' wrapper)!');
+            } catch (e) {
+                outputText.value = '';
+                updateStats(input, '', 0, 0, 0);
+                showToast('❌ ' + e.message);
+            }
+        }
+
+        btnConvert.addEventListener('click', handleConvert);
+
+        btnCopy.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Không có dữ liệu để copy!');
+                return;
+            }
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                showToast('📋 Đã copy vào clipboard!');
+            }).catch(() => {
+                outputText.select();
+                document.execCommand('copy');
+                showToast('📋 Đã copy vào clipboard!');
+            });
+        });
+
+        btnClear.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            updateStats('', '', 0, 0, 0);
+            showToast('🗑️ Đã xoá');
+        });
+
+        btnSample.addEventListener('click', () => {
+            inputText.value = SAMPLE_HTML;
+            handleConvert();
+        });
+
+        btnDownload.addEventListener('click', () => {
+            if (!outputText.value.trim()) {
+                showToast('⚠️ Xử lý trước đã!');
+                return;
+            }
+            const blob = new Blob([outputText.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'swiper-features.html';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            showToast('⬇️ Đã tải swiper-features.html');
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                inputText.value = evt.target.result;
+                outputText.value = '';
+                fileInput.value = '';
+                handleConvert();
+            };
+            reader.readAsText(file);
+        });
+
+        inputText.addEventListener('input', () => {
+            inputCount.textContent = '(' + inputText.value.length + ' ký tự)';
+            if (optAutoRun.checked && inputText.value.trim()) {
+                handleConvert();
+            }
+        });
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                handleConvert();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -343,6 +343,24 @@ Tool chuyển đổi khối `<div class="subj_cont">` (trang giới thiệu khoa
 **Cách dùng:** mở `course02.html` trong trình duyệt, dán HTML `subj_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-course02.js` để kiểm thử logic.
 
 
+## 🧩 Features2 Swiper Converter Tool
+
+Tool chuyển đổi khối `<div class="diff_cont">` (trang giới thiệu khoa: nhiều `<dl>` với `<dt>Features. 01<p>tiêu đề</p></dt>` + `<dd><ul class="dot_list">…</ul><a class="btn01 …more_ic">더보기</a><div class="thumb_img"><img></div></dd>`) thành `<ul class="swiper-wrapper">` gồm các `<li class="swiper-slide">`:
+- Mỗi `<dl>` → 1 slide: `<p class="label">Features NN</p>` + `<div class="img"><img src alt></div>` + `<div class="txt">`
+- `Features. NN` → `Features NN` (bỏ dấu chấm); tuỳ chọn tiền tố (mặc định `Features`), số bắt đầu (mặc định `1`) và checkbox **tự đánh số NN theo thứ tự slide** (tắt thì giữ số có sẵn trong input, kể cả khi label nằm trong `<span>`)
+- `<dt><p>` → `<p class="txt01 line1">` (`<br>` → khoảng trắng, trim + gộp khoảng trắng/`&nbsp;`; checkbox bật/tắt class `line1`)
+- `<dd> > ul.dot_list > li` → `<div class="txt02"><ul class="ul-dot cir">…</ul>` (giữ nguyên `<br>`, escape ký tự đặc biệt; `<li>` có block con thì xuống dòng, thụt thêm 1 cấp)
+- `div.thumb_img > img` → `<div class="img"><img src alt></div>`, tuỳ chọn **mẫu src ảnh** với `{NN}` (01, 02…) / `{N}` (1, 2…) — để trống thì giữ ảnh gốc
+- `<a class="view" href="#a" title="펼쳐보기/접기"><span>펼쳐보기</span><span>접기</span></a>` thêm vào mỗi slide (tuỳ chọn bật/tắt + href)
+- `<dl>` không có `ul.dot_list` (vd `<dl class="no_dd">` chỉ có ảnh): mặc định vẫn xuất đủ cấu trúc với `<div class="txt02"></div>` rỗng; bật checkbox thì bỏ luôn `div.txt02` + `a.view` (chỉ giữ ảnh + `p.txt01`)
+- Nhiều `<div class="diff_cont">`: mặc định gộp tất cả `<dl>` vào 1 `ul.swiper-wrapper` (số label liên tục); bật checkbox thì mỗi khối 1 wrapper riêng
+- Thụt lề theo mẫu trang bằng tab: wrapper 0 tab, `<li class="swiper-slide">` 6 tab, `p.label`/`div.img`/`div.txt` 7 tab, `p.txt01`/`div.txt02` 8 tab, `ul.ul-dot.cir` 9 tab, `<li>` 10 tab
+- Bỏ `data-aos`/`aos-init`, `a.btn01…더보기` và href gốc của CMS; fallback khi input chỉ có `<dl>` trần hoặc là cả trang HTML
+- Đầy đủ tiện ích: copy, tải file `.html` (`swiper-features.html`), load file có sẵn, ví dụ mẫu thật (4 `<dl>`, có 1 `<dl class="no_dd">`), thống kê (tổng slide / slide thiếu `ul.dot_list` / số wrapper), tự động xử lý khi dán input
+
+**Cách dùng:** mở `features2.html` trong trình duyệt, dán HTML `diff_cont` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-features2.js` để kiểm thử logic.
+
+
 ## 📝 License
 
 MIT
