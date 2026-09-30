@@ -378,6 +378,17 @@ Tool chuyển đổi khối `<div class="dept_section dept_licn">` (trang 자격
 **Cách dùng:** mở `certificate.html` trong trình duyệt, dán HTML `dept_section dept_licn` vào ô trái → bấm ⚡ Chuyển đổi → copy kết quả. Hoặc chạy `node test-certificate.js` để kiểm thử logic.
 
 
+## 🔃 Image Converter Tool (PNG &#8646; JPG)
+
+Tool chuyển đổi ảnh PNG &#8646; JPG **chạy 100% trong trình duyệt** bằng Canvas API (không upload ảnh lên server, không cần thư viện ngoài):
+- Kéo-thả / bấm chọn / paste (`Ctrl+V`) nhiều file `.png`, `.jpg`, `.jpeg`, `.webp` cùng lúc; mỗi file có thumbnail, dung lượng/kích thước gốc và nút tải riêng
+- Chọn định dạng đích `JPG` hoặc `PNG`; thanh trượt **Quality 50–100%** (mặc định **100%** = tối đa của encoder); ô **màu nền lót** (mặc định trắng) cho PNG trong suốt → JPG vì JPG không có kênh alpha
+- Giữ chất lượng: **giữ nguyên width × height** (không resize), PNG xuất **lossless**, JPG vẽ với `imageSmoothingQuality = 'high'`, chuyển nối tiếp từng file + tải nối tiếp (mỗi file cách 400ms để trình duyệt không chặn)
+- Thống kê (tổng ảnh / đã chuyển / bytes gốc / bytes sau chuyển), nút tải tất cả, xoá từng ảnh hoặc cả danh sách
+
+**Cách dùng:** mở `image-converter.html` trong trình duyệt, thả ảnh vào khung → bấm ⚡ Chuyển đổi tất cả → tải từng file hoặc Tải tất cả. Hoặc chạy `node test-image-converter.js` để kiểm thử logic.
+
+
 ## 📝 License
 
 MIT

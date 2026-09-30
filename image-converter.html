@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Converter - Chuyển PNG &#8646; JPG giữ chất lượng gốc</title>
+    <link rel="stylesheet" href="header-menu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px; width: 100%; max-width: 1100px; margin: 60px auto 0; border: 1px solid #2a2a2a; }
+        h1 { font-size: 28px; color: #e0e0e0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        h1 span { background: #2a2a2a; color: #cccccc; border: 1px solid #3a3a3a; font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .subtitle { color: #888888; margin-bottom: 24px; font-size: 14px; line-height: 1.7; }
+        .subtitle b { color: #bbbbbb; }
+        code { background: #2a2a2a; padding: 1px 6px; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; color: #e0a568; }
+        .options { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 20px; padding: 18px 20px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .option-group { display: flex; flex-direction: column; gap: 8px; }
+        .option-group .group-title { font-size: 13px; font-weight: 600; color: #aaaaaa; margin-bottom: 2px; }
+        .option-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cccccc; cursor: pointer; white-space: nowrap; }
+        input[type="checkbox"], input[type="radio"] { accent-color: #6366f1; cursor: pointer; }
+        input[type="range"] { width: 180px; accent-color: #6366f1; cursor: pointer; }
+        input[type="color"] { width: 40px; height: 26px; padding: 0; border: 1px solid #444444; border-radius: 6px; background: #111111; cursor: pointer; }
+        .q-val { color: #e0a568; font-weight: 700; min-width: 44px; }
+        .hint { font-size: 12px; color: #666666; max-width: 260px; white-space: normal; line-height: 1.6; }
+        .dropzone { border: 2px dashed #444444; border-radius: 12px; padding: 44px 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #111111; margin-bottom: 20px; }
+        .dropzone:hover, .dropzone.dragover { border-color: #6366f1; background: #151528; }
+        .dropzone .dz-icon { font-size: 44px; margin-bottom: 10px; }
+        .dropzone .dz-title { font-size: 16px; font-weight: 600; color: #e0e0e0; margin-bottom: 6px; }
+        .dropzone .dz-sub { font-size: 13px; color: #777777; }
+        .actions { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #444444; background: #2a2a2a; color: #e0e0e0; }
+        .btn:hover { background: #3a3a3a; transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .btn-outline { background: transparent; color: #aaaaaa; }
+        .file-list { display: flex; flex-direction: column; gap: 14px; }
+        .file-card { display: flex; gap: 16px; align-items: center; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 16px; flex-wrap: wrap; }
+        .file-card .thumb { width: 96px; height: 96px; object-fit: contain; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; flex-shrink: 0; }
+        .file-card .meta { flex: 1; min-width: 220px; }
+        .file-card .fname { font-size: 14px; font-weight: 600; color: #e0e0e0; word-break: break-all; margin-bottom: 4px; }
+        .file-card .finfo { font-size: 12px; color: #888888; line-height: 1.7; }
+        .file-card .finfo .ok { color: #6fcf7f; }
+        .file-card .finfo .err { color: #e06c6c; }
+        .file-card .arrow { font-size: 22px; color: #6366f1; flex-shrink: 0; }
+        .btn-dl { padding: 10px 18px; font-size: 13px; flex-shrink: 0; }
+        .empty { text-align: center; color: #555555; font-size: 14px; padding: 30px 0 10px; }
+        .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; padding: 14px 18px; background: #121212; border: 1px solid #2a2a2a; border-radius: 10px; }
+        .stat-item { font-size: 13px; color: #999999; }
+        .stat-item strong { color: #e0e0e0; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #2a2a2a; color: #e0e0e0; border: 1px solid #444444; padding: 12px 20px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000; max-width: 80vw; }
+        .toast.show { opacity: 1; }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #666666; border-top-color: #e0e0e0; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -2px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+<body>
+    <!-- Global Header Menu -->
+    <div id="header-container"></div>
+
+    <div class="container">
+        <h1>🔃 Image Converter <span>PNG &#8646; JPG</span> <span>client-side</span></h1>
+        <p class="subtitle">
+            Kéo-thả (hoặc bấm chọn) nhiều ảnh <b>PNG / JPG / JPEG / WEBP</b> → chuyển 1-click sang
+            <code>PNG</code> hoặc <code>JPG</code>. Xử lý <b>100% trong trình duyệt</b> bằng Canvas API — ảnh
+            <b>không upload</b> lên server. Kích thước (width × height) <b>giữ nguyên</b>,
+            PNG xuất <b>lossless</b>, JPG xuất ở <b>chất lượng 100%</b> (có thể hạ bằng thanh trượt nếu muốn file nhẹ hơn).
+            PNG trong → JPG được lót nền (mặc định trắng) vì JPG không có kênh alpha.
+        </p>
+
+        <div class="options">
+            <div class="option-group">
+                <div class="group-title">🎯 Định dạng đích</div>
+                <label><input type="radio" name="outFormat" value="jpeg" checked> <code>JPG</code> (ảnh chụp, nền web — nhẹ)</label>
+                <label><input type="radio" name="outFormat" value="png"> <code>PNG</code> (giữ nền trong suốt, lossless)</label>
+            </div>
+            <div class="option-group">
+                <div class="group-title">✨ Chất lượng JPG</div>
+                <label>Quality: <input type="range" id="optQuality" min="50" max="100" value="100" step="1"> <span class="q-val" id="qualityVal">100%</span></label>
+                <span class="hint">100% = chất lượng tối đa của encoder (khuyên dùng để giữ chi tiết gốc). Kéo xuống 85–92 nếu cần file nhẹ hơn.</span>
+            </div>
+            <div class="option-group">
+                <div class="group-title">⬜ Nền lót (PNG trong → JPG)</div>
+                <label>Màu nền: <input type="color" id="optBg" value="#ffffff"> <span id="bgVal">#ffffff</span></label>
+                <span class="hint">JPG không lưu được độ trong suốt nên vùng alpha được ghép lên màu này.</span>
+            </div>
+        </div>
+
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Chọn ảnh để chuyển đổi">
+            <div class="dz-icon">🖼️</div>
+            <div class="dz-title">Kéo-thả ảnh vào đây hoặc bấm để chọn</div>
+            <div class="dz-sub">Chấp nhận .png, .jpg, .jpeg, .webp — xử lý nhiều file cùng lúc</div>
+            <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" multiple hidden>
+        </div>
+        <div class="actions">
+            <button class="btn" id="btnConvert" disabled>⚡ Chuyển đổi tất cả</button>
+            <button class="btn btn-outline" id="btnDownloadAll" disabled>⬇️ Tải tất cả (.zip không cần — tải từng file)</button>
+            <button class="btn btn-outline" id="btnClear" disabled>🗑️ Xoá danh sách</button>
+        </div>
+
+        <div class="file-list" id="fileList">
+            <div class="empty" id="emptyMsg">Chưa có ảnh nào — hãy kéo-thả hoặc bấm vào khung trên để chọn ảnh.</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">🖼️ Tổng ảnh: <strong id="statTotal">0</strong></div>
+            <div class="stat-item">✅ Đã chuyển: <strong id="statDone">0</strong></div>
+            <div class="stat-item">📥 Tổng dung lượng gốc: <strong id="statInBytes">0</strong></div>
+            <div class="stat-item">📤 Tổng dung lượng sau chuyển: <strong id="statOutBytes">0</strong></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Nạp global header menu
+        fetch('header-menu.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    if (link.getAttribute('data-page') === 'image-converter') link.classList.add('active');
+                });
+                const script = document.createElement('script');
+                script.src = 'header-menu.js';
+                document.head.appendChild(script);
+            })
+            .catch(err => console.error('Error loading header:', err));
+    </script>
+    <script>
+        // ===== Core converter: PNG <-> JPG (Canvas API, client-side, giữ chất lượng) =====
+        // Nguyên tắc giữ chất lượng:
+        // - Giữ nguyên width x height (không resize / không resample).
+        // - PNG đích: canvas.toBlob('image/png') là lossless (không có quality).
+        // - JPG đích: canvas.toBlob('image/jpeg', quality) với quality mặc định 1.0 (100%),
+        //   imageSmoothingEnabled = true + imageSmoothingQuality = 'high' để vẽ 1:1 nét nhất.
+        // - JPG không có alpha: lót nền (mặc định trắng) rồi mới vẽ ảnh lên.
+        'use strict';
+
+        const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+        const ACCEPTED_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+
+        function formatBytes(bytes) {
+            if (!Number.isFinite(bytes) || bytes < 0) return '0 B';
+            if (bytes === 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let v = bytes;
+            let u = 0;
+            while (v >= 1024 && u < units.length - 1) { v /= 1024; u++; }
+            return (u === 0 ? Math.round(v) : v.toFixed(v >= 100 ? 0 : 1)) + ' ' + units[u];
+        }
+
+        function extForFormat(fmt) {
+            return fmt === 'png' ? 'png' : 'jpg';
+        }
+
+        function mimeForFormat(fmt) {
+            return fmt === 'png' ? 'image/png' : 'image/jpeg';
+        }
+
+        function clampQuality(q) {
+            const n = Number(q);
+            if (!Number.isFinite(n)) return 1;
+            return Math.min(1, Math.max(0.01, n));
+        }
+
+        // 'photo.PNG' + 'jpeg' -> 'photo.jpg' ; 'anh' (không đuôi) -> 'anh.jpg'
+        function outFileName(origName, fmt) {
+            const ext = extForFormat(fmt);
+            const base = String(origName || 'image').split(/[\\/]/).pop() || 'image';
+            const dot = base.lastIndexOf('.');
+            const stem = dot > 0 ? base.slice(0, dot) : base;
+            return (stem || 'image') + '.' + ext;
+        }
+
+        function isAcceptedFile(file) {
+            if (!file) return false;
+            if (file.type && ACCEPTED_TYPES.indexOf(file.type) !== -1) return true;
+            const name = String(file.name || '').toLowerCase();
+            const dot = name.lastIndexOf('.');
+            const ext = dot >= 0 ? name.slice(dot + 1) : '';
+            return ACCEPTED_EXTS.indexOf(ext) !== -1;
+        }
+
+        // '#fff' / '#ffffff' -> {r,g,b} ; sai -> null
+        function parseHexColor(hex) {
+            if (typeof hex !== 'string') return null;
+            let h = hex.trim().replace(/^#/, '');
+            if (/^[0-9a-fA-F]{3}$/.test(h)) {
+                h = h.split('').map(c => c + c).join('');
+            }
+            if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+            return {
+                r: parseInt(h.slice(0, 2), 16),
+                g: parseInt(h.slice(2, 4), 16),
+                b: parseInt(h.slice(4, 6), 16)
+            };
+        }
+
+        function cssForBg(rgb, fallbackHex) {
+            if (rgb && Number.isFinite(rgb.r)) {
+                return 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
+            }
+            return fallbackHex || '#ffffff';
+        }
+        // Đọc File/Blob ảnh -> HTMLImageElement (giữ nguyên pixel gốc,
+        // dùng createImageBitmap khi có để decode nhanh + giữ màu chuẩn)
+        function loadImageBitmap(file) {
+            if (typeof createImageBitmap === 'function') {
+                return createImageBitmap(file).then(bmp => ({ img: bmp, w: bmp.width, h: bmp.height, close: () => { try { bmp.close(); } catch (e) {} } }));
+            }
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => resolve({ img, w: img.naturalWidth || img.width, h: img.naturalHeight || img.height, close: () => URL.revokeObjectURL(url) });
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Không đọc được ảnh (file hỏng hoặc sai định dạng)')); };
+                img.src = url;
+            });
+        }
+
+        function canvasToBlob(canvas, mime, quality) {
+            return new Promise((resolve, reject) => {
+                const done = blob => {
+                    if (blob) resolve(blob);
+                    else reject(new Error('Trình duyệt không xuất được ' + mime));
+                };
+                if (mime === 'image/png') {
+                    if (canvas.toBlob) canvas.toBlob(done, mime);
+                    else if (canvas.convertToBlob) canvas.convertToBlob({ type: mime }).then(done, reject);
+                    else reject(new Error('Canvas không hỗ trợ toBlob'));
+                } else {
+                    if (canvas.toBlob) canvas.toBlob(done, mime, quality);
+                    else if (canvas.convertToBlob) canvas.convertToBlob({ type: mime, quality }).then(done, reject);
+                    else reject(new Error('Canvas không hỗ trợ toBlob'));
+                }
+            });
+        }
+
+        // Vẽ ảnh lên canvas đúng kích thước gốc (không resize), JPG thì lót nền trước.
+        function renderToCanvas(img, w, h, fmt, bgCss) {
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d', { alpha: fmt === 'png' });
+            if ('imageSmoothingEnabled' in ctx) ctx.imageSmoothingEnabled = true;
+            if ('imageSmoothingQuality' in ctx) { try { ctx.imageSmoothingQuality = 'high'; } catch (e) {} }
+            if (fmt !== 'png') {
+                ctx.fillStyle = bgCss;
+                ctx.fillRect(0, 0, w, h);
+            } else {
+                ctx.clearRect(0, 0, w, h);
+            }
+            ctx.drawImage(img, 0, 0, w, h);
+            return canvas;
+        }
+
+        // Chuyển 1 file ảnh -> Blob đích. Trả về { blob, w, h, mime }.
+        function convertImageFile(file, opts) {
+            const fmt = opts && opts.format === 'png' ? 'png' : 'jpeg';
+            const quality = fmt === 'png' ? undefined : clampQuality(opts && opts.quality != null ? opts.quality : 1);
+            const rgb = parseHexColor(opts && opts.bg != null ? opts.bg : '#ffffff') || { r: 255, g: 255, b: 255 };
+            const bgCss = cssForBg(rgb);
+            const mime = mimeForFormat(fmt);
+            let holder = null;
+            return loadImageBitmap(file).then(h => {
+                holder = h;
+                if (!h.w || !h.h) throw new Error('Ảnh rỗng (0x0)');
+                if (h.w > 16000 || h.h > 16000) throw new Error('Ảnh quá lớn (' + h.w + 'x' + h.h + '), trình duyệt không xử lý nổi');
+                const canvas = renderToCanvas(h.img, h.w, h.h, fmt, bgCss);
+                return canvasToBlob(canvas, mime, quality).then(blob => ({ blob, w: h.w, h: h.h, mime }));
+            }).finally(() => { if (holder && holder.close) { try { holder.close(); } catch (e) {} } });
+        }
+    </script>
+    </script>
+
+    <script>
+        // ===== UI wiring: dropzone / danh sách file / convert hàng loạt =====
+        (function () {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const emptyMsg = document.getElementById('emptyMsg');
+            const btnConvert = document.getElementById('btnConvert');
+            const btnDownloadAll = document.getElementById('btnDownloadAll');
+            const btnClear = document.getElementById('btnClear');
+            const optQuality = document.getElementById('optQuality');
+            const qualityVal = document.getElementById('qualityVal');
+            const optBg = document.getElementById('optBg');
+            const bgVal = document.getElementById('bgVal');
+            const statTotal = document.getElementById('statTotal');
+            const statDone = document.getElementById('statDone');
+            const statInBytes = document.getElementById('statInBytes');
+            const statOutBytes = document.getElementById('statOutBytes');
+            const toast = document.getElementById('toast');
+
+            const items = []; // { id, file, url, outUrl, outName, outSize, w, h, status, error }
+            let seq = 0;
+
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(showToast._t);
+                showToast._t = setTimeout(() => toast.classList.remove('show'), 2600);
+            }
+
+            function currentFormat() {
+                const checked = document.querySelector('input[name="outFormat"]:checked');
+                return checked && checked.value === 'png' ? 'png' : 'jpeg';
+            }
+
+            function refreshQualityLabel() {
+                qualityVal.textContent = optQuality.value + '%';
+            }
+            optQuality.addEventListener('input', refreshQualityLabel);
+            refreshQualityLabel();
+
+            optBg.addEventListener('input', () => { bgVal.textContent = optBg.value; });
+
+            function updateStats() {
+                statTotal.textContent = items.length;
+                const done = items.filter(it => it.status === 'done').length;
+                statDone.textContent = done;
+                statInBytes.textContent = formatBytes(items.reduce((s, it) => s + (it.file ? it.file.size : 0), 0));
+                statOutBytes.textContent = formatBytes(items.reduce((s, it) => s + (it.outSize || 0), 0));
+                const has = items.length > 0;
+                btnConvert.disabled = !has;
+                btnClear.disabled = !has;
+                btnDownloadAll.disabled = done === 0;
+            }
+            function cardInfoHtml(it) {
+                const fmt = currentFormat();
+                const target = extForFormat(fmt).toUpperCase();
+                const base = 'Gốc: ' + formatBytes(it.file.size) + (it.file.type ? ' · ' + it.file.type : '') + (it.w ? ' · ' + it.w + '×' + it.h + 'px' : '');
+                if (it.status === 'done') return base + '<br><span class="ok">Đã chuyển → ' + it.outName + ' (' + formatBytes(it.outSize) + ', ' + target + ')</span>';
+                if (it.status === 'working') return base + '<br><span class="spinner"></span> Đang chuyển…';
+                if (it.status === 'error') return base + '<br><span class="err">Lỗi: ' + escapeHtml(it.error || 'không rõ') + '</span>';
+                return base + '<br>Sẵn sàng chuyển → ' + target;
+            }
+
+            function escapeHtml(s) {
+                return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            }
+
+            function renderCard(it) {
+                let card = document.getElementById('card-' + it.id);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.className = 'file-card';
+                    card.id = 'card-' + it.id;
+                    const img = document.createElement('img');
+                    img.className = 'thumb';
+                    img.alt = it.file.name;
+                    img.src = it.url;
+                    img.addEventListener('load', () => {
+                        if (!it.w && img.naturalWidth) {
+                            it.w = img.naturalWidth;
+                            it.h = img.naturalHeight;
+                            const info = card.querySelector('.finfo');
+                            if (info && it.status === 'pending') info.innerHTML = cardInfoHtml(it);
+                        }
+                    });
+                    const meta = document.createElement('div');
+                    meta.className = 'meta';
+                    const fname = document.createElement('div');
+                    fname.className = 'fname';
+                    fname.textContent = it.file.name;
+                    const finfo = document.createElement('div');
+                    finfo.className = 'finfo';
+                    meta.appendChild(fname);
+                    meta.appendChild(finfo);
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.textContent = '→';
+                    card.appendChild(img);
+                    card.appendChild(meta);
+                    card.appendChild(arrow);
+                    fileList.appendChild(card);
+                }
+                card.querySelector('.finfo').innerHTML = cardInfoHtml(it);
+                let dlBtn = card.querySelector('.btn-dl');
+                if (!dlBtn) {
+                    dlBtn = document.createElement('button');
+                    dlBtn.className = 'btn btn-dl';
+                    dlBtn.textContent = '⬇️ Tải';
+                    dlBtn.addEventListener('click', () => downloadItem(it));
+                    card.appendChild(dlBtn);
+                }
+                dlBtn.disabled = it.status !== 'done';
+                return card;
+            }
+            function addFiles(fileListLike) {
+                const files = Array.from(fileListLike || []);
+                let added = 0;
+                let rejected = 0;
+                files.forEach(f => {
+                    if (!isAcceptedFile(f)) { rejected++; return; }
+                    const it = { id: ++seq, file: f, url: URL.createObjectURL(f), outUrl: null, outName: '', outSize: 0, w: 0, h: 0, status: 'pending', error: '' };
+                    items.push(it);
+                    renderCard(it);
+                    added++;
+                });
+                if (emptyMsg) emptyMsg.style.display = items.length ? 'none' : '';
+                if (rejected > 0) showToast('Bỏ qua ' + rejected + ' file không phải ảnh PNG/JPG/WEBP');
+                else if (added > 0) showToast('Đã thêm ' + added + ' ảnh');
+                updateStats();
+            }
+
+            function removeItem(id) {
+                const idx = items.findIndex(it => it.id === id);
+                if (idx === -1) return;
+                const it = items[idx];
+                try { URL.revokeObjectURL(it.url); } catch (e) {}
+                if (it.outUrl) { try { URL.revokeObjectURL(it.outUrl); } catch (e) {} }
+                items.splice(idx, 1);
+                const card = document.getElementById('card-' + id);
+                if (card) card.remove();
+                if (emptyMsg) emptyMsg.style.display = items.length ? 'none' : '';
+                updateStats();
+            }
+
+            function downloadItem(it) {
+                if (!it.outUrl) return;
+                const a = document.createElement('a');
+                a.href = it.outUrl;
+                a.download = it.outName || outFileName(it.file.name, currentFormat());
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }
+
+            function readOptions() {
+                let q = Number(optQuality.value) / 100;
+                if (!Number.isFinite(q)) q = 1;
+                return { format: currentFormat(), quality: clampQuality(q), bg: optBg.value };
+            }
+            function convertItem(it, opts) {
+                it.status = 'working';
+                it.error = '';
+                renderCard(it);
+                return convertImageFile(it.file, opts).then(res => {
+                    if (it.outUrl) { try { URL.revokeObjectURL(it.outUrl); } catch (e) {} }
+                    it.outUrl = URL.createObjectURL(res.blob);
+                    it.outName = outFileName(it.file.name, opts.format);
+                    it.outSize = res.blob.size;
+                    it.w = res.w;
+                    it.h = res.h;
+                    it.status = 'done';
+                    renderCard(it);
+                    updateStats();
+                    return it;
+                }).catch(err => {
+                    it.status = 'error';
+                    it.error = (err && err.message) || String(err);
+                    renderCard(it);
+                    updateStats();
+                    return it;
+                });
+            }
+
+            function convertAll() {
+                if (!items.length) return;
+                const opts = readOptions();
+                btnConvert.disabled = true;
+                btnConvert.innerHTML = '<span class="spinner"></span> Đang chuyển…';
+                const chain = items.reduce((p, it) => p.then(() => convertItem(it, opts)), Promise.resolve());
+                chain.then(() => {
+                    const ok = items.filter(it => it.status === 'done').length;
+                    const fail = items.length - ok;
+                    showToast(fail === 0 ? 'Xong: đã chuyển ' + ok + '/' + items.length + ' ảnh' : 'Xong: ' + ok + ' ảnh, lỗi ' + fail + ' ảnh');
+                }).finally(() => {
+                    btnConvert.innerHTML = '⚡ Chuyển đổi tất cả';
+                    updateStats();
+                });
+            }
+
+            function downloadAll() {
+                const done = items.filter(it => it.status === 'done');
+                if (!done.length) { showToast('Chưa có ảnh nào được chuyển'); return; }
+                showToast('Đang tải ' + done.length + ' file…');
+                done.forEach((it, i) => setTimeout(() => downloadItem(it), i * 400));
+            }
+
+            function clearAll() {
+                items.forEach(it => {
+                    try { URL.revokeObjectURL(it.url); } catch (e) {}
+                    if (it.outUrl) { try { URL.revokeObjectURL(it.outUrl); } catch (e) {} }
+                    const card = document.getElementById('card-' + it.id);
+                    if (card) card.remove();
+                });
+                items.length = 0;
+                if (emptyMsg) emptyMsg.style.display = '';
+                try { fileInput.value = ''; } catch (e) {}
+                updateStats();
+                showToast('Đã xoá danh sách');
+            }
+            dropzone.addEventListener('click', e => { if (e.target !== fileInput) fileInput.click(); });
+            dropzone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+            fileInput.addEventListener('change', () => { addFiles(fileInput.files); try { fileInput.value = ''; } catch (e) {} });
+            ['dragenter', 'dragover'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+            ['dragleave', 'drop'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+            dropzone.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length) addFiles(dt.files);
+            });
+            window.addEventListener('paste', e => {
+                if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length) addFiles(e.clipboardData.files);
+            });
+
+            document.querySelectorAll('input[name="outFormat"]').forEach(r => r.addEventListener('change', () => {
+                items.forEach(it => {
+                    if (it.status === 'done' || it.status === 'error') { it.status = 'pending'; it.error = ''; renderCard(it); }
+                });
+                updateStats();
+            }));
+
+            btnConvert.addEventListener('click', convertAll);
+            btnDownloadAll.addEventListener('click', downloadAll);
+            btnClear.addEventListener('click', clearAll);
+            updateStats();
+        })();
+    </script>
+</body>
+</html>
