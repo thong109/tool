@@ -116,7 +116,7 @@ const factory = new Function('DOMParser', coreFn +
 const core = factory.call(null, FakeDOMParser);
 const convert = core.convertBoxes;
 
-const DEFAULT_OPTS = { courseNo: '03', detailBase: '888', incrementId: false, popupId: '5627', tab: 'auto', href: '#a' };
+const DEFAULT_OPTS = { courseNo: '03', detailBase: '888', incrementId: false, popupId: '4444', tab: 'auto', href: '#a' };
 
 // ============ 3. Input nhỏ -> so khớp CHÍNH XÁC từng dòng ============
 const SMALL_INPUT = `<div class="subj_cont on" style="background-image: url(/_res/sjcu/ko/img/dept/x_bg.jpg);">
@@ -153,8 +153,8 @@ const expectedSmall = [
     T(9) + '</div>',
     T(8) + '</div>',
     T(8) + '<div class="btn">',
-    T(9) + '<div class="pc"><a class="more popup-click" href="#a" id="5627" tab="2" title="View More"><span>View more</span></a></div>',
-    T(9) + '<div class="mo"><a class="view" href="#a" title="펼쳐보기/접기"><span>펼쳐보기</span><span>접기</span></a><a class="detail popup-click" href="#a" id="5627" tab="2" title="자세히보기">자세히보기</a></div>',
+    T(9) + '<div class="pc"><a class="more popup-click" href="#a" id="4444" tab="2" title="View More"><span>View more</span></a></div>',
+    T(9) + '<div class="mo"><a class="view" href="#a" title="펼쳐보기/접기"><span>펼쳐보기</span><span>접기</span></a><a class="detail popup-click" href="#a" id="4444" tab="2" title="자세히보기">자세히보기</a></div>',
     T(8) + '</div>',
     '</div>'
 ].join('\n');
@@ -231,9 +231,9 @@ assert.strictEqual($areaA.attr('title'), '경ㆍ공매투자 전문가', 'ul.are
 assert.strictEqual($areaA.text(), '경ㆍ공매투자 전문가', 'ul.area text = label');
 assert.strictEqual($areaA.attr('class'), undefined, 'ul.area không dùng popup-click');
 
-// tab tự lấy từ ?major_tab=1, id popup mặc định 5627
+// tab tự lấy từ ?major_tab=1, id popup mặc định 4444
 const $btn = $real('div.box > div.btn');
-assert.strictEqual($btn.find('a.more').attr('id'), '5627', 'a.more id = 5627');
+assert.strictEqual($btn.find('a.more').attr('id'), '4444', 'a.more id = 4444');
 assert.strictEqual($btn.find('a.more').attr('tab'), '1', 'tab tự lấy major_tab từ p.tit');
 assert.strictEqual($btn.find('a.more').attr('title'), 'View More');
 assert.strictEqual($btn.find('a.more span').text(), 'View more');
